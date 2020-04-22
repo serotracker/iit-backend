@@ -1,15 +1,12 @@
 import os
 import subprocess
 
-from flask_script import Manager
+from app import create_app
 
-from app.init import app
-
-manager = Manager(app)
+app = create_app()
 
 
-@manager.command
-def run():
+def run_app():
     if os.getenv('FLASK_ENV') == 'test':
         app.run()
     else:
@@ -17,4 +14,4 @@ def run():
 
 
 if __name__ == '__main__':
-    manager.run()
+    run_app()
