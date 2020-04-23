@@ -11,5 +11,6 @@ jsonschema==3.2.0
 MarkupSafe==1.1.1
 pyrsistent==0.16.0
 pytz==2019.3
+requests==2.23.0
 six==1.14.0
 Werkzeug==0.16.0
