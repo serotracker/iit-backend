@@ -9,6 +9,7 @@ class ApiConfig:
     AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
     BASE_REQUEST_URL = "https://api.airtable.com/v0/{}/Rapid%20Review%20Data?filterByFormula=" \
                        "%7BMeets+Inclusion+Criteria%3F%7D%3D%22Yes%22".format(AIRTABLE_BASE_ID)
+    TIME_DIFF = os.getenv('TIME_DIFF', 24)
 
 
 class ApiTestingConfig(ApiConfig):

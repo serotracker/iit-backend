@@ -1,7 +1,8 @@
+import json
+
 import requests
 
 from flask import current_app as app
-from flask import jsonify
 
 
 def get_all_records():
@@ -10,4 +11,16 @@ def get_all_records():
     r = requests.get(url, headers=headers)
     data = r.json()
     records = data['records']
-    return jsonify(records)
+    return records
+
+
+def write_to_json(records):
+    with open('cached_results.json', 'w') as file:
+        json.dump(records, file)
+    return
+
+
+def read_from_json():
+    with open('cached_results.json', 'r') as file:
+        records = json.load(file)
+    return records

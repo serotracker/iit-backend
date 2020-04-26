@@ -1,6 +1,10 @@
-from flask_restplus import Resource, Namespace
+import os
+from datetime import datetime
 
-from .airtable_scraper_service import get_all_records
+from flask_restplus import Resource, Namespace
+from flask import jsonify, current_app as app
+
+from .airtable_scraper_service import get_all_records, write_to_json, read_from_json
 
 airtable_scraper_ns = Namespace('airtable_scraper', description='An endpoint for scraping airtable data.')
 
@@ -9,5 +13,14 @@ airtable_scraper_ns = Namespace('airtable_scraper', description='An endpoint for
 class AirtableScraper(Resource):
     @airtable_scraper_ns.doc('An endpoint for getting all records of airtable data.')
     def get(self):
-        records = get_all_records()
-        return records
+        current_time = datetime.now()
+        file_created_time = datetime.fromtimestamp(os.path.getctime('cached_results.json'))
+        hour_diff = ((current_time - file_created_time).total_seconds())/3600
+        if hour_diff > app.config['TIME_DIFF']:
+            records = get_all_records()
+            write_to_json(records)
+        else:
+            records = read_from_json()
+        return jsonify(records)
+
+
