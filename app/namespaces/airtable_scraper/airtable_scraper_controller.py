@@ -13,10 +13,14 @@ airtable_scraper_ns = Namespace('airtable_scraper', description='An endpoint for
 class AirtableScraper(Resource):
     @airtable_scraper_ns.doc('An endpoint for getting all records of airtable data.')
     def get(self):
-        current_time = datetime.now()
-        file_created_time = datetime.fromtimestamp(os.path.getctime('cached_results.json'))
-        hour_diff = ((current_time - file_created_time).total_seconds())/3600
-        if hour_diff > app.config['TIME_DIFF']:
+        try:
+            current_time = datetime.now()
+            file_created_time = datetime.fromtimestamp(os.path.getctime('cached_results.json'))
+            hour_diff = ((current_time - file_created_time).total_seconds())/3600
+            generate_new_cache = True if hour_diff > app.config['TIME_DIFF'] else False
+        except FileNotFoundError:
+            generate_new_cache = True
+        if generate_new_cache:
             records = get_all_records()
             write_to_json(records)
         else:
