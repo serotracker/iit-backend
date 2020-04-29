@@ -3,9 +3,9 @@ pipeline {
   stages {
     stage('Build') {
       steps {
-        sh 'python3 -m venv env'
-        sh '. ./env/bin/activate'
-        sh 'sudo pip install -r requirements.txt'
+        withEnv(["HOME=${env.WORKSPACE}"]) {
+          sh "pip install -r requirements.txt --user"
+        }
       }
     }
     stage('Test') {
@@ -15,3 +15,4 @@ pipeline {
     }
   }
 }
+
