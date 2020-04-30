@@ -12,8 +12,7 @@ pipeline {
       steps {
         withEnv(["HOME=${env.WORKSPACE}"]) {
           sh 'pip install -r requirements.txt --user'
-          sh 'echo $FLASK_ENV'
-          sh 'echo $AIRTABLE_API_KEY'
+          sh 'python manage.py'
         }
       }
     }
