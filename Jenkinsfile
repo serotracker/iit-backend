@@ -12,7 +12,7 @@ pipeline {
     stage('Build') {
       steps {
         withEnv(["HOME=${env.WORKSPACE}"]) {
-          sh 'echo $PATH'
+          sh 'PATH+=:/var/lib/jenkins/jobs/iit-backend/branches/ci-integration/workspace/.local/bin'
           sh 'pip install -r requirements.txt --user'
           sh 'python manage.py'
         }
