@@ -12,7 +12,7 @@ pipeline {
     FLASK_ENV = 'prod'
     AIRTABLE_API_KEY = credentials('airtable_api_key')
     AIRTABLE_BASE_ID = credentials('airtable_base_id')
-  }  
+  } 
   stages {
     stage('Build') {
       steps {
