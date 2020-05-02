@@ -10,7 +10,7 @@ def run_app():
     if os.getenv('FLASK_ENV') == 'test':
         app.run()
     else:
-        subprocess.call(['gunicorn', '--bind', '0.0.0.0:5000', 'wsgi'])
+        subprocess.call(['gunicorn', '--bind', '0.0.0.0:5000', 'wsgi:app'])
 
 
 if __name__ == '__main__':
