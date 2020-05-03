@@ -3,9 +3,8 @@ pipeline {
     docker { 
       image 'python:3.7.2' 
       args '''
-        -e PATH="$PATH:/var/lib/jenkins/jobs/iit-backend/branches/ci-integration/workspace/.local/bin"
+        -e PATH="$PATH:${env.WORKSPACE}/.local/bin"
       '''
-      // TODO: Fix the above environment variable to not depend on a branch
     } 
   }
   environment {
