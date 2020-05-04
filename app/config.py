@@ -7,8 +7,8 @@ class ApiConfig:
     APP_NAMESPACES = os.getenv('APP_NAMESPACES', ['healthcheck', 'airtable_scraper'])
     AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
     AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
-    BASE_REQUEST_URL = "https://api.airtable.com/v0/{}/Rapid%20Review%20Data".format(AIRTABLE_BASE_ID)
-    AIRTABLE_FIELDS = {'filterByFormula': '{Meets Inclusion Criteria?}="Yes"'}
+    REQUEST_URL = "https://api.airtable.com/v0/{}/Prevalence%20estimates?".format(AIRTABLE_BASE_ID)
+    REQUEST_PARAMS = {'filterByFormula': '{Visualise data}=1'}
     TIME_DIFF = os.getenv('TIME_DIFF', 24)
 
 
