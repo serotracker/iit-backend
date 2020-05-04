@@ -2,6 +2,7 @@ import json
 
 import requests
 import pandas as pd
+import numpy as np
 
 from flask import current_app as app
 
@@ -34,6 +35,7 @@ def get_formatted_json_records(records):
             reordered_cols.append(value[1])
     total_records_df = total_records_df.rename(columns=renamed_cols)
     total_records_df = total_records_df[reordered_cols]
+    total_records_df = total_records_df.replace({np.nan: None})
     total_records_json = total_records_df.to_dict('records')
     return total_records_json
 
