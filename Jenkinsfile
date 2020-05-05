@@ -13,7 +13,7 @@ pipeline {
     AIRTABLE_BASE_ID = credentials('airtable_base_id')
   } 
   stages {
-    stage('Build') {
+    stage('Test') {
       steps {
         withEnv(["HOME=${env.WORKSPACE}"]) {
           sh 'pip install -r requirements.txt --user'
