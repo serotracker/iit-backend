@@ -15,8 +15,8 @@ class AirtableScraper(Resource):
     def get(self):
         try:
             current_time = datetime.now()
-            file_created_time = datetime.fromtimestamp(os.path.getmtime('cached_results.json'))
-            hour_diff = ((current_time - file_created_time).total_seconds())/3600
+            file_created_datetime = datetime.fromtimestamp(os.path.getmtime('cached_results.json'))
+            hour_diff = ((current_time - file_created_datetime).total_seconds())/3600
             generate_new_cache = True if hour_diff > app.config['TIME_DIFF'] else False
         except FileNotFoundError:
             generate_new_cache = True
@@ -25,6 +25,7 @@ class AirtableScraper(Resource):
             write_to_json(records)
         else:
             records = read_from_json()
-        return jsonify(records)
+        result = {"records": records, "updated_at": file_created_datetime}
+        return jsonify(result)
 
 
