@@ -1,3 +1,10 @@
+# Environment
+.env
+
+# IDE
+.idea/
+.swp
+
 # Python Cache
 .cache/
 __pycache__/
