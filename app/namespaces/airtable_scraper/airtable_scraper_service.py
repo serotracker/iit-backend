@@ -47,9 +47,12 @@ def get_all_records():
     params = app.config['REQUEST_PARAMS']
     r = requests.get(url, headers=headers, params=params)
     data = r.json()
-    records = data['records']
-    formatted_records = get_formatted_json_records(records)
-    return formatted_records
+    try:
+        records = data['records']
+        formatted_records = get_formatted_json_records(records)
+        return formatted_records
+    except KeyError:
+        return "No records could be retrieved from Airtable."
 
 
 def write_to_json(records):
