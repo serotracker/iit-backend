@@ -23,13 +23,13 @@
 
 	"fldqCxGe7W5IV3dsX": ["FullDate", "FULL_DATE"],
 
-	"fldcoa6mpgVsJhPOx": ["Sampling start date", "SAMPLING_START_DATE"],
+	"fldcoa6mpgVsJhPOx": ["Sampling Start Date", "SAMPLING_START_DATE"],
 
-	"fldJybWXR3s4BnAxV": ["Sampling end date", "SAMPLING_END_DATE"],
+	"fldJybWXR3s4BnAxV": ["Sampling End Date", "SAMPLING_END_DATE"],
 
-	"flda7OAIs7mEEMMwR": ["Populations studied (high level)", "POPULATIONS_STUDIED"],
+	"flda7OAIs7mEEMMwR": ["Populations studied (high level) (DELETE)", "POPULATIONS_STUDIED"],
 
-	"fld3snSC5vfDOZArD": ["Population Sampled", "POPULATION_SAMPLED"],
+	"fld3snSC5vfDOZArD": ["Population Sampled (DELETE)", "POPULATION_SAMPLED"],
 
 	"fldNEIgKOTfhdKJ2f": ["N", "N"],
 
@@ -37,39 +37,39 @@
 
 	"fldtRFJP0mqH1sj8r": ["IFR (95% CI)", "IFR_95_CI"],
 
-	"fld7GlbcWIsBKPzmC": ["Test type", "TEST_TYPE"],
+	"fld7GlbcWIsBKPzmC": ["Test Type", "TEST_TYPE"],
 
-	"fldIEAR99IUfp8KEh": ["Isotype reported", "ISOTYPE_REPORTED"],
+	"fldIEAR99IUfp8KEh": ["Isotype(s) Reported", "ISOTYPE_REPORTED"],
 
 	"fldTpUDHe26hckJdU": ["Test sensitivity", "TEST_SENSITIVITY"],
 
 	"fldgHXPFfI4Y1JrFP": ["Test specificity", "TEST_SPECIFICITY"],
 
-	"fld4uLqNtAefYwrRJ": ["Approving regulator", "APPROVING_REGULATOR"],
+	"fld4uLqNtAefYwrRJ": ["Approving Regulator", "APPROVING_REGULATOR"],
 
-	"fldWOqN7J9ctVdJT9": ["Sensitivity %", "SENSITIVITY"],
+	"fldWOqN7J9ctVdJT9": ["Sensitivity", "SENSITIVITY"],
 
-	"fldMplVcqByyT1pb2": ["Sensitivity 95% CI Lower", "SENSITIVITY_CI_LOWER"],
+	"fldMplVcqByyT1pb2": ["Sensitivity, 95% CI Lower", "SENSITIVITY_CI_LOWER"],
 
-	"fld4eSXSobbGnck9a": ["Sensitivity 95% CI Upper", "SENSITIVITY"],
+	"fld4eSXSobbGnck9a": ["Sensitivity, 95% CI Upper", "SENSITIVITY"],
 
-	"fldQR0wsY28L2RWuD": ["Specificity %", "SPECIFICITY"],
+	"fldQR0wsY28L2RWuD": ["Specificity", "SPECIFICITY"],
 
-	"fldEQ4xFK6RqZYMef": ["Specificity 95% CI Lower", "SPECIFICITY_CI_LOWER"],
+	"fldEQ4xFK6RqZYMef": ["Specificity, 95% CI Lower", "SPECIFICITY_CI_LOWER"],
 
-	"fldE1jnLkxEVS7vqX": ["Specificity 95% CI Upper", "SPECIFICITY_CI_UPPER"],
+	"fldE1jnLkxEVS7vqX": ["Specificity, 95% CI Upper", "SPECIFICITY_CI_UPPER"],
 
-	"fldMZ6754xuQc5Fu8": ["Denominator value / expected value", "DENOMINATOR_VALUE"],
+	"fldMZ6754xuQc5Fu8": ["Denominator Value", "DENOMINATOR_VALUE"],
 
-	"fldcJAufVb7heGQvE": ["Numerator value / expected value", "NUMERATOR_VALUE"],
+	"fldcJAufVb7heGQvE": ["Numerator Value", "NUMERATOR_VALUE"],
 
-	"fldugXxeu8NV0sece": ["Numerator definition (definition of test positive)", "NUMERATOR DEFINITION"],
+	"fldugXxeu8NV0sece": ["Numerator Definition", "NUMERATOR DEFINITION"],
 
-	"fldJVVqKEWoXfRibi": ["Serum + prevalence", "SERUM_POSITIVE_PREVALENCE"],
+	"fldJVVqKEWoXfRibi": ["Serum positive prevalence", "SERUM_POSITIVE_PREVALENCE"],
 
-	"fldCMidd8gc8znfDv": ["Serum + , 95% CI Lower", "SERUM_POSITIVE_CI_LOWER"],
+	"fldCMidd8gc8znfDv": ["Serum + prevalence, 95% CI Lower", "SERUM_POSITIVE_CI_LOWER"],
 
-	"fld7zdxh9P9n8aWUz": ["Serum + , 95% CI Upper", "SERUM_POSITIVE_CI_UPPER"],
+	"fld7zdxh9P9n8aWUz": ["Serum + Prevalence, 95% CI Upper", "SERUM_POSITIVE_CI_UPPER"],
 
 	"fld0nwP01dNBiUVa8": ["Serum -ve prevalence", "SERUM_NEGATIVE_PREVALENCE"],
 
