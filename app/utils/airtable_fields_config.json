@@ -11,7 +11,7 @@
 
 	"fldejqj7wyEhbbId3": ["Date", "DATE"],
 
-	"fldqeuFceXlpJC7G1": ["Study Type", "STUDY_TYPE"],
+	"fldqeuFceXlpJC7G1": ["Study Type (DELETE)", "STUDY_TYPE"],
 
 	"fldg8R6rWDrkbLc3B": ["Country", "COUNTRY"],
 
@@ -37,15 +37,15 @@
 
 	"fldtRFJP0mqH1sj8r": ["IFR (95% CI)", "IFR_95_CI"],
 
-	"fld7GlbcWIsBKPzmC": ["Test type", "TEST_TYPE"],
+	"fld7GlbcWIsBKPzmC": ["Test Type", "TEST_TYPE"],
 
-	"fldIEAR99IUfp8KEh": ["Isotype reported", "ISOTYPE_REPORTED"],
+	"fldIEAR99IUfp8KEh": ["Isotype(s) reported", "ISOTYPE_REPORTED"],
 
 	"fldTpUDHe26hckJdU": ["Test sensitivity", "TEST_SENSITIVITY"],
 
 	"fldgHXPFfI4Y1JrFP": ["Test specificity", "TEST_SPECIFICITY"],
 
-	"fld4uLqNtAefYwrRJ": ["Approving regulator", "APPROVING_REGULATOR"],
+	"fld4uLqNtAefYwrRJ": ["Approving Regulator", "APPROVING_REGULATOR"],
 
 	"fldWOqN7J9ctVdJT9": ["Sensitivity", "SENSITIVITY"],
 
