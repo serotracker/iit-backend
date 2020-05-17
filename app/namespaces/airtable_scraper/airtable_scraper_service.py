@@ -1,4 +1,5 @@
 import json
+import logging
 
 import requests
 import pandas as pd
@@ -6,8 +7,11 @@ import numpy as np
 
 from flask import current_app as app
 
+logger = logging.getLogger(__name__)
+
 
 def _add_fields_to_url(url):
+    # Add fields in config to api URL
     with open('app/utils/airtable_fields_config.json', 'r') as file:
         fields = json.load(file)
         for key in fields:
@@ -23,7 +27,7 @@ def _get_formatted_json_records(records):
     # Convert list of dictionaries to df
     total_records_df = pd.DataFrame(new_records)
 
-    # Rename df columns according to formatted column names in config
+    # Rename and reorder df columns according to formatted column names in config
     with open('app/utils/airtable_fields_config.json', 'r') as file:
         fields = json.load(file)
         renamed_cols = {key: fields[key] for key in fields}
@@ -36,18 +40,27 @@ def _get_formatted_json_records(records):
 
 
 def get_all_records():
+    # Get airtable API URL and add fields to be scraped to URL in HTML format
     url = app.config['REQUEST_URL']
     url = _add_fields_to_url(url)
     headers = {'Authorization': 'Bearer {}'.format(app.config['AIRTABLE_API_KEY'])}
     params = app.config['REQUEST_PARAMS']
+    # Make request and retrieve records in json format
     r = requests.get(url, headers=headers, params=params)
     data = r.json()
+    # Try to get records from data if the request was successful
     try:
         records = data['records']
         formatted_records = _get_formatted_json_records(records)
         return formatted_records
+    # If request was not successful, there will be no records field in response
+    # Just return what is in cached layer and log an error
     except KeyError:
-        return "No records could be retrieved from Airtable."
+        logger.error("Results were not successfully retrieved from Airtable API."
+                     "Please check connection parameters in config.py and fields in airtable_fields_config.json",
+                     extra=data)
+        records = read_from_json()
+        return records
 
 
 def write_to_json(records):
