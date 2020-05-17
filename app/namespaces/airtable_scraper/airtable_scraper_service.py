@@ -29,8 +29,8 @@ def get_formatted_json_records(records):
     renamed_cols = {}
     with open('app/utils/airtable_fields_config.json', 'r') as file:
         fields = json.load(file)
-        renamed_cols = {value[0]: value[1] for value in fields.values() if value[0] in df.columns}
-        reordered_cols = [value[1] for value in fields.values() if value[0] in df.columns]
+        renamed_cols = {value[0]: value[1] for value in fields.values() if value[0] in total_records_df.columns}
+        reordered_cols = [value[1] for value in fields.values() if value[0] in total_records_df.columns]
     total_records_df = total_records_df.rename(columns=renamed_cols)
     total_records_df = total_records_df[reordered_cols]
     total_records_df = total_records_df.replace({np.nan: None})
