@@ -37,14 +37,14 @@ def _get_formatted_json_records(records):
 
 def get_all_records():
     url = app.config['REQUEST_URL']
-    url = add_fields_to_url(url)
+    url = _add_fields_to_url(url)
     headers = {'Authorization': 'Bearer {}'.format(app.config['AIRTABLE_API_KEY'])}
     params = app.config['REQUEST_PARAMS']
     r = requests.get(url, headers=headers, params=params)
     data = r.json()
     try:
         records = data['records']
-        formatted_records = get_formatted_json_records(records)
+        formatted_records = _get_formatted_json_records(records)
         return formatted_records
     except KeyError:
         return "No records could be retrieved from Airtable."
