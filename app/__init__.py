@@ -2,6 +2,7 @@ import os
 
 from flask import Flask
 from flask_restplus import Api
+from flask_cors import CORS
 
 from .config import config_by_name
 from .namespaces import healthcheck_ns, airtable_scraper_ns
@@ -11,6 +12,7 @@ def create_app():
     # Initialize app and api
     app = Flask(__name__)
     api = Api(app)
+    CORS(app, resources=r'/records')
 
     # Config app by dictionary in config file
     config_name = 'api_{}'.format(os.getenv('FLASK_ENV'))
