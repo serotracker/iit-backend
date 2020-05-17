@@ -1,83 +1,31 @@
 {
-	"fldsETyXGcx3JsxRR": ["Source Type", "SOURCE_TYPE"],
-
-	"fld0New2vI3ZnPuMt": ["Article Name", "ARTICLE_NAME"],
-
-	"fldJAJR8lEyJE6Bte": ["Authors", "AUTHORS"],
-
-	"fld5GzDWWDti8MRn4": ["Institution", "INSTITUTION"],
-
-	"fldt1HPsFwYwglKHG": ["URL", "URL"],
-
-	"fldejqj7wyEhbbId3": ["Date", "DATE"],
-
-	"fldqeuFceXlpJC7G1": ["Study Type", "STUDY_TYPE"],
-
-	"fldg8R6rWDrkbLc3B": ["Country", "COUNTRY"],
-
-	"fldEjYq2nQULDrQjp": ["State/Province", "STATE_OR_PROVINCE"],
-
-	"fldfDCC8iZPBwSf4d": ["County/City", "COUNTY_OR_CITY"],
-
-	"fldnnlEAKvRNpaUGQ": ["Study Status", "STUDY_STATUS"],
-
-	"fldqCxGe7W5IV3dsX": ["FullDate", "FULL_DATE"],
-
-	"fldcoa6mpgVsJhPOx": ["Sampling Start Date", "SAMPLING_START_DATE"],
-
-	"fldJybWXR3s4BnAxV": ["Sampling End Date", "SAMPLING_END_DATE"],
-
-	"flda7OAIs7mEEMMwR": ["Populations studied (high level) (DELETE)", "POPULATIONS_STUDIED"],
-
-	"fld3snSC5vfDOZArD": ["Population Sampled (DELETE)", "POPULATION_SAMPLED"],
-
-	"fldNEIgKOTfhdKJ2f": ["N", "N"],
-
-	"fldothzF0sgBMXb0p": ["Seroprevalence (95% CI)", "SEROPREVALENCE_95_CI"],
-
-	"fldtRFJP0mqH1sj8r": ["IFR (95% CI)", "IFR_95_CI"],
-
-	"fld7GlbcWIsBKPzmC": ["Test Type", "TEST_TYPE"],
-
-	"fldIEAR99IUfp8KEh": ["Isotype(s) Reported", "ISOTYPE_REPORTED"],
-
-	"fldTpUDHe26hckJdU": ["Test sensitivity", "TEST_SENSITIVITY"],
-
-	"fldgHXPFfI4Y1JrFP": ["Test specificity", "TEST_SPECIFICITY"],
-
-	"fld4uLqNtAefYwrRJ": ["Approving Regulator", "APPROVING_REGULATOR"],
-
-	"fldWOqN7J9ctVdJT9": ["Sensitivity", "SENSITIVITY"],
-
-	"fldMplVcqByyT1pb2": ["Sensitivity, 95% CI Lower", "SENSITIVITY_CI_LOWER"],
-
-	"fld4eSXSobbGnck9a": ["Sensitivity, 95% CI Upper", "SENSITIVITY"],
-
-	"fldQR0wsY28L2RWuD": ["Specificity", "SPECIFICITY"],
-
-	"fldEQ4xFK6RqZYMef": ["Specificity, 95% CI Lower", "SPECIFICITY_CI_LOWER"],
-
-	"fldE1jnLkxEVS7vqX": ["Specificity, 95% CI Upper", "SPECIFICITY_CI_UPPER"],
-
-	"fldMZ6754xuQc5Fu8": ["Denominator Value", "DENOMINATOR_VALUE"],
-
-	"fldcJAufVb7heGQvE": ["Numerator Value", "NUMERATOR_VALUE"],
-
-	"fldugXxeu8NV0sece": ["Numerator Definition", "NUMERATOR DEFINITION"],
-
-	"fldJVVqKEWoXfRibi": ["Serum positive prevalence", "SERUM_POSITIVE_PREVALENCE"],
-
-	"fldCMidd8gc8znfDv": ["Serum + prevalence, 95% CI Lower", "SERUM_POSITIVE_CI_LOWER"],
-
-	"fld7zdxh9P9n8aWUz": ["Serum + Prevalence, 95% CI Upper", "SERUM_POSITIVE_CI_UPPER"],
-
-	"fld0nwP01dNBiUVa8": ["Serum -ve prevalence", "SERUM_NEGATIVE_PREVALENCE"],
-
-	"fldSiT9RiFOpCEtti": ["IFR", "IFR"],
-
-	"fldY3B72TfUWyptXB": ["IFR 95% CI Lower", "IFR_CI_LOWER"],
-
-	"fldTez12gqlah3CJf": ["IFR 95% CI Upper", "IFR_CI_UPPER"],
-
-	"fldbumlkMBeNZCbkK": ["Risk of Bias (JBI)", "RISK_OF_BIAS"]
+   "Source Name":"SOURCE_NAME",
+   "Publication Date":"PUB_DATE",
+   "First Author Full Name":"FIRST_AUTHOR",
+   "URL":"URL",
+   "Source Type":"SOURCE_TYPE",
+   "Source Publisher":"PUBLISHER",
+   "One-Line Summary":"SUMMARY",
+   "Study Type":"STUDY_TYPE",
+   "Study Status":"STUDY_STATUS",
+   "Country":"COUNTRY",
+   "Lead Organization":"LEAD_ORG",
+   "State/Province":"STATE",
+   "County/City":"CITY",
+   "Sampling Start Date":"SAMPLING_START",
+   "Sampling End Date":"SAMPLING_END",
+   "Sample Frame (sex)":"SEX",
+   "Sample Frame (age)":"AGE",
+   "Sample Frame (risk groups)":"POPULATION_GROUP",
+   "Sampling Method":"SAMPLING",
+   "Test Manufacturer":"MANUFACTURER",
+   "Approving Regulator":"APPROVAL",
+   "Test Type":"TEST_TYPE",
+   "Isotype(s) Reported":"ISOTYPES",
+   "Sensitivity":"SENSITIVITY",
+   "Specificity":"SPECIFICITY",
+   "Denominator Value":"DENOMINATOR",
+   "Numerator Definition":"NUM_DEFINITION",
+   "Serum positive prevalence":"SERUM_POS_PREVALENCE",
+   "Overall Risk of Bias":"OVERALL_RISK_OF_BIAS"
 }

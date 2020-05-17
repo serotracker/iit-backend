@@ -7,7 +7,7 @@ import numpy as np
 from flask import current_app as app
 
 
-def add_fields_to_url(url):
+def _add_fields_to_url(url):
     with open('app/utils/airtable_fields_config.json', 'r') as file:
         fields = json.load(file)
         for key in fields:
@@ -16,23 +16,18 @@ def add_fields_to_url(url):
     return url
 
 
-def get_formatted_json_records(records):
+def _get_formatted_json_records(records):
     # Remove the created_at and id keys from each list item
-    new_records = []
-    for record in records:
-        new_records.append(record['fields'])
+    new_records = [record['fields'] for record in records]
 
     # Convert list of dictionaries to df
     total_records_df = pd.DataFrame(new_records)
 
     # Rename df columns according to formatted column names in config
-    renamed_cols = {}
     with open('app/utils/airtable_fields_config.json', 'r') as file:
         fields = json.load(file)
-        reordered_cols = []
-        for value in fields.values():
-            renamed_cols[value[0]] = value[1]
-            reordered_cols.append(value[1])
+        renamed_cols = {key: fields[key] for key in fields}
+        reordered_cols = [fields[key] for key in fields]
     total_records_df = total_records_df.rename(columns=renamed_cols)
     total_records_df = total_records_df[reordered_cols]
     total_records_df = total_records_df.replace({np.nan: None})
