@@ -39,20 +39,46 @@ def _get_formatted_json_records(records):
     return total_records_json
 
 
+def _get_paginated_records(data, api_request_info):
+    # Extract API request parameters
+    url = api_request_info[0]
+    headers = api_request_info[1]
+    params = api_request_info[2]
+
+    # Extract records from initial request response
+    records = data['records']
+
+    # Continue adding paginated records so long as there is an offset in the api response
+    while 'offset' in list(data.keys()):
+        params['offset'] = data['offset']
+        r = requests.get(url, headers=headers, params=params)
+        data = r.json()
+        records += data['records']
+    return records
+
+
 def get_all_records():
     # Get airtable API URL and add fields to be scraped to URL in HTML format
     url = app.config['REQUEST_URL']
     url = _add_fields_to_url(url)
     headers = {'Authorization': 'Bearer {}'.format(app.config['AIRTABLE_API_KEY'])}
     params = app.config['REQUEST_PARAMS']
+
     # Make request and retrieve records in json format
     r = requests.get(url, headers=headers, params=params)
     data = r.json()
+
     # Try to get records from data if the request was successful
     try:
-        records = data['records']
+        # If offset was included in data, retrieve additional paginated records
+        if 'offset' in list(data.keys()):
+            request_info = [url, headers, params]
+            records = _get_paginated_records(data, request_info)
+        else:
+            records = data['records']
         formatted_records = _get_formatted_json_records(records)
         return formatted_records
+
     # If request was not successful, there will be no records field in response
     # Just return what is in cached layer and log an error
     except KeyError:
