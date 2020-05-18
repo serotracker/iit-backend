@@ -16,7 +16,7 @@
    "Sampling End Date":"SAMPLING_END",
    "Sample Frame (sex)":"SEX",
    "Sample Frame (age)":"AGE",
-   "Sample Frame (risk groups)":"POPULATION_GROUP",
+   "Sample Frame (groups of interest)":"POPULATION_GROUP",
    "Sampling Method":"SAMPLING",
    "Test Manufacturer":"MANUFACTURER",
    "Approving Regulator":"APPROVAL",
@@ -27,5 +27,5 @@
    "Denominator Value":"DENOMINATOR",
    "Numerator Definition":"NUM_DEFINITION",
    "Serum positive prevalence":"SERUM_POS_PREVALENCE",
-   "Overall Risk of Bias":"OVERALL_RISK_OF_BIAS"
+   "Overall Risk of Bias (JBI)":"OVERALL_RISK_OF_BIAS"
 }
