@@ -3,7 +3,6 @@ from datetime import datetime
 
 from flask_restplus import Resource, Namespace
 from flask import jsonify, current_app as app
-from flask_cors import cross_origin
 
 from .airtable_scraper_service import get_all_records, write_to_json, read_from_json
 
@@ -11,7 +10,6 @@ airtable_scraper_ns = Namespace('airtable_scraper', description='An endpoint for
 
 
 @airtable_scraper_ns.route('/records', methods=['GET'])
-@cross_origin()
 class AirtableScraper(Resource):
     @airtable_scraper_ns.doc('An endpoint for getting all records of airtable data.')
     def get(self):
