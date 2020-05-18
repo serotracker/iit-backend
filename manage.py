@@ -3,9 +3,11 @@ import subprocess
 
 from app import create_app
 from dotenv import load_dotenv
+from flask_cors import CORS
 
 load_dotenv()
 app = create_app()
+CORS(app, resources=r'/records')
 
 
 def run_app():
