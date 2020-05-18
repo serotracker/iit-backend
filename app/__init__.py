@@ -12,7 +12,7 @@ def create_app():
     # Initialize app and api
     app = Flask(__name__)
     api = Api(app)
-    CORS(app)
+    CORS(app, resources=r'/airtable_scraper/records')
 
     # Config app by dictionary in config file
     config_name = 'api_{}'.format(os.getenv('FLASK_ENV'))
