@@ -7,7 +7,8 @@ from flask_cors import CORS
 
 load_dotenv()
 app = create_app()
-CORS(app, resources=r'/records')
+# CORS(app, resources=r'/records')
+# CORS(app)
 
 
 def run_app():
