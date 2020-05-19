@@ -81,10 +81,11 @@ def get_all_records():
 
     # If request was not successful, there will be no records field in response
     # Just return what is in cached layer and log an error
-    except KeyError:
+    except KeyError as e:
         logger.error("Results were not successfully retrieved from Airtable API."
-                     "Please check connection parameters in config.py and fields in airtable_fields_config.json",
-                     extra=data)
+                     "Please check connection parameters in config.py and fields in airtable_fields_config.json")
+        logger.error("Error info: {}".format(e))
+        logger.error("API response info: {}".format(data))
         records = read_from_json()
         return records
 
