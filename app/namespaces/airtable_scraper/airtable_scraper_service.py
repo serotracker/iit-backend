@@ -1,5 +1,9 @@
 import json
 import logging
+import os
+import smtplib
+import ssl
+
 
 import requests
 import pandas as pd
@@ -8,6 +12,11 @@ import numpy as np
 from flask import current_app as app
 
 logger = logging.getLogger(__name__)
+
+# SMTP setup
+port = 465
+sender = 'iitbackendalerts@gmail.com'
+password = os.getenv('GMAIL_PASS')
 
 
 def _add_fields_to_url(url):
