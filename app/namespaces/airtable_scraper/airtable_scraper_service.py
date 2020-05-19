@@ -96,8 +96,15 @@ def get_all_records():
     except KeyError as e:
         body = "Results were not successfully retrieved from Airtable API. Please check connection parameters in config.py and fields in airtable_fields_config.json."
         logger.error(body)
-        logger.error("Error info: {}".format(e))
-        logger.error("API response info: {}".format(data))
+        logger.error(f"Error Info: {e}")
+        logger.error(f"API response info: {data}")
+
+        # Configure the full email body
+        body = "Hello Data Team,\n\n" + body
+        body += f"\n\nError Info: {e}"
+        body += f"\nType: {data['error']['type']}"  # If logging severity changes, this needs to be updated accordingly
+        body += f"\nMessage: {data['error']['message']}"
+        body += "\n\nSincerely,\nIIT Backend Alerts"
 
         with smtplib.SMTP_SSL('smtp.gmail.com', port, context=context) as server:
             server.login(sender, password)
