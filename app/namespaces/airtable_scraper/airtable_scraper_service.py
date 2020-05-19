@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 port = 465
 context = ssl.create_default_context()
 sender = 'iitbackendalerts@gmail.com'
-recipients = ['abeljohnjoseph@gmail.com', 'abel.joseph@uwaterloo.ca']
+recipients = ['abeljohnjoseph@gmail.com']  # Add additional email addresses here
 password = os.getenv('GMAIL_PASS')
 
 
@@ -98,14 +98,13 @@ def get_all_records():
         logger.error(body, extra=data)
 
         with smtplib.SMTP_SSL('smtp.gmail.com', port, context=context) as server:
-            server.login('iitbackendalerts@gmail.com', password)
+            server.login(sender, password)
 
             msg = MIMEText(body)
             msg['Subject'] = "ALERT: Unsuccessful Record Retrieval"
             msg['From'] = sender
-            for addr in recipients:
-                msg['To'] = addr
-                server.sendmail('iitbackendalerts@gmail.com', addr, msg.as_string())
+            msg['To'] = ", ".join(recipients)
+            server.sendmail(sender, recipients, msg.as_string())
 
         records = read_from_json()
         return records
