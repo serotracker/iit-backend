@@ -69,6 +69,29 @@ def _get_paginated_records(data, api_request_info):
     return records
 
 
+def send_api_error_email(body, error, data):
+    # Configure the full email body
+    body = "Hello Data Team,\n\n" + body
+    body += f"\n\nError Info: {error}"
+
+    try:
+        body += f"\nType: {data['error']['type']}"  # If logging severity changes, this needs to be updated accordingly
+        body += f"\nMessage: {data['error']['message']}"
+    except KeyError:
+        body += f"\nAPI Response Info: {data}"
+
+    body += "\n\nSincerely,\nIIT Backend Alerts"
+
+    with smtplib.SMTP_SSL('smtp.gmail.com', port, context=context) as server:
+        server.login(sender, password)
+
+        msg = MIMEText(body)
+        msg['Subject'] = "ALERT: Unsuccessful Record Retrieval"
+        msg['From'] = sender
+        msg['To'] = ", ".join(recipients)
+        server.sendmail(sender, recipients, msg.as_string())
+
+
 def get_all_records():
     # Get airtable API URL and add fields to be scraped to URL in HTML format
     url = app.config['REQUEST_URL']
@@ -99,26 +122,7 @@ def get_all_records():
         logger.error(f"Error Info: {e}")
         logger.error(f"API Response Info: {data}")
 
-        # Configure the full email body
-        body = "Hello Data Team,\n\n" + body
-        body += f"\n\nError Info: {e}"
-
-        try:
-            body += f"\nType: {data['error']['type']}"  # If logging severity changes, this needs to be updated accordingly
-            body += f"\nMessage: {data['error']['message']}"
-        except KeyError:
-            body += f"\nAPI Response Info: {data}"
-
-        body += "\n\nSincerely,\nIIT Backend Alerts"
-
-        with smtplib.SMTP_SSL('smtp.gmail.com', port, context=context) as server:
-            server.login(sender, password)
-
-            msg = MIMEText(body)
-            msg['Subject'] = "ALERT: Unsuccessful Record Retrieval"
-            msg['From'] = sender
-            msg['To'] = ", ".join(recipients)
-            server.sendmail(sender, recipients, msg.as_string())
+        send_api_error_email(body, e, data)
 
         records = read_from_json()
         return records
