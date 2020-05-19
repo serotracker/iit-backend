@@ -1,5 +1,10 @@
 import json
 import logging
+import os
+import smtplib
+import ssl
+
+from email.mime.text import MIMEText
 
 import requests
 import pandas as pd
@@ -8,6 +13,13 @@ import numpy as np
 from flask import current_app as app
 
 logger = logging.getLogger(__name__)
+
+# SMTP setup
+port = 465
+context = ssl.create_default_context()
+sender = 'iitbackendalerts@gmail.com'
+recipients = ['abeljohnjoseph@gmail.com', 'ewanmay3@gmail.com', 'simonarocco09@gmail.com', 'austin.atmaja@gmail.com']  # Add additional email addresses here
+password = os.getenv('GMAIL_PASS')
 
 
 def _add_fields_to_url(url):
@@ -82,10 +94,20 @@ def get_all_records():
     # If request was not successful, there will be no records field in response
     # Just return what is in cached layer and log an error
     except KeyError as e:
-        logger.error("Results were not successfully retrieved from Airtable API."
-                     "Please check connection parameters in config.py and fields in airtable_fields_config.json")
+        body = "Results were not successfully retrieved from Airtable API. Please check connection parameters in config.py and fields in airtable_fields_config.json."
+        logger.error(body)
         logger.error("Error info: {}".format(e))
         logger.error("API response info: {}".format(data))
+
+        with smtplib.SMTP_SSL('smtp.gmail.com', port, context=context) as server:
+            server.login(sender, password)
+
+            msg = MIMEText(body)
+            msg['Subject'] = "ALERT: Unsuccessful Record Retrieval"
+            msg['From'] = sender
+            msg['To'] = ", ".join(recipients)
+            server.sendmail(sender, recipients, msg.as_string())
+
         records = read_from_json()
         return records
 
