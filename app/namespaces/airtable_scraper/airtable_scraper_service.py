@@ -102,7 +102,6 @@ def get_all_records():
         with smtplib.SMTP_SSL('smtp.gmail.com', port, context=context) as server:
             server.login(sender, password)
 
-
             msg = MIMEText(body)
             msg['Subject'] = "ALERT: Unsuccessful Record Retrieval"
             msg['From'] = sender
