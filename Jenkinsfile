@@ -17,7 +17,10 @@ pipeline {
       steps {
         withEnv(["HOME=${env.WORKSPACE}"]) {
           sh 'pip install -r requirements.txt --user'
-          sh 'python manage.py test'
+          echo $workspace
+          echo $PATH
+          echo ${env.WORKSPACE}
+          //sh 'python manage.py test'
         }
       }
     }
