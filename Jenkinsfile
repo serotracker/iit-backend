@@ -17,7 +17,6 @@ pipeline {
       steps {
         withEnv(["HOME=${env.WORKSPACE}"]) {
           sh 'pip install -r requirements.txt --user'
-          sh 'pip install pytest==2.5.1 --user'
           sh 'python manage.py test'
         }
       }
