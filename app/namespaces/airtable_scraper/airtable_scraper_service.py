@@ -69,7 +69,7 @@ def _get_paginated_records(data, api_request_info):
     return records
 
 
-def send_api_error_email(body, error, data):
+def _send_api_error_email(body, error, data):
     # Configure the full email body
     body = "Hello Data Team,\n\n" + body
     body += f"\n\nError Info: {error}"
@@ -122,7 +122,7 @@ def get_all_records():
         logger.error(f"Error Info: {e}")
         logger.error(f"API Response Info: {data}")
 
-        send_api_error_email(body, e, data)
+        _send_api_error_email(body, e, data)
 
         records = read_from_json()
         return records
