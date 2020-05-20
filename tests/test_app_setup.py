@@ -5,7 +5,7 @@ from app import create_app
 
 def test_flask_environment_variable():
     flask_env = os.getenv('FLASK_ENV')
-    assert flask_env in ['test', 'prod']
+    assert flask_env == 'test'
 
 
 def test_app_namespaces(app):
