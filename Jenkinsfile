@@ -8,7 +8,7 @@ pipeline {
     } 
   }
   environment {
-    FLASK_ENV = 'prod'
+    FLASK_ENV = 'test'
     AIRTABLE_API_KEY = credentials('airtable_api_key')
     AIRTABLE_BASE_ID = credentials('airtable_base_id')
   } 
@@ -18,7 +18,7 @@ pipeline {
         withEnv(["HOME=${env.WORKSPACE}"]) {
           sh 'pip install -r requirements.txt --user'
           sh 'pip install pytest --user'
-          sh 'python -m pytest'
+          sh 'python manage.py test'
         }
       }
     }
