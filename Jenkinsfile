@@ -3,7 +3,7 @@ pipeline {
     docker { 
       image 'python:3.7.2' 
       args '''
-        -e PATH="$PATH:/var/lib/jenkins/jobs/iit-backend/branches/master/workspace/.local/bin"
+        -e PATH="$PATH:/var/lib/jenkins/jobs/iit-backend/branches/master/workspace/.local/bin:/var/lib/jenkins/jobs/iit-backend/branches/develop/workspace/.local/bin"
       '''
     } 
   }
