@@ -5,13 +5,13 @@ from app import create_app
 
 def test_flask_environment_variable():
     flask_env = os.getenv('FLASK_ENV')
-    assert flask_env == 'test'
+    assert flask_env in ['test', 'prod']
 
 
 def test_app_namespaces(app):
     app_namespaces = app.config['APP_NAMESPACES']
     namespace_options = ['healthcheck', 'airtable_scraper']
-    for namespace in namespace_options:
+    for namespace in app_namespaces:
         assert namespace in namespace_options
 
 
