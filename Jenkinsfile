@@ -3,7 +3,7 @@ pipeline {
     docker { 
       image 'python:3.7.2' 
       args '''
-        -e PATH="$PATH:${env.WORKSPACE}/.local/bin"
+        -e PATH="$PATH:/var/lib/jenkins/jobs/iit-backend/branches/master/workspace/.local/bin"
       '''
     } 
   }
@@ -17,9 +17,7 @@ pipeline {
       steps {
         withEnv(["HOME=${env.WORKSPACE}"]) {
           sh 'pip install -r requirements.txt --user'
-          echo $PATH
-          echo "${env.WORKSPACE}"
-          //sh 'python manage.py test'
+          sh 'python manage.py test'
         }
       }
     }
