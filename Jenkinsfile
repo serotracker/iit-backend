@@ -19,7 +19,7 @@ pipeline {
           sh 'pip install -r requirements.txt --user'
           echo $workspace
           echo $PATH
-          echo ${env.WORKSPACE}
+          echo "${env.WORKSPACE}"
           //sh 'python manage.py test'
         }
       }
