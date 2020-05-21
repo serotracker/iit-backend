@@ -8,5 +8,5 @@ healthcheck_ns = Namespace('healthcheck', description='A health check endpoint.'
 class Healthcheck(Resource):
     @healthcheck_ns.doc('A health check endpoint.')
     def get(self):
-        print("hi")
-        return jsonify('Airtable scraper API heath check endpoint was hit.')
+        response = 'Airtable scraper API heath check endpoint was hit.'
+        return jsonify(response)
