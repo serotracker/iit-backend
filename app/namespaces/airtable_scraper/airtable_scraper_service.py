@@ -112,7 +112,7 @@ def get_all_records():
         else:
             records = data['records']
         formatted_records = _get_formatted_json_records(records)
-        return formatted_records
+        return formatted_records, 200
 
     # If request was not successful, there will be no records field in response
     # Just return what is in cached layer and log an error
@@ -125,7 +125,7 @@ def get_all_records():
         _send_api_error_email(body, e, data)
 
         records = read_from_json()
-        return records
+        return records, 400
 
 
 def write_to_json(records):
