@@ -69,7 +69,7 @@ def _get_paginated_records(data, api_request_info):
     return records
 
 
-def _send_api_error_email(body, error, data):
+def _send_api_error_email(body, error, data, request_info=None):
     # Configure the full email body
     body = "Hello Data Team,\n\n" + body
     body += f"\n\nError Info: {error}"
@@ -77,8 +77,13 @@ def _send_api_error_email(body, error, data):
     try:
         body += f"\nType: {data['error']['type']}"  # If logging severity changes, this needs to be updated accordingly
         body += f"\nMessage: {data['error']['message']}"
-    except KeyError:
+    except (KeyError, TypeError) as e:
         body += f"\nAPI Response Info: {data}"
+
+    if request_info:
+        body += f"\n\nAPI Request info"
+        body += f"\nURL: {request_info['url']}"
+        body += f"\nHeaders: {request_info['headers']}"
 
     body += "\n\nSincerely,\nIIT Backend Alerts"
 
@@ -122,9 +127,17 @@ def get_all_records():
         logger.error(f"Error Info: {e}")
         logger.error(f"API Response Info: {data}")
 
-        _send_api_error_email(body, e, data)
+        request_info = {
+            "url": url,
+            "headers": json.dumps(headers)
+        }
 
-        records = read_from_json()
+        _send_api_error_email(body, e, data, request_info=request_info)
+
+        try:
+            records = read_from_json()
+        except FileNotFoundError:
+            records = []
         return records, 400
 
 
