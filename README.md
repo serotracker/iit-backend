@@ -7,6 +7,7 @@ After cloning, add a `.env` file to the top level of the repository to store env
 FLASK_ENV=foo
 AIRTABLE_API_KEY=bar
 AIRTABLE_BASE_ID=baz
+GMAIL_PASS=foobar
 ```
 
 ### Run airtable_fields_config.json
