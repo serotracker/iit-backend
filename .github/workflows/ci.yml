@@ -1,0 +1,25 @@
+name: CI
+
+on: [push]
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8.3'
+    - name: Install
+      run: |
+        pip install -r requirements.txt
+    - name: Test
+      run: |
+        python manage.py test
+      env:
+        AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+        AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+        FLASK_ENV: 'test'
