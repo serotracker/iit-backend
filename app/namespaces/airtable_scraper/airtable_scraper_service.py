@@ -55,15 +55,15 @@ def _get_paginated_records(data, api_request_info):
     # Extract API request parameters
     url = api_request_info[0]
     headers = api_request_info[1]
-    params = api_request_info[2]
+    parameters = api_request_info[2]
 
     # Extract records from initial request response
     records = data['records']
 
     # Continue adding paginated records so long as there is an offset in the api response
     while 'offset' in list(data.keys()):
-        params['offset'] = data['offset']
-        r = requests.get(url, headers=headers, params=params)
+        parameters['offset'] = data['offset']
+        r = requests.get(url, headers=headers, params=parameters)
         data = r.json()
         records += data['records']
     return records
@@ -107,7 +107,8 @@ def get_all_records():
     try:
         # If offset was included in data, retrieve additional paginated records
         if 'offset' in list(data.keys()):
-            request_info = [url, headers, params]
+            parameters = params.copy()
+            request_info = [url, headers, parameters]
             records = _get_paginated_records(data, request_info)
         else:
             records = data['records']
