@@ -18,7 +18,3 @@ If there are changes to the Airtable schema, the `airtable_fields_config.json` f
 3. Run `airtable_fields_config_handler.py` in app/utils. This script takes --file_name as an argument,
 which is the name of the Airtable CSV. The default is `"Airtable SOP.csv"`.
 4. Once you have run the script, you should see the new `airtable_fields_config.json` in app/utils.
-
-
-### Development
-Please work on the `develop` branch. You may need to first merge in changes from `master`.
