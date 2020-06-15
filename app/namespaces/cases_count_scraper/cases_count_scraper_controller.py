@@ -21,7 +21,7 @@ class AirtableScraper(Resource):
                 datetime.fromtimestamp(os.path.getmtime('app/namespaces/cases_count_scraper/cached_results.json'))
             hour_diff = ((current_time - file_created_datetime).total_seconds())/3600
             # If longer than value of time diff param, generate a new cache
-            generate_new_cache = True if hour_diff > app.config['TIME_DIFF'] else False
+            generate_new_cache = True if hour_diff > app.config['JHU_TIME_DIFF'] else False
         except FileNotFoundError:
             # If cached_results.json has never been created, generate a new cache
             generate_new_cache = True
