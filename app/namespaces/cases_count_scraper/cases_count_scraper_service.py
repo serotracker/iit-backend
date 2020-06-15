@@ -34,5 +34,5 @@ def get_all_records():
         send_api_error_email(body, data, request_info=request_info)
 
         # Read and return data from cached json
-        data = read_from_json('app/namespaces/airtable_scraper/cached_results.json')
+        data = read_from_json(app.config['JHU_CACHED_RESULTS_PATH'])
     return data, status_code

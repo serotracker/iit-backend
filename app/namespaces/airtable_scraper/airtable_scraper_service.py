@@ -98,7 +98,7 @@ def get_all_records():
         send_api_error_email(body, data, error=e, request_info=request_info)
 
         try:
-            records = read_from_json('app/namespaces/airtable_scraper/cached_results.json')
+            records = read_from_json(app.config['AIRTABLE_CACHED_RESULTS_PATH'])
         except FileNotFoundError:
             records = []
         return records, 400

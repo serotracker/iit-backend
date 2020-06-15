@@ -1,7 +1,5 @@
 import os
 
-from app import create_app
-
 
 def test_flask_environment_variable():
     flask_env = os.getenv('FLASK_ENV')

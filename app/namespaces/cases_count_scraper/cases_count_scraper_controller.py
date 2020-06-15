@@ -32,10 +32,10 @@ class AirtableScraper(Resource):
             records, status_code = get_all_records()
             if status_code == 200:
                 # Write new records to json only if the JHU API request was successful
-                write_to_json(records, 'app/namespaces/cases_count_scraper/cached_results.json')
+                write_to_json(records, app.config['JHU_CACHED_RESULTS_PATH'])
         else:
             # Read records from json cache layer
-            records = read_from_json('app/namespaces/cases_count_scraper/cached_results.json')
+            records = read_from_json(app.config['JHU_CACHED_RESULTS_PATH'])
             status_code = 200
         result = {"jhu_request_status_code": status_code, "records": records, "updated_at": file_created_datetime}
         return jsonify(result)
