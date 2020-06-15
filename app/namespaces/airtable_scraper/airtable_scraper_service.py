@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 
 from flask import current_app as app
-from app.utils.send_error_email import send_api_error_email
+from app.utils import read_from_json, send_api_error_email
 
 logger = logging.getLogger(__name__)
 
@@ -98,19 +98,8 @@ def get_all_records():
         send_api_error_email(body, data, error=e, request_info=request_info)
 
         try:
-            records = read_from_json()
+            records = read_from_json('app/namespaces/airtable_scraper/cached_results.json')
         except FileNotFoundError:
             records = []
         return records, 400
 
-
-def write_to_json(records):
-    with open('app/namespaces/airtable_scraper/cached_results.json', 'w') as file:
-        json.dump(records, file)
-    return
-
-
-def read_from_json():
-    with open('app/namespaces/airtable_scraper/cached_results.json', 'r') as file:
-        records = json.load(file)
-    return records

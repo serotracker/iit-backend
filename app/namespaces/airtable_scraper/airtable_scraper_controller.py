@@ -4,7 +4,8 @@ from datetime import datetime
 from flask_restplus import Resource, Namespace
 from flask import jsonify, current_app as app
 
-from .airtable_scraper_service import get_all_records, write_to_json, read_from_json
+from .airtable_scraper_service import get_all_records
+from app.utils import write_to_json, read_from_json
 
 airtable_scraper_ns = Namespace('airtable_scraper', description='An endpoint for scraping airtable data.')
 
@@ -30,10 +31,10 @@ class AirtableScraper(Resource):
             records, status_code = get_all_records()
             if status_code == 200:
                 # Write new records to json only if the airtable API request was successful
-                write_to_json(records)
+                write_to_json(records, 'app/namespaces/airtable_scraper/cached_results.json')
         else:
             # Read records from json cache layer
-            records = read_from_json()
+            records = read_from_json('app/namespaces/airtable_scraper/cached_results.json')
             status_code = 200
         result = {"airtable_request_status_code": status_code, "records": records, "updated_at": file_created_datetime}
         return jsonify(result)
