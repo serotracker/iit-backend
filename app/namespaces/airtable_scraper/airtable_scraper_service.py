@@ -1,25 +1,14 @@
 import json
 import logging
-import os
-import smtplib
-import ssl
-
-from email.mime.text import MIMEText
 
 import requests
 import pandas as pd
 import numpy as np
 
 from flask import current_app as app
+from app.utils import read_from_json, send_api_error_email
 
 logger = logging.getLogger(__name__)
-
-# SMTP setup
-port = 465
-context = ssl.create_default_context()
-sender = 'iitbackendalerts@gmail.com'
-recipients = ['abeljohnjoseph@gmail.com', 'ewanmay3@gmail.com', 'simonarocco09@gmail.com', 'austin.atmaja@gmail.com']  # Add additional email addresses here
-password = os.getenv('GMAIL_PASS')
 
 
 def _add_fields_to_url(url):
@@ -69,40 +58,12 @@ def _get_paginated_records(data, api_request_info):
     return records
 
 
-def _send_api_error_email(body, error, data, request_info=None):
-    # Configure the full email body
-    body = "Hello Data Team,\n\n" + body
-    body += f"\n\nError Info: {error}"
-
-    try:
-        body += f"\nType: {data['error']['type']}"  # If logging severity changes, this needs to be updated accordingly
-        body += f"\nMessage: {data['error']['message']}"
-    except (KeyError, TypeError) as e:
-        body += f"\nAPI Response Info: {data}"
-
-    if request_info:
-        body += f"\n\nAPI Request info"
-        body += f"\nURL: {request_info['url']}"
-        body += f"\nHeaders: {request_info['headers']}"
-
-    body += "\n\nSincerely,\nIIT Backend Alerts"
-
-    with smtplib.SMTP_SSL('smtp.gmail.com', port, context=context) as server:
-        server.login(sender, password)
-
-        msg = MIMEText(body)
-        msg['Subject'] = "ALERT: Unsuccessful Record Retrieval"
-        msg['From'] = sender
-        msg['To'] = ", ".join(recipients)
-        server.sendmail(sender, recipients, msg.as_string())
-
-
 def get_all_records():
     # Get airtable API URL and add fields to be scraped to URL in HTML format
-    url = app.config['REQUEST_URL']
+    url = app.config['AIRTABLE_REQUEST_URL']
     url = _add_fields_to_url(url)
     headers = {'Authorization': 'Bearer {}'.format(app.config['AIRTABLE_API_KEY'])}
-    params = app.config['REQUEST_PARAMS']
+    params = app.config['AIRTABLE_REQUEST_PARAMS']
 
     # Make request and retrieve records in json format
     r = requests.get(url, headers=headers, params=params)
@@ -123,7 +84,8 @@ def get_all_records():
     # If request was not successful, there will be no records field in response
     # Just return what is in cached layer and log an error
     except KeyError as e:
-        body = "Results were not successfully retrieved from Airtable API. Please check connection parameters in config.py and fields in airtable_fields_config.json."
+        body = "Results were not successfully retrieved from Airtable API." \
+               "Please check connection parameters in config.py and fields in airtable_fields_config.json."
         logger.error(body)
         logger.error(f"Error Info: {e}")
         logger.error(f"API Response Info: {data}")
@@ -133,22 +95,11 @@ def get_all_records():
             "headers": json.dumps(headers)
         }
 
-        _send_api_error_email(body, e, data, request_info=request_info)
+        send_api_error_email(body, data, error=e, request_info=request_info)
 
         try:
-            records = read_from_json()
+            records = read_from_json(app.config['AIRTABLE_CACHED_RESULTS_PATH'])
         except FileNotFoundError:
             records = []
         return records, 400
 
-
-def write_to_json(records):
-    with open('cached_results.json', 'w') as file:
-        json.dump(records, file)
-    return
-
-
-def read_from_json():
-    with open('cached_results.json', 'r') as file:
-        records = json.load(file)
-    return records

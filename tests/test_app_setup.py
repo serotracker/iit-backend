@@ -1,7 +1,5 @@
 import os
 
-from app import create_app
-
 
 def test_flask_environment_variable():
     flask_env = os.getenv('FLASK_ENV')
@@ -10,7 +8,7 @@ def test_flask_environment_variable():
 
 def test_app_namespaces(app):
     app_namespaces = app.config['APP_NAMESPACES']
-    namespace_options = ['healthcheck', 'airtable_scraper']
+    namespace_options = ['healthcheck', 'airtable_scraper', 'cases_count_scraper']
     for namespace in app_namespaces:
         assert namespace in namespace_options
 
@@ -28,20 +26,20 @@ def test_airtable_credentials(app):
 
 
 def test_airtable_api_request_params(app):
-    api_request_url = app.config['REQUEST_URL']
-    api_request_params = app.config['REQUEST_PARAMS']
+    api_request_url = app.config['AIRTABLE_REQUEST_URL']
+    api_request_params = app.config['AIRTABLE_REQUEST_PARAMS']
     assert type(api_request_url) is str
     assert type(api_request_params) is dict
 
 
-def test_caching_refresh_variable(app):
-    cache_refresh_hour_frequency = app.config['TIME_DIFF']
-    assert cache_refresh_hour_frequency == 24
+def test_jhu_api_request_params(app):
+    api_request_url = app.config['JHU_REQUEST_URL']
+    assert type(api_request_url) is str
 
 
-def test_create():
-    app = create_app()
-    assert app
-    assert app.env == app.config['ENV'] == os.getenv('FLASK_ENV')
-    assert app.config['AIRTABLE_API_KEY'] == os.getenv('AIRTABLE_API_KEY')
-    assert app.config['TIME_DIFF'] == os.getenv('TIME_DIFF', 24)
+def test_caching_refresh_variables(app):
+    airtable_cache_refresh_hour_frequency = app.config['AIRTABLE_TIME_DIFF']
+    jhu_cache_refresh_hour_frequency = app.config['JHU_TIME_DIFF']
+    assert airtable_cache_refresh_hour_frequency == 24
+    assert jhu_cache_refresh_hour_frequency == 24
+
