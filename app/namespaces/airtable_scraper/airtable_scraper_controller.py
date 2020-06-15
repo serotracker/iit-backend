@@ -18,7 +18,7 @@ class AirtableScraper(Resource):
             # Check how long it has been since cached_results.json was last updated
             current_time = datetime.now()
             file_created_datetime =\
-                datetime.fromtimestamp(os.path.getmtime('app/namespaces/airtable_scraper/cached_results.json'))
+                datetime.fromtimestamp(os.path.getmtime(app.config['AIRTABLE_CACHED_RESULTS_PATH']))
             hour_diff = ((current_time - file_created_datetime).total_seconds())/3600
             # If longer than value of time diff param, generate a new cache
             generate_new_cache = True if hour_diff > app.config['AIRTABLE_TIME_DIFF'] else False
@@ -38,4 +38,3 @@ class AirtableScraper(Resource):
             status_code = 200
         result = {"airtable_request_status_code": status_code, "records": records, "updated_at": file_created_datetime}
         return jsonify(result)
-
