@@ -99,10 +99,10 @@ def _send_api_error_email(body, error, data, request_info=None):
 
 def get_all_records():
     # Get airtable API URL and add fields to be scraped to URL in HTML format
-    url = app.config['REQUEST_URL']
+    url = app.config['AIRTABLE_REQUEST_URL']
     url = _add_fields_to_url(url)
     headers = {'Authorization': 'Bearer {}'.format(app.config['AIRTABLE_API_KEY'])}
-    params = app.config['REQUEST_PARAMS']
+    params = app.config['AIRTABLE_REQUEST_PARAMS']
 
     # Make request and retrieve records in json format
     r = requests.get(url, headers=headers, params=params)
@@ -143,12 +143,12 @@ def get_all_records():
 
 
 def write_to_json(records):
-    with open('cached_results.json', 'w') as file:
+    with open('app/namespaces/airtable_scraper/cached_results.json', 'w') as file:
         json.dump(records, file)
     return
 
 
 def read_from_json():
-    with open('cached_results.json', 'r') as file:
+    with open('app/namespaces/airtable_scraper/cached_results.json', 'r') as file:
         records = json.load(file)
     return records
