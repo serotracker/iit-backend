@@ -1,0 +1,216 @@
+import pandas as pd
+from math import log, sqrt, asin, exp, sin, cos, pi
+from numpy import sign
+
+Z_975 = 1.96
+SP_ZERO_BLACKLIST = ['untransformed', 'logit']
+MIN_DENOMINATOR = 250
+pd.options.mode.chained_assignment = None
+
+
+def calc_transformed_prevalence(p, N, method):
+    if method == 'untransformed':
+        return p
+    elif method == 'logit':
+        return log(p / (1 - p))
+    elif method == 'arcsin':
+        return asin(sqrt(p))
+    elif method == 'double_arcsin_approx':
+        n = N * p
+        return asin(sqrt(n / (N + 1))) + asin(sqrt((n + 1) / (N + 1)))
+    elif method == 'double_arcsin_precise':
+        n = N * p
+        return 0.5 * (asin(sqrt(n / (N + 1))) + asin(sqrt((n + 1) / (N + 1))))
+
+
+def calc_transformed_variance(p, N, method):
+    if method == 'untransformed':
+        return p * (1 - p) / N
+    elif method == 'logit':
+        return 1 / (N * p) + 1 / (N * (1 - p))
+    elif method == 'arcsin':
+        return 1 / (4 * N)
+    elif method == 'double_arcsin_approx':
+        return 1 / (N + 0.5)
+    elif method == 'double_arcsin_precise':
+        return 1 / (4 * N + 2)
+
+
+def back_transform_prevalence(t, n, method):
+    if method == 'untransformed':
+        if t < 0:
+            return 0
+        elif t > 1:
+            return 1
+        else:
+            return t
+    elif method == 'logit':
+        return exp(t) / (exp(t) + 1)
+    elif method == 'arcsin':
+        if t < 0:
+            return 0
+        elif t > pi / 2:
+            return 1
+        else:
+            return sin(t) ** 2
+    elif method == 'double_arcsin_approx':
+        if t < 0:
+            return 0
+        elif t > pi:
+            return 1
+        else:
+            return sin(t / 2) ** 2
+    elif method == 'double_arcsin_precise':
+        if t < 0:
+            return 0
+        elif t > pi / 4:
+            return 1
+        else:
+            return 0.5 * (1 - sign(cos(t)) * sqrt(1 - (sin(2 * t) + (sin(2 * t) - 2 * sin(2 * t)) / n) ** 2))
+
+
+def calc_between_study_variance(records):
+    q = sum(
+        records['FIXED_WEIGHT'] * (records['TRANSFORMED_PREVALENCE'] - records['TRANSFORMED_POOLED_PREVALENCE']) ** 2)
+    estimator_numerator = q - (records.shape[0] - 1)
+    estimator_denominator = sum(records['FIXED_WEIGHT']) - sum((records['FIXED_WEIGHT']) ** 2) / sum(
+        records['FIXED_WEIGHT'])
+    if estimator_denominator == 0:
+        return 0
+    else:
+        return max(0, estimator_numerator / estimator_denominator)
+
+
+def get_valid_filtered_records(records, transformation):
+    # Remove records based on criteria for prevalence and denominator fields
+    filtered_records = records[(records['SERUM_POS_PREVALENCE'].notna()) &
+                               (records['DENOMINATOR'].notna()) &
+                               (records['DENOMINATOR'] > 0) &
+                               (records[
+                                    'SERUM_POS_PREVALENCE'] != 0 if transformation in SP_ZERO_BLACKLIST else True)]
+
+    # If there are any records with denominator greater than min denominator, return those records, else drop criteria
+    valid_records = (filtered_records['DENOMINATOR'] >= MIN_DENOMINATOR).any()
+    if valid_records:
+        return filtered_records[filtered_records['DENOMINATOR'] >= MIN_DENOMINATOR]
+    else:
+        return filtered_records
+
+
+def get_overall_study_population_size(data, n_studies):
+    # Calculate the inverse of all of the populations per study
+    inverse_denominator = 1 / data['DENOMINATOR']
+
+    # Calculate the sum of the inverses
+    sum_inverse_denominator = sum(inverse_denominator)
+
+    # Calculate the overall average population size
+    overall_population_size = n_studies / sum_inverse_denominator
+    return overall_population_size
+
+
+def get_trans_pooled_prev_and_ci(weighted_prev_sum, weighted_sum, variance_sum):
+    trans_pooled_prevalence = weighted_prev_sum / weighted_sum
+    trans_conf_inter = [trans_pooled_prevalence - Z_975 * sqrt(variance_sum),
+                        trans_pooled_prevalence + Z_975 * sqrt(variance_sum)]
+    return trans_pooled_prevalence, trans_conf_inter
+
+
+def get_pooled_prevalence_and_error(transformed_prev, overall_n, transformation, transformed_ci):
+    pooled_prevalence = back_transform_prevalence(transformed_prev, overall_n, transformation)
+    conf_inter = [back_transform_prevalence(i, overall_n, transformation) for i in transformed_ci]
+    conf_inter = [max(conf_inter[0], 0), min(conf_inter[1], 1)]
+    error = [abs(pooled_prevalence - i) for i in conf_inter]
+    return pooled_prevalence, error
+
+
+def get_return_body(prevalence, error, total_population, total_studies):
+    return {
+            'seroprevalence_percent': prevalence * 100,
+            'error_percent': [i * 100 for i in error],
+            'total_N': total_population,
+            'n_studies': total_studies
+            }
+
+
+def calc_pooled_prevalence_for_subgroup(records, meta_transformation='double_arcsin_precise', meta_technique='fixed'):
+    if meta_technique is not 'median':
+        filtered_records = get_valid_filtered_records(records, meta_transformation)
+
+        # If there are no remaining records, return None for pooled prevalence estimate
+        n_studies = filtered_records.shape[0]
+        if n_studies == 0:
+            return None
+
+        # Add columns for transformed prevalence and transformed variance based on specified transformation method
+        filtered_records['TRANSFORMED_PREVALENCE'] = filtered_records.apply(
+            lambda row: calc_transformed_prevalence(row['SERUM_POS_PREVALENCE'],
+                                                    row['DENOMINATOR'],
+                                                    meta_transformation),
+            axis=1)
+        filtered_records['TRANSFORMED_VARIANCE'] = filtered_records.apply(
+            lambda row: calc_transformed_variance(row['SERUM_POS_PREVALENCE'],
+                                                  row['DENOMINATOR'],
+                                                  meta_transformation),
+            axis=1)
+
+        # Calculate the transformed weights and the transformed weighted prevalences only using within study variances
+        filtered_records['FIXED_WEIGHT'] = 1 / (filtered_records['TRANSFORMED_VARIANCE'])
+        filtered_records['FIXED_WEIGHTED_PREVALENCE'] = filtered_records['TRANSFORMED_PREVALENCE'] * filtered_records[
+            'FIXED_WEIGHT']
+
+        fixed_weight_sum = sum(filtered_records['FIXED_WEIGHT'])
+        fixed_weighted_prevalence_sum = sum(filtered_records['FIXED_WEIGHTED_PREVALENCE'])
+        variance_sum = sum(filtered_records['TRANSFORMED_VARIANCE'])
+
+        # Calculate the transformed pooled prevalence, and the transformed confidence intervals
+        trans_pooled_prevalence, trans_conf_inter =\
+            get_trans_pooled_prev_and_ci(fixed_weighted_prevalence_sum, fixed_weight_sum, variance_sum)
+
+        # Calculate the sum of all the populations across all studies
+        population_sum = sum(filtered_records['DENOMINATOR'])
+
+        # Calculate the overall study population size across all studies using harmonic mean
+        overall_population_size = get_overall_study_population_size(filtered_records, n_studies)
+
+        # If meta analysis technique is fixed effects, back transformed prevalence and error and return body
+        if meta_technique == 'fixed':
+            pooled_prevalence, error =\
+                get_pooled_prevalence_and_error(trans_pooled_prevalence, overall_population_size,
+                                                meta_transformation, trans_conf_inter)
+            return get_return_body(pooled_prevalence, error, population_sum, n_studies)
+
+        # If meta analysis technique is random effects, add between study variance to all calculations
+        else:
+            # Calculate tau = between study variance
+            filtered_records['TRANSFORMED_POOLED_PREVALENCE'] = trans_pooled_prevalence
+            tau = calc_between_study_variance(filtered_records)
+
+            # Calculate transformed weights and transformed weighted prevalences also using between study variances
+            filtered_records['RANDOM_WEIGHT'] = 1 / (filtered_records['TRANSFORMED_TOTAL_VARIANCE'] + tau)
+            filtered_records['RANDOM_WEIGHT_PREVALENCE'] =\
+                filtered_records['TRANSFORMED_PREVALENCE'] * filtered_records['RANDOM_WEIGHT']
+
+            random_weight_sum = sum(filtered_records['RANDOM_WEIGHT'])
+            random_weighted_prevalence_sum = sum(filtered_records['RANDOM_WEIGHT_PREVALENCE'])
+            variance_sum += tau
+
+            # Calculate the transformed pooled prevalence, and the transformed confidence intervals
+            trans_pooled_prevalence, trans_conf_inter = \
+                get_trans_pooled_prev_and_ci(random_weighted_prevalence_sum, random_weight_sum, variance_sum)
+
+            pooled_prevalence, error = get_pooled_prevalence_and_error(trans_pooled_prevalence, overall_population_size,
+                                                                       meta_transformation, trans_conf_inter)
+            return get_return_body(pooled_prevalence, error, population_sum, n_studies)
+
+
+def group_by_agg_var(data, agg_var):
+    options = {item for sublist in data[agg_var] for item in sublist}
+    data.dropna(subset=[agg_var], inplace=True)
+    return {name: data[data[agg_var].apply(lambda x: name in x)] for name in options}
+
+
+def get_meta_analysis_records(data, agg_var, transformation, technique):
+    records = {name: calc_pooled_prevalence_for_subgroup(records, transformation, technique)
+               for name, records in group_by_agg_var(data, agg_var).items()}
+    return records

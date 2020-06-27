@@ -5,8 +5,8 @@ from flask_restplus import Api
 from flask_cors import CORS
 
 from .config import config_by_name
-from .namespaces import healthcheck_ns, airtable_scraper_ns, cases_count_scraper_ns
-
+from .namespaces import healthcheck_ns, airtable_scraper_ns, cases_count_scraper_ns, meta_analysis_ns
+from .utils import init_namespace
 
 def create_app():
     # Initialize app and api
@@ -20,9 +20,8 @@ def create_app():
     app.config.from_object(config_obj)
 
     # Attach namespaces to api
-    api.add_namespace(healthcheck_ns)
-    api.add_namespace(airtable_scraper_ns)
-    api.add_namespace(cases_count_scraper_ns)
+    namespaces = config_obj.APP_NAMESPACES
+    init_namespace(namespaces, api)
 
     app.app_context().push()
 
