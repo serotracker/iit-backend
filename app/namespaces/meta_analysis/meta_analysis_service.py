@@ -4,10 +4,10 @@ from math import log, sqrt, asin, exp, sin, cos, pi
 import pandas as pd
 from numpy import sign, quantile
 from scipy.stats import hmean
+from flask import current_app as app
 
 Z_975 = 1.96
 SP_ZERO_BLACKLIST = ['untransformed', 'logit']
-MIN_DENOMINATOR = 250
 pd.options.mode.chained_assignment = None
 
 
@@ -81,9 +81,9 @@ def get_valid_filtered_records(records, transformation):
                                     'SERUM_POS_PREVALENCE'] != 0 if transformation in SP_ZERO_BLACKLIST else True)]
 
     # If there are any records with denominator greater than min denominator, return those records, else drop criteria
-    valid_records = (filtered_records['DENOMINATOR'] >= MIN_DENOMINATOR).any()
+    valid_records = (filtered_records['DENOMINATOR'] >= app.config['MIN_DENOMINATOR']).any()
     if valid_records:
-        return filtered_records[filtered_records['DENOMINATOR'] >= MIN_DENOMINATOR]
+        return filtered_records[filtered_records['DENOMINATOR'] >= app.config['MIN_DENOMINATOR']]
     else:
         return filtered_records
 

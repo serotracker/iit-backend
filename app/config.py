@@ -20,6 +20,9 @@ class ApiConfig:
     JHU_TIME_DIFF = os.getenv('JHU_TIME_DIFF', 24)
     JHU_CACHED_RESULTS_PATH = 'app/namespaces/cases_count_scraper/cached_results.json'
 
+    # Meta analysis config vars
+    MIN_DENOMINATOR = 250
+
 
 class ApiTestingConfig(ApiConfig):
     def __init__(self):
