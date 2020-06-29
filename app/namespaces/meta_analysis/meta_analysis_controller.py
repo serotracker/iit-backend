@@ -52,5 +52,5 @@ class MetaAnalysis(Resource):
         except KeyError:
             meta_technique = 'fixed'
 
-        records = get_meta_analysis_records(records, agg_var, meta_transformation, meta_technique)
-        return records
+        meta_analysis_results = get_meta_analysis_records(records, agg_var, meta_transformation, meta_technique)
+        return meta_analysis_results

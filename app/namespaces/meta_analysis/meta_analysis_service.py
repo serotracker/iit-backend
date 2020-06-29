@@ -1,6 +1,7 @@
 import pandas as pd
 from math import log, sqrt, asin, exp, sin, cos, pi
 from numpy import sign
+from scipy.stats import hmean
 
 Z_975 = 1.96
 SP_ZERO_BLACKLIST = ['untransformed', 'logit']
@@ -15,10 +16,7 @@ def calc_transformed_prevalence(p, N, method):
         return log(p / (1 - p))
     elif method == 'arcsin':
         return asin(sqrt(p))
-    elif method == 'double_arcsin_approx':
-        n = N * p
-        return asin(sqrt(n / (N + 1))) + asin(sqrt((n + 1) / (N + 1)))
-    elif method == 'double_arcsin_precise':
+    elif method == 'double_arcsin_approx' or method == 'double_arcsin_precise':
         n = N * p
         return 0.5 * (asin(sqrt(n / (N + 1))) + asin(sqrt((n + 1) / (N + 1))))
 
@@ -30,9 +28,7 @@ def calc_transformed_variance(p, N, method):
         return 1 / (N * p) + 1 / (N * (1 - p))
     elif method == 'arcsin':
         return 1 / (4 * N)
-    elif method == 'double_arcsin_approx':
-        return 1 / (N + 0.5)
-    elif method == 'double_arcsin_precise':
+    elif method == 'double_arcsin_approx' or method == 'double_arcsin_precise':
         return 1 / (4 * N + 2)
 
 
@@ -46,20 +42,13 @@ def back_transform_prevalence(t, n, method):
             return t
     elif method == 'logit':
         return exp(t) / (exp(t) + 1)
-    elif method == 'arcsin':
+    elif method == 'arcsin' or method == 'double_arcsin_approx':
         if t < 0:
             return 0
         elif t > pi / 2:
             return 1
         else:
             return sin(t) ** 2
-    elif method == 'double_arcsin_approx':
-        if t < 0:
-            return 0
-        elif t > pi:
-            return 1
-        else:
-            return sin(t / 2) ** 2
     elif method == 'double_arcsin_precise':
         if t < 0:
             return 0
@@ -97,18 +86,6 @@ def get_valid_filtered_records(records, transformation):
         return filtered_records
 
 
-def get_overall_study_population_size(data, n_studies):
-    # Calculate the inverse of all of the populations per study
-    inverse_denominator = 1 / data['DENOMINATOR']
-
-    # Calculate the sum of the inverses
-    sum_inverse_denominator = sum(inverse_denominator)
-
-    # Calculate the overall average population size
-    overall_population_size = n_studies / sum_inverse_denominator
-    return overall_population_size
-
-
 def get_trans_pooled_prev_and_ci(weighted_prev_sum, weighted_sum, variance_sum):
     trans_pooled_prevalence = weighted_prev_sum / weighted_sum
     trans_conf_inter = [trans_pooled_prevalence - Z_975 * sqrt(variance_sum),
@@ -134,7 +111,7 @@ def get_return_body(prevalence, error, total_population, total_studies):
 
 
 def calc_pooled_prevalence_for_subgroup(records, meta_transformation='double_arcsin_precise', meta_technique='fixed'):
-    if meta_technique is not 'median':
+    if meta_technique != 'median':
         filtered_records = get_valid_filtered_records(records, meta_transformation)
 
         # If there are no remaining records, return None for pooled prevalence estimate
@@ -171,12 +148,12 @@ def calc_pooled_prevalence_for_subgroup(records, meta_transformation='double_arc
         population_sum = sum(filtered_records['DENOMINATOR'])
 
         # Calculate the overall study population size across all studies using harmonic mean
-        overall_population_size = get_overall_study_population_size(filtered_records, n_studies)
+        average_population_size = hmean(filtered_records['DENOMINATOR'].tolist())
 
         # If meta analysis technique is fixed effects, back transformed prevalence and error and return body
         if meta_technique == 'fixed':
             pooled_prevalence, error =\
-                get_pooled_prevalence_and_error(trans_pooled_prevalence, overall_population_size,
+                get_pooled_prevalence_and_error(trans_pooled_prevalence, average_population_size,
                                                 meta_transformation, trans_conf_inter)
             return get_return_body(pooled_prevalence, error, population_sum, n_studies)
 
@@ -199,9 +176,11 @@ def calc_pooled_prevalence_for_subgroup(records, meta_transformation='double_arc
             trans_pooled_prevalence, trans_conf_inter = \
                 get_trans_pooled_prev_and_ci(random_weighted_prevalence_sum, random_weight_sum, variance_sum)
 
-            pooled_prevalence, error = get_pooled_prevalence_and_error(trans_pooled_prevalence, overall_population_size,
+            pooled_prevalence, error = get_pooled_prevalence_and_error(trans_pooled_prevalence, average_population_size,
                                                                        meta_transformation, trans_conf_inter)
             return get_return_body(pooled_prevalence, error, population_sum, n_studies)
+    else:
+        pass
 
 
 def group_by_agg_var(data, agg_var):
@@ -211,6 +190,7 @@ def group_by_agg_var(data, agg_var):
 
 
 def get_meta_analysis_records(data, agg_var, transformation, technique):
+    data_df = pd.DataFrame(data)
     records = {name: calc_pooled_prevalence_for_subgroup(records, transformation, technique)
-               for name, records in group_by_agg_var(data, agg_var).items()}
+               for name, records in group_by_agg_var(data_df, agg_var).items()}
     return records
