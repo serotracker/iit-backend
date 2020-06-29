@@ -1,6 +1,8 @@
-import pandas as pd
+from statistics import median
 from math import log, sqrt, asin, exp, sin, cos, pi
-from numpy import sign
+
+import pandas as pd
+from numpy import sign, quantile
 from scipy.stats import hmean
 
 Z_975 = 1.96
@@ -164,7 +166,7 @@ def calc_pooled_prevalence_for_subgroup(records, meta_transformation='double_arc
             tau = calc_between_study_variance(filtered_records)
 
             # Calculate transformed weights and transformed weighted prevalences also using between study variances
-            filtered_records['RANDOM_WEIGHT'] = 1 / (filtered_records['TRANSFORMED_TOTAL_VARIANCE'] + tau)
+            filtered_records['RANDOM_WEIGHT'] = 1 / (filtered_records['TRANSFORMED_VARIANCE'] + tau)
             filtered_records['RANDOM_WEIGHT_PREVALENCE'] =\
                 filtered_records['TRANSFORMED_PREVALENCE'] * filtered_records['RANDOM_WEIGHT']
 
@@ -180,7 +182,26 @@ def calc_pooled_prevalence_for_subgroup(records, meta_transformation='double_arc
                                                                        meta_transformation, trans_conf_inter)
             return get_return_body(pooled_prevalence, error, population_sum, n_studies)
     else:
-        pass
+        # Remove records where prevalence is null, or denominator is null or 0
+        filtered_records = records[(records['SERUM_POS_PREVALENCE'].notna()) &
+                                   (records['DENOMINATOR'].notna()) &
+                                   (records['DENOMINATOR'] > 0)]
+
+        # If there are no remaining records, return None for pooled prevalence estimate
+        n_studies = filtered_records.shape[0]
+        if n_studies == 0:
+            return None
+
+        # Calculate pooled prevalence based on median prevalence
+        prevalence_list = filtered_records['SERUM_POS_PREVALENCE'].tolist()
+        median_prevalence = median(prevalence_list)
+
+        # Calculate error based on first and third quartiles
+        q1 = quantile(prevalence_list, 0.25)
+        q3 = quantile(prevalence_list, 0.75)
+        error = [abs(median_prevalence - i) for i in [q1, q3]]
+        population_sum = sum(filtered_records['DENOMINATOR'])
+        return get_return_body(median_prevalence, error, population_sum, n_studies)
 
 
 def group_by_agg_var(data, agg_var):
@@ -191,6 +212,9 @@ def group_by_agg_var(data, agg_var):
 
 def get_meta_analysis_records(data, agg_var, transformation, technique):
     data_df = pd.DataFrame(data)
-    records = {name: calc_pooled_prevalence_for_subgroup(records, transformation, technique)
-               for name, records in group_by_agg_var(data_df, agg_var).items()}
-    return records
+    meta_analysis_records = {}
+    for name, records in group_by_agg_var(data_df, agg_var).items():
+        pooled_prev_results = calc_pooled_prevalence_for_subgroup(records, transformation, technique)
+        if pooled_prev_results is not None:
+            meta_analysis_records[name] = pooled_prev_results
+    return meta_analysis_records
