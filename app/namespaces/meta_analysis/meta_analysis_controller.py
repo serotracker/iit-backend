@@ -1,7 +1,7 @@
 import logging
 
 from flask_restplus import Resource, Namespace
-from flask import jsonify, make_response, request, current_app as app
+from flask import make_response, request
 
 from app.utils import validate_request_input_against_schema
 from .meta_analysis_schema import MetaSchema
@@ -24,10 +24,10 @@ class MetaAnalysis(Resource):
             return make_response({"message": "No input payload provided"}, 400)
 
         # Validate input payload
-        payload = validate_request_input_against_schema(json_input, MetaSchema())
-        if not isinstance(payload, dict):
+        payload, status_code = validate_request_input_against_schema(json_input, MetaSchema())
+        if status_code != 200:
             # If there was an error with the input payload, return the error and 422 response
-            return payload
+            return make_response(payload, status_code)
 
         # If payload was successfully validated, extract fields
         records = json_input['records']
