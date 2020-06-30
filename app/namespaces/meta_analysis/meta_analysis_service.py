@@ -103,13 +103,17 @@ def get_pooled_prevalence_and_error(transformed_prev, overall_n, transformation,
     return pooled_prevalence, error
 
 
-def get_return_body(prevalence, error, total_population, total_studies):
-    return {
+def get_return_body(prevalence, error, total_population, total_studies, countries_col):
+    num_countries = len({item for sublist in countries_col for item in sublist})
+    body = {
             'seroprevalence_percent': prevalence * 100,
             'error_percent': [i * 100 for i in error],
             'total_N': total_population,
             'n_studies': total_studies
             }
+    if num_countries > 1:
+        body['countries'] = num_countries
+    return body
 
 
 def calc_pooled_prevalence_for_subgroup(records, meta_transformation='double_arcsin_precise', meta_technique='fixed'):
@@ -157,7 +161,7 @@ def calc_pooled_prevalence_for_subgroup(records, meta_transformation='double_arc
             pooled_prevalence, error =\
                 get_pooled_prevalence_and_error(trans_pooled_prevalence, average_population_size,
                                                 meta_transformation, trans_conf_inter)
-            return get_return_body(pooled_prevalence, error, population_sum, n_studies)
+            return get_return_body(pooled_prevalence, error, population_sum, n_studies, filtered_records['COUNTRY'])
 
         # If meta analysis technique is random effects, add between study variance to all calculations
         else:
@@ -180,7 +184,7 @@ def calc_pooled_prevalence_for_subgroup(records, meta_transformation='double_arc
 
             pooled_prevalence, error = get_pooled_prevalence_and_error(trans_pooled_prevalence, average_population_size,
                                                                        meta_transformation, trans_conf_inter)
-            return get_return_body(pooled_prevalence, error, population_sum, n_studies)
+            return get_return_body(pooled_prevalence, error, population_sum, n_studies, filtered_records['COUNTRY'])
     else:
         # Remove records where prevalence is null, or denominator is null or 0
         filtered_records = records[(records['SERUM_POS_PREVALENCE'].notna()) &
@@ -201,7 +205,11 @@ def calc_pooled_prevalence_for_subgroup(records, meta_transformation='double_arc
         q3 = quantile(prevalence_list, 0.75)
         error = [abs(median_prevalence - i) for i in [q1, q3]]
         population_sum = sum(filtered_records['DENOMINATOR'])
-        return get_return_body(median_prevalence, error, population_sum, n_studies)
+
+        # Get return body and add number of countries if there are multiple countries
+        return_body =\
+            get_return_body(median_prevalence, error, population_sum, n_studies, filtered_records['COUNTRY'])
+        return return_body
 
 
 def group_by_agg_var(data, agg_var):
@@ -220,8 +228,5 @@ def get_meta_analysis_records(data, agg_var, transformation, technique):
                 meta_analysis_records[name] = pooled_prev_results
         return meta_analysis_records
     else:
-        unique_countries = {item for sublist in data_df['COUNTRY'] for item in sublist}
-        num_unique_countries = len(unique_countries)
         return_body = calc_pooled_prevalence_for_subgroup(data_df, transformation, technique)
-        return_body['countries'] = num_unique_countries
         return return_body
