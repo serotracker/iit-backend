@@ -213,8 +213,15 @@ def group_by_agg_var(data, agg_var):
 def get_meta_analysis_records(data, agg_var, transformation, technique):
     data_df = pd.DataFrame(data)
     meta_analysis_records = {}
-    for name, records in group_by_agg_var(data_df, agg_var).items():
-        pooled_prev_results = calc_pooled_prevalence_for_subgroup(records, transformation, technique)
-        if pooled_prev_results is not None:
-            meta_analysis_records[name] = pooled_prev_results
-    return meta_analysis_records
+    if agg_var is not None:
+        for name, records in group_by_agg_var(data_df, agg_var).items():
+            pooled_prev_results = calc_pooled_prevalence_for_subgroup(records, transformation, technique)
+            if pooled_prev_results is not None:
+                meta_analysis_records[name] = pooled_prev_results
+        return meta_analysis_records
+    else:
+        unique_countries = {item for sublist in data_df['COUNTRY'] for item in sublist}
+        num_unique_countries = len(unique_countries)
+        return_body = calc_pooled_prevalence_for_subgroup(data_df, transformation, technique)
+        return_body['countries'] = num_unique_countries
+        return return_body

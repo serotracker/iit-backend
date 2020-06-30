@@ -31,7 +31,7 @@ class MetaAnalysis(Resource):
 
         # If payload was successfully validated, extract fields
         records = json_input['records']
-        agg_var = json_input['aggregation_variable']
+        agg_var = json_input.get('aggregation_variable', None)
 
         # Extract meta transformation variable if present and validate it, else set to default
         try:
