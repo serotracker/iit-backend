@@ -12,7 +12,7 @@ cases_count_scraper_ns =\
 
 
 @cases_count_scraper_ns.route('/records', methods=['GET'])
-class AirtableScraper(Resource):
+class CasesCountScraper(Resource):
     @cases_count_scraper_ns.doc('An endpoint for getting cases by country using JHU data source.')
     def get(self):
         try:

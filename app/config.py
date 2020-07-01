@@ -4,7 +4,8 @@ import os
 class ApiConfig:
     DEBUG = True
     FLASK_DEBUG = True
-    APP_NAMESPACES = os.getenv('APP_NAMESPACES', ['healthcheck', 'airtable_scraper', 'cases_count_scraper'])
+    APP_NAMESPACES = os.getenv('APP_NAMESPACES', ['healthcheck', 'airtable_scraper',
+                                                  'cases_count_scraper', 'meta_analysis'])
 
     # Airtable config vars
     AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
@@ -18,6 +19,9 @@ class ApiConfig:
     JHU_REQUEST_URL = "https://api.covid19api.com/summary"
     JHU_TIME_DIFF = os.getenv('JHU_TIME_DIFF', 24)
     JHU_CACHED_RESULTS_PATH = 'app/namespaces/cases_count_scraper/cached_results.json'
+
+    # Meta analysis config vars
+    MIN_DENOMINATOR = 200
 
 
 class ApiTestingConfig(ApiConfig):
