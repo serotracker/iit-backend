@@ -103,10 +103,9 @@ def get_return_body(prevalence, error, total_population, total_studies, countrie
             'seroprevalence_percent': prevalence * 100,
             'error_percent': [i * 100 for i in error],
             'total_N': total_population,
-            'n_studies': total_studies
+            'n_studies': total_studies,
+            'countries': num_countries
             }
-    if num_countries > 1:
-        body['countries'] = num_countries
     return body
 
 
