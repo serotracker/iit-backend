@@ -76,16 +76,10 @@ def get_valid_filtered_records(records, transformation):
     # Remove records based on criteria for prevalence and denominator fields
     filtered_records = records[(records['SERUM_POS_PREVALENCE'].notna()) &
                                (records['DENOMINATOR'].notna()) &
-                               (records['DENOMINATOR'] > 0) &
+                               (records['DENOMINATOR'] >= app.config['MIN_DENOMINATOR']) &
                                (records[
                                     'SERUM_POS_PREVALENCE'] != 0 if transformation in SP_ZERO_BLACKLIST else True)]
-
-    # If there are any records with denominator greater than min denominator, return those records, else drop criteria
-    valid_records = (filtered_records['DENOMINATOR'] >= app.config['MIN_DENOMINATOR']).any()
-    if valid_records:
-        return filtered_records[filtered_records['DENOMINATOR'] >= app.config['MIN_DENOMINATOR']]
-    else:
-        return filtered_records
+    return filtered_records
 
 
 def get_trans_pooled_prev_and_ci(weighted_prev_sum, weighted_sum, variance_sum):
