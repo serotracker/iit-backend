@@ -2,7 +2,9 @@ import requests
 import json
 import os
 import logging
+from datetime import datetime
 from uuid import uuid4
+from time import time
 
 import pandas as pd
 
@@ -100,28 +102,99 @@ def get_all_records():
         return request_info
 
 
+def isotype_col(isotype_string, x):
+    if x:
+        return True if isotype_string in x else False
+    return False
+
+
+def create_airtable_source_df(original_data):
+    # Length of records
+    num_records = original_data.shape[0]
+
+    # Create source id column
+    source_id_col = [uuid4() for i in range(num_records)]
+    original_data.insert(0, 'SOURCE_ID', source_id_col)
+
+    # Create isotype boolean columns
+    original_data['ISOTYPE_IGG'] = original_data['ISOTYPES'].apply(lambda x: isotype_col('IgG', x))
+    original_data['ISOTYPE_IGM'] = original_data['ISOTYPES'].apply(lambda x: isotype_col('IgM', x))
+    original_data['ISOTYPE_IGA'] = original_data['ISOTYPES'].apply(lambda x: isotype_col('IgA', x))
+    original_data = original_data.drop(columns=['ISOTYPES'])
+
+    # Create created at column
+    original_data['CREATED_AT'] = datetime.now()
+    return original_data
+
+
+def create_multi_select_tables(original_data, cols):
+    # Create dictionary to store multi select tables
+    multi_select_tables_dict = {}
+    for col in cols:
+        id_col = '{}_ID'.format(col)
+        name_col = '{}_NAME'.format(col)
+        new_df_cols = [id_col, name_col]
+        col_specific_df = pd.DataFrame(columns=new_df_cols)
+        original_column = original_data[col].dropna()
+        unique_nam_col = list({item for sublist in original_column for item in sublist})
+        col_specific_df[name_col] = unique_nam_col
+        col_specific_df[id_col] = [uuid4() for i in range(len(unique_nam_col))]
+        multi_select_tables_dict[col] = col_specific_df
+    return multi_select_tables_dict
+
+
+def create_bridge_tables(original_data, multi_select_tables):
+    multi_select_cols = multi_select_tables.keys()
+
+    # Create bridge tables dict
+    bridge_tables_dict = {}
+
+    for col in multi_select_cols:
+        id_col = '{}_ID'.format(col)
+        name_col = '{}_NAME'.format(col)
+        new_df_cols = ['ID', 'SOURCE_ID', id_col]
+        bridge_table_df = pd.DataFrame(columns=new_df_cols)
+        multi_select_table = multi_select_tables[col]
+        for index, row in original_data.iterrows():
+            col_options = row[col]
+            source_id = row['SOURCE_ID']
+            if col_options is not None:
+                for option in col_options:
+                    option_id = multi_select_table[multi_select_table[name_col] == option].iloc[0][id_col]
+                    new_row = {'ID': uuid4(), 'SOURCE_ID': source_id, id_col: option_id}
+                    bridge_table_df = bridge_table_df.append(new_row, ignore_index=True)
+        bridge_tables_dict[col] = bridge_table_df
+    return bridge_tables_dict
+
+
 def main():
     json = get_all_records()
     data = pd.DataFrame(json)
 
-    single_select_cols = ['SOURCE_NAME', 'PUBLICATION_DATE', 'FIRST_AUTHOR', 'URL', 'SOURCE_TYPE', 'SUMMARY',
-                          'STUDY_TYPE', 'STUDY_STATUS', 'COUNTRY', 'LEAD_ORGANIZATION', 'SAMPLING_START', 'SAMPLING_END',
-                          'OVERALL_RISK_OF_BIAS']
+    single_select_cols = ['SOURCE_NAME', 'PUBLICATION_DATE', 'FIRST_AUTHOR', 'URL', 'SOURCE_TYPE', 'SOURCE_PUBLISHER',
+                          'SUMMARY', 'STUDY_TYPE', 'STUDY_STATUS', 'COUNTRY', 'LEAD_ORGANIZATION',
+                          'SAMPLING_START_DATE', 'SAMPLING_END_DATE', 'OVERALL_RISK_OF_BIAS']
+
+    multi_select_cols = ['CITY', 'STATE', 'AGE', 'POPULATION_GROUP', 'TEST_MANUFACTURER', 'APPROVING_REGULATOR',
+                         'TEST_TYPE', 'SPECIMEN_TYPE']
 
     # Remove lists from single select columns
     for col in single_select_cols:
         data[col] = data[col].apply(lambda x: x[0] if x is not None else x)
 
     # Create airtable source df
+    airtable_source = create_airtable_source_df(data)
+
+    # Create dictionary to store multi select tables
+    multi_select_tables_dict = create_multi_select_tables(data, multi_select_cols)
+
+    # Create dictionary to store bridge tables
+    bridge_tables_dict = create_bridge_tables(airtable_source, multi_select_tables_dict)
+
     # Drop columns not needed
-    airtable_source = data.drop(columns=['CITY', 'STATE', 'AGE', 'SOURCE_PUBLISHER', 'POPULATION_GROUP',
-                                         'TEST_MANUFACTURER', 'APPROVING_REGULATOR', 'TEST_TYPE', 'SPECIMEN_TYPE'])
-
-    # Length of records
-    num_records = airtable_source.shape[0]
-
-    ## ISSUE: THE SAME PREVALENCE IS RECORDED BY MULTIPLE SOURCES, THEREFORE EVERY COLUMN CAN TECHNICALLY HAVE MULTIPLE VALUES.
-    ## SHOULD WE INCLUDE ALL THE SOURCES OF THE ESTIMATE, OR JUST TAKE ONE OF THEM?
+    airtable_source = airtable_source.drop(columns=['CITY', 'STATE', 'AGE', 'POPULATION_GROUP',
+                                                    'TEST_MANUFACTURER', 'APPROVING_REGULATOR', 'TEST_TYPE',
+                                                    'SPECIMEN_TYPE'])
     return
 
 
