@@ -12,8 +12,8 @@
    "Lead Organization":"LEAD_ORGANIZATION",
    "State/Province":"STATE",
    "County/City":"CITY",
-   "Sampling Start Date":"SAMPLING_START",
-   "Sampling End Date":"SAMPLING_END",
+   "Sampling Start Date":"SAMPLING_START_DATE",
+   "Sampling End Date":"SAMPLING_END_DATE",
    "Sample Frame (sex)":"SEX",
    "Sample Frame (age)":"AGE",
    "Sample Frame (groups of interest)":"POPULATION_GROUP",
@@ -27,6 +27,7 @@
    "Specificity":"SPECIFICITY",
    "Include in N?": "INCLUDE_IN_N",
    "Denominator Value":"DENOMINATOR_VALUE",
+   "Numerator Value": "NUMERATOR_VALUE",
    "Numerator Definition":"NUMERATOR_DEFINITION",
    "Serum positive prevalence":"SERUM_POS_PREVALENCE",
    "Overall Risk of Bias (JBI)":"OVERALL_RISK_OF_BIAS"
