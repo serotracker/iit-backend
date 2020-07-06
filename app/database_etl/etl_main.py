@@ -4,9 +4,9 @@ import os
 import logging
 from datetime import datetime
 from uuid import uuid4
-from time import time
 
 import pandas as pd
+from sqlalchemy import create_engine
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ AIRTABLE_REQUEST_PARAMS = {'filterByFormula': '{Visualize on SeroTracker?}=1'}
 
 def _add_fields_to_url(url):
     # Add fields in config to api URL
-    with open('utils/airtable_fields_config.json', 'r') as file:
+    with open('../utils/airtable_fields_config.json', 'r') as file:
         fields = json.load(file)
         for key in fields:
             url += 'fields%5B%5D={}&'.format(key)
@@ -34,7 +34,7 @@ def _get_formatted_json_records(records):
     total_records_df = pd.DataFrame(new_records)
 
     # Rename and reorder df columns according to formatted column names in config
-    with open('utils/airtable_fields_config.json', 'r') as file:
+    with open('../utils/airtable_fields_config.json', 'r') as file:
         fields = json.load(file)
         renamed_cols = {key: fields[key] for key in fields}
         reordered_cols = [fields[key] for key in fields]
@@ -199,4 +199,7 @@ def main():
 
 
 if __name__ == '__main__':
+    engine = create_engine('postgresql://{username}:{password}@localhost:5432/whiteclaw'.format(
+        username=os.getenv('DATABASE_USERNAME'),
+        password=os.getenv('DATABASE_PASSWORD')))
     main()
