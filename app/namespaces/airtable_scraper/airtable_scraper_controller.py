@@ -15,7 +15,7 @@ class AirtableScraper(Resource):
     @airtable_scraper_ns.doc('An endpoint for getting all records of airtable data.')
     def get(self):
         # Parse request parameters
-        visualize_on_serotracker_filter = request.args.get('visualize_on_serotracker_filter', 'true') == 'true'
+        visualize_on_serotracker_filter = request.args.get('visualize_on_serotracker_filter', 1, type=int)
         airtable_fields_json_name = request.args.get('airtable_fields_json_name', 'dashboard')
 
         # Only check cache if records are being pulled for dashboard

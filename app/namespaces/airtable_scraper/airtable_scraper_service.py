@@ -62,7 +62,7 @@ def get_all_records(visualize_sero_filter, airtable_fields_json):
     url = app.config['AIRTABLE_REQUEST_URL']
     url = _add_fields_to_url(url, airtable_fields_json)
     headers = {'Authorization': 'Bearer {}'.format(app.config['AIRTABLE_API_KEY'])}
-    params = app.config['AIRTABLE_REQUEST_PARAMS'] if visualize_sero_filter else None
+    params = app.config['AIRTABLE_REQUEST_PARAMS'] if visualize_sero_filter == 1 else None
 
     # Make request and retrieve records in json format
     r = requests.get(url, headers=headers, params=params)
