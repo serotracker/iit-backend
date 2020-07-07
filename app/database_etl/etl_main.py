@@ -14,11 +14,12 @@ AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
 AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
 AIRTABLE_REQUEST_URL = "https://api.airtable.com/v0/{}/Rapid%20Review%3A%20Estimates?".format(AIRTABLE_BASE_ID)
 AIRTABLE_REQUEST_PARAMS = {'filterByFormula': '{Visualize on SeroTracker?}=1'}
+PATH = os.path.join(os.path.realpath(__file__), "../airtable_fields_config.json")
 
 
 def _add_fields_to_url(url):
     # Add fields in config to api URL
-    with open('../utils/airtable_fields_config.json', 'r') as file:
+    with open(PATH, 'r') as file:
         fields = json.load(file)
         for key in fields:
             url += 'fields%5B%5D={}&'.format(key)
@@ -34,7 +35,7 @@ def _get_formatted_json_records(records):
     total_records_df = pd.DataFrame(new_records)
 
     # Rename and reorder df columns according to formatted column names in config
-    with open('../utils/airtable_fields_config.json', 'r') as file:
+    with open(PATH, 'r') as file:
         fields = json.load(file)
         renamed_cols = {key: fields[key] for key in fields}
         reordered_cols = [fields[key] for key in fields]
@@ -124,6 +125,12 @@ def create_airtable_source_df(original_data):
 
     # Create created at column
     original_data['CREATED_AT'] = datetime.now()
+
+    # Convert the publication, sampling start date and sampling end date to datetime
+    date_cols = ['PUBLICATION_DATE', 'SAMPLING_START_DATE', 'SAMPLING_END_DATE']
+    for col in date_cols:
+        original_data[col] =\
+            original_data[col].apply(lambda x: datetime.strptime(x, '%Y-%m-%d') if x is not None else x)
     return original_data
 
 
@@ -173,7 +180,7 @@ def main():
 
     single_select_cols = ['SOURCE_NAME', 'PUBLICATION_DATE', 'FIRST_AUTHOR', 'URL', 'SOURCE_TYPE', 'SOURCE_PUBLISHER',
                           'SUMMARY', 'STUDY_TYPE', 'STUDY_STATUS', 'COUNTRY', 'LEAD_ORGANIZATION',
-                          'SAMPLING_START_DATE', 'SAMPLING_END_DATE', 'OVERALL_RISK_OF_BIAS']
+                          'OVERALL_RISK_OF_BIAS']
 
     multi_select_cols = ['CITY', 'STATE', 'AGE', 'POPULATION_GROUP', 'TEST_MANUFACTURER', 'APPROVING_REGULATOR',
                          'TEST_TYPE', 'SPECIMEN_TYPE']
@@ -195,11 +202,12 @@ def main():
     airtable_source = airtable_source.drop(columns=['CITY', 'STATE', 'AGE', 'POPULATION_GROUP',
                                                     'TEST_MANUFACTURER', 'APPROVING_REGULATOR', 'TEST_TYPE',
                                                     'SPECIMEN_TYPE'])
+    print(airtable_source.columns)
     return
 
 
 if __name__ == '__main__':
-    engine = create_engine('postgresql://{username}:{password}@localhost:5432/whiteclaw'.format(
-        username=os.getenv('DATABASE_USERNAME'),
-        password=os.getenv('DATABASE_PASSWORD')))
+    # engine = create_engine('postgresql://{username}:{password}@localhost:5432/whiteclaw'.format(
+    #     username=os.getenv('DATABASE_USERNAME'),
+    #     password=os.getenv('DATABASE_PASSWORD')))
     main()
