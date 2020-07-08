@@ -11,10 +11,11 @@ from sqlalchemy import create_engine
 logger = logging.getLogger(__name__)
 
 AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
-AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_IßD')
 AIRTABLE_REQUEST_URL = "https://api.airtable.com/v0/{}/Rapid%20Review%3A%20Estimates?".format(AIRTABLE_BASE_ID)
 AIRTABLE_REQUEST_PARAMS = {'filterByFormula': '{Visualize on SeroTracker?}=1'}
-PATH = os.path.join(os.path.realpath(__file__), "../airtable_fields_config.json")
+#PATH = os.path.join(os.path.realpath(__file__), "../airtable_fields_config.json")
+PATH = "./airtable_fields_config.json"
 
 
 def _add_fields_to_url(url):

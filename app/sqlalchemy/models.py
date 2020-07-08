@@ -12,27 +12,27 @@ class AirtableSource(Base):
     source_id = Column(UUID, primary_key=True)
     source_name = Column(String(128))
     publication_date = Column(DateTime)
-    first_author = Column(String)
-    url = Column(String)
-    source_type = Column(String)
-    source_publisher = Column(String)
-    summary = Column(String)
-    study_type = Column(String)
-    study_status = Column(String)
-    country = Column(String)
-    lead_organization = Column(String)
+    first_author = Column(String(64))
+    url = Column(String(128))
+    source_type = Column(String(64))
+    source_publisher = Column(String(64))
+    summary = Column(String(256))
+    study_type = Column(String(128))
+    study_status = Column(String(32))
+    country = Column(String(32))
+    lead_organization = Column(String(64))
     sampling_start_date = Column(DateTime)
     sampling_end_date = Column(DateTime)
-    sex = Column(String)
-    sampling_method = Column(String)
+    sex = Column(String(16))
+    sampling_method = Column(String(128))
     sensitivity = Column(Float)
     specificity = Column(Float)
-    include_in_n = Column(String)
+    include_in_n = Column(Boolean)
     denominator_value = Column(Integer)
     numerator_value = Column(Integer)
-    numerator_definition = Column(String)
+    numerator_definition = Column(String(128))
     serum_pos_prevalence = Column(Float)
-    overall_risk_of_bias = Column(String)
+    overall_risk_of_bias = Column(String(16))
     isotype_igg = Column(Boolean)
     isotype_igm = Column(Boolean)
     isotype_iga = Column(Boolean)
@@ -44,7 +44,7 @@ class City(Base):
     __tablename__ = 'city'
 
     city_id = Column(UUID, primary_key=True)
-    city_name = Column(String)
+    city_name = Column(String(64))
     created_at = Column(DateTime)
 
 
@@ -52,7 +52,7 @@ class State(Base):
     __tablename__ = 'state'
 
     state_id = Column(UUID, primary_key=True)
-    state_name = Column(String)
+    state_name = Column(String(64))
     created_at = Column(DateTime)
 
 
@@ -60,7 +60,7 @@ class Age(Base):
     __tablename__ = 'age'
 
     age_id = Column(UUID, primary_key=True)
-    age_name = Column(String)
+    age_name = Column(String(32))
     created_at = Column(DateTime)
 
 
@@ -68,7 +68,7 @@ class PopulationGroup(Base):
     __tablename__ = 'population_group'
 
     population_group_id = Column(UUID, primary_key=True)
-    population_group_name = Column(String)
+    population_group_name = Column(String(64))
     created_at = Column(DateTime)
 
 
@@ -76,7 +76,7 @@ class TestManufacturer(Base):
     __tablename__ = 'test_manufacturer'
 
     test_manufacturer_id = Column(UUID, primary_key=True)
-    test_manufacturer_name = Column(String)
+    test_manufacturer_name = Column(String(64))
     created_at = Column(DateTime)
 
 
@@ -84,7 +84,7 @@ class ApprovingRegulator(Base):
     __tablename__ = 'approving_regulator'
 
     approving_regulator_id = Column(UUID, primary_key=True)
-    approving_regulator_name = Column(String)
+    approving_regulator_name = Column(String(128))
     created_at = Column(DateTime)
 
 
@@ -92,7 +92,7 @@ class TestType(Base):
     __tablename__ = 'test_type'
 
     test_type_id = Column(UUID, primary_key=True)
-    test_type_name = Column(String)
+    test_type_name = Column(String(64))
     created_at = Column(DateTime)
 
 
@@ -100,7 +100,7 @@ class SpecimenType(Base):
     __tablename__ = 'specimen_type'
 
     specimen_type_id = Column(UUID, primary_key=True)
-    specimen_type_name = Column(String)
+    specimen_type_name = Column(String(32))
     created_at = Column(DateTime)
 
 
