@@ -1,14 +1,8 @@
-import json
-
-
-def _read_airtable_fields_config():
-    with open('app/utils/airtable_fields_config.json', 'r') as file:
-        fields = json.load(file)
-    return fields
+from app.utils import airtable_fields_config
 
 
 def test_airtable_fields_config():
-    fields = _read_airtable_fields_config()
+    fields = airtable_fields_config['dashboard']
     assert type(fields) is dict
 
 
@@ -40,7 +34,7 @@ def test_get_airtable_records_correct_config(client):
 
     # Make sure records fields in response are same as fields in config
     response_records_fields = list(data['records'][0].keys())
-    config_fields = list((_read_airtable_fields_config()).values())
+    config_fields = list(airtable_fields_config['dashboard'].values())
     assert len(response_records_fields) == len(config_fields)
     for field in response_records_fields:
         assert field in config_fields

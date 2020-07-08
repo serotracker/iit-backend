@@ -4,6 +4,7 @@ import argparse
 import pandas as pd
 
 
+## THIS METHOD IS OBSOLETE AT THE MOMENT SINCE WE AREN'T USED A CONFIG JSON
 def create_airtable_fields_config_from_csv(csv_file):
     try:
         # Read csv indicating which Airtable columns to pull
@@ -19,7 +20,7 @@ def create_airtable_fields_config_from_csv(csv_file):
         config_dict = {column_label[i]: short_name[i] for i in range(len(column_label))}
 
         # Create config json from config dict in app/utils
-        with open('../database_etl/airtable_fields_config.json', 'w') as f:
+        with open('airtable_fields_config.py', 'w') as f:
             json.dump(config_dict, f)
         return
     except FileNotFoundError:
