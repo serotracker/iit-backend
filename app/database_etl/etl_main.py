@@ -4,26 +4,25 @@ import os
 import logging
 from datetime import datetime
 from uuid import uuid4
+from time import time
 
 import pandas as pd
 from sqlalchemy import create_engine
+from app.utils import airtable_fields_config
 
 logger = logging.getLogger(__name__)
 
 AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
-AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_IßD')
+AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
 AIRTABLE_REQUEST_URL = "https://api.airtable.com/v0/{}/Rapid%20Review%3A%20Estimates?".format(AIRTABLE_BASE_ID)
 AIRTABLE_REQUEST_PARAMS = {'filterByFormula': '{Visualize on SeroTracker?}=1'}
-#PATH = os.path.join(os.path.realpath(__file__), "../airtable_fields_config.json")
-PATH = "./airtable_fields_config.json"
 
 
 def _add_fields_to_url(url):
     # Add fields in config to api URL
-    with open(PATH, 'r') as file:
-        fields = json.load(file)
-        for key in fields:
-            url += 'fields%5B%5D={}&'.format(key)
+    fields = airtable_fields_config['dashboard']
+    for key in fields:
+        url += 'fields%5B%5D={}&'.format(key)
     url = url[:-1]
     return url
 
@@ -36,10 +35,9 @@ def _get_formatted_json_records(records):
     total_records_df = pd.DataFrame(new_records)
 
     # Rename and reorder df columns according to formatted column names in config
-    with open(PATH, 'r') as file:
-        fields = json.load(file)
-        renamed_cols = {key: fields[key] for key in fields}
-        reordered_cols = [fields[key] for key in fields]
+    fields = airtable_fields_config['dashboard']
+    renamed_cols = {key: fields[key] for key in fields}
+    reordered_cols = [fields[key] for key in fields]
     total_records_df = total_records_df.rename(columns=renamed_cols)
     total_records_df = total_records_df[reordered_cols]
     total_records_df = total_records_df.where(total_records_df.notna(), None)
@@ -116,21 +114,21 @@ def create_airtable_source_df(original_data):
 
     # Create source id column
     source_id_col = [uuid4() for i in range(num_records)]
-    original_data.insert(0, 'SOURCE_ID', source_id_col)
+    original_data.insert(0, 'source_id', source_id_col)
 
     # Create isotype boolean columns
-    original_data['ISOTYPE_IGG'] = original_data['ISOTYPES'].apply(lambda x: isotype_col('IgG', x))
-    original_data['ISOTYPE_IGM'] = original_data['ISOTYPES'].apply(lambda x: isotype_col('IgM', x))
-    original_data['ISOTYPE_IGA'] = original_data['ISOTYPES'].apply(lambda x: isotype_col('IgA', x))
-    original_data = original_data.drop(columns=['ISOTYPES'])
+    original_data['isotype_igg'] = original_data['isotypes'].apply(lambda x: isotype_col('IgG', x))
+    original_data['isotype_igm'] = original_data['isotypes'].apply(lambda x: isotype_col('IgM', x))
+    original_data['isotype_iga'] = original_data['isotypes'].apply(lambda x: isotype_col('IgA', x))
+    original_data = original_data.drop(columns=['isotypes'])
 
     # Create created at column
-    original_data['CREATED_AT'] = datetime.now()
+    original_data['created_at'] = datetime.now()
 
     # Convert the publication, sampling start date and sampling end date to datetime
-    date_cols = ['PUBLICATION_DATE', 'SAMPLING_START_DATE', 'SAMPLING_END_DATE']
+    date_cols = ['publication_date', 'sampling_start_date', 'sampling_end_date']
     for col in date_cols:
-        original_data[col] =\
+        original_data[col] = \
             original_data[col].apply(lambda x: datetime.strptime(x, '%Y-%m-%d') if x is not None else x)
     return original_data
 
@@ -139,14 +137,15 @@ def create_multi_select_tables(original_data, cols):
     # Create dictionary to store multi select tables
     multi_select_tables_dict = {}
     for col in cols:
-        id_col = '{}_ID'.format(col)
-        name_col = '{}_NAME'.format(col)
-        new_df_cols = [id_col, name_col]
+        id_col = '{}_id'.format(col)
+        name_col = '{}_name'.format(col)
+        new_df_cols = [id_col, name_col, 'created_at']
         col_specific_df = pd.DataFrame(columns=new_df_cols)
         original_column = original_data[col].dropna()
         unique_nam_col = list({item for sublist in original_column for item in sublist})
         col_specific_df[name_col] = unique_nam_col
         col_specific_df[id_col] = [uuid4() for i in range(len(unique_nam_col))]
+        col_specific_df['created_at'] = datetime.now()
         multi_select_tables_dict[col] = col_specific_df
     return multi_select_tables_dict
 
@@ -158,18 +157,18 @@ def create_bridge_tables(original_data, multi_select_tables):
     bridge_tables_dict = {}
 
     for col in multi_select_cols:
-        id_col = '{}_ID'.format(col)
-        name_col = '{}_NAME'.format(col)
-        new_df_cols = ['ID', 'SOURCE_ID', id_col]
+        id_col = '{}_id'.format(col)
+        name_col = '{}_name'.format(col)
+        new_df_cols = ['id', 'source_id', id_col, 'created_at']
         bridge_table_df = pd.DataFrame(columns=new_df_cols)
         multi_select_table = multi_select_tables[col]
         for index, row in original_data.iterrows():
             col_options = row[col]
-            source_id = row['SOURCE_ID']
+            source_id = row['source_id']
             if col_options is not None:
                 for option in col_options:
                     option_id = multi_select_table[multi_select_table[name_col] == option].iloc[0][id_col]
-                    new_row = {'ID': uuid4(), 'SOURCE_ID': source_id, id_col: option_id}
+                    new_row = {'id': uuid4(), 'source_id': source_id, id_col: option_id, 'created_at': datetime.now()}
                     bridge_table_df = bridge_table_df.append(new_row, ignore_index=True)
         bridge_tables_dict[col] = bridge_table_df
     return bridge_tables_dict
@@ -179,12 +178,12 @@ def main():
     json = get_all_records()
     data = pd.DataFrame(json)
 
-    single_select_cols = ['SOURCE_NAME', 'PUBLICATION_DATE', 'FIRST_AUTHOR', 'URL', 'SOURCE_TYPE', 'SOURCE_PUBLISHER',
-                          'SUMMARY', 'STUDY_TYPE', 'STUDY_STATUS', 'COUNTRY', 'LEAD_ORGANIZATION',
-                          'OVERALL_RISK_OF_BIAS']
+    single_select_cols = ['source_name', 'publication_date', 'first_author', 'url', 'source_type', 'source_publisher',
+                          'summary', 'study_type', 'study_status', 'country', 'lead_organization',
+                          'overall_risk_of_bias']
 
-    multi_select_cols = ['CITY', 'STATE', 'AGE', 'POPULATION_GROUP', 'TEST_MANUFACTURER', 'APPROVING_REGULATOR',
-                         'TEST_TYPE', 'SPECIMEN_TYPE']
+    multi_select_cols = ['city', 'state', 'age', 'population_group', 'test_manufacturer', 'approving_regulator',
+                         'test_type', 'specimen_type']
 
     # Remove lists from single select columns
     for col in single_select_cols:
@@ -200,15 +199,39 @@ def main():
     bridge_tables_dict = create_bridge_tables(airtable_source, multi_select_tables_dict)
 
     # Drop columns not needed
-    airtable_source = airtable_source.drop(columns=['CITY', 'STATE', 'AGE', 'POPULATION_GROUP',
-                                                    'TEST_MANUFACTURER', 'APPROVING_REGULATOR', 'TEST_TYPE',
-                                                    'SPECIMEN_TYPE'])
-    print(airtable_source.columns)
+    airtable_source = airtable_source.drop(columns=['city', 'state', 'age', 'population_group',
+                                                    'test_manufacturer', 'approving_regulator', 'test_type',
+                                                    'specimen_type'])
+
+    # Create engine to connect to whiteclaw database
+    engine = create_engine('postgresql://{username}:{password}@localhost/whiteclaw'.format(
+        username=os.getenv('DATABASE_USERNAME'),
+        password=os.getenv('DATABASE_PASSWORD')))
+
+    # Load dataframes into postgres tables
+    airtable_source.to_sql('airtable_source',
+                           schema='public',
+                           con=engine,
+                           if_exists='append',
+                           index=False)
+
+    for table_name, table_value in multi_select_tables_dict.items():
+        table_value.to_sql(table_name,
+                           schema='public',
+                           con=engine,
+                           if_exists='append',
+                           index=False)
+
+    for table_name, table_value in bridge_tables_dict.items():
+        table_value.to_sql('{}_bridge'.format(table_name),
+                           schema='public',
+                           con=engine,
+                           if_exists='append',
+                           index=False)
     return
 
 
 if __name__ == '__main__':
-    # engine = create_engine('postgresql://{username}:{password}@localhost:5432/whiteclaw'.format(
-    #     username=os.getenv('DATABASE_USERNAME'),
-    #     password=os.getenv('DATABASE_PASSWORD')))
+    beginning = time()
     main()
+    diff = time() - beginning
