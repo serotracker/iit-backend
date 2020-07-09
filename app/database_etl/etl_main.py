@@ -8,6 +8,10 @@ from time import time
 
 import pandas as pd
 from sqlalchemy import create_engine
+from app.sqlalchemy import db_session, AirtableSource, City, State, \
+    Age, PopulationGroup, TestManufacturer, ApprovingRegulator, TestType, \
+    SpecimenType, CityBridge, StateBridge, AgeBridge, PopulationGroupBridge, \
+    TestManufacturerBridge, ApprovingRegulatorBridge, TestTypeBridge, SpecimenTypeBridge
 from app.utils import airtable_fields_config
 
 logger = logging.getLogger(__name__)
@@ -16,6 +20,8 @@ AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
 AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
 AIRTABLE_REQUEST_URL = "https://api.airtable.com/v0/{}/Rapid%20Review%3A%20Estimates?".format(AIRTABLE_BASE_ID)
 AIRTABLE_REQUEST_PARAMS = {'filterByFormula': '{Visualize on SeroTracker?}=1'}
+
+CURR_TIME = datetime.now()
 
 
 def _add_fields_to_url(url):
@@ -124,7 +130,7 @@ def create_airtable_source_df(original_data):
     original_data = original_data.drop(columns=['isotypes'])
 
     # Create created at column
-    original_data['created_at'] = datetime.now()
+    original_data['created_at'] = CURR_TIME
 
     # Convert the publication, sampling start date and sampling end date to datetime
     date_cols = ['publication_date', 'sampling_start_date', 'sampling_end_date']
@@ -154,7 +160,7 @@ def create_multi_select_tables(original_data, cols):
         # Create name all df columns and add as value to dictionary
         col_specific_df[name_col] = unique_nam_col
         col_specific_df[id_col] = [uuid4() for i in range(len(unique_nam_col))]
-        col_specific_df['created_at'] = datetime.now()
+        col_specific_df['created_at'] = CURR_TIME
         multi_select_tables_dict[col] = col_specific_df
     return multi_select_tables_dict
 
@@ -180,18 +186,13 @@ def create_bridge_tables(original_data, multi_select_tables):
             if col_options is not None:
                 for option in col_options:
                     option_id = multi_select_table[multi_select_table[name_col] == option].iloc[0][id_col]
-                    new_row = {'id': uuid4(), 'source_id': source_id, id_col: option_id, 'created_at': datetime.now()}
+                    new_row = {'id': uuid4(), 'source_id': source_id, id_col: option_id, 'created_at': CURR_TIME}
                     bridge_table_df = bridge_table_df.append(new_row, ignore_index=True)
         bridge_tables_dict[col] = bridge_table_df
     return bridge_tables_dict
 
 
-def load_postgres_tables(airtable_table, multi_select_tables_dict, bridge_tables_dict):
-    # Create engine to connect to whiteclaw database
-    engine = create_engine('postgresql://{username}:{password}@localhost/whiteclaw'.format(
-        username=os.getenv('DATABASE_USERNAME'),
-        password=os.getenv('DATABASE_PASSWORD')))
-
+def load_postgres_tables(airtable_table, multi_select_tables_dict, bridge_tables_dict, engine):
     # Load dataframes into postgres tables
     airtable_table.to_sql('airtable_source',
                           schema='public',
@@ -215,7 +216,25 @@ def load_postgres_tables(airtable_table, multi_select_tables_dict, bridge_tables
     return
 
 
+def drop_old_entries(engine):
+    all_tables = [AirtableSource, City, State, Age, PopulationGroup,
+                  TestManufacturer, ApprovingRegulator, TestType, SpecimenType,
+                  CityBridge, StateBridge, AgeBridge, PopulationGroupBridge,
+                  TestManufacturerBridge, ApprovingRegulatorBridge, TestTypeBridge, SpecimenTypeBridge]
+    with db_session(engine) as session:
+        for table in all_tables:
+            # Drop record if it was not added during the current run
+            query = session.query(table).filter(table.created_at != CURR_TIME).delete()
+        session.commit()
+    return
+
+
 def main():
+    # Create engine to connect to whiteclaw database
+    engine = create_engine('postgresql://{username}:{password}@localhost/whiteclaw'.format(
+        username=os.getenv('DATABASE_USERNAME'),
+        password=os.getenv('DATABASE_PASSWORD')))
+
     # Get all records with airtable API request and load into dataframe
     json = get_all_records()
     data = pd.DataFrame(json)
@@ -248,7 +267,11 @@ def main():
                                                     'specimen_type'])
 
     # Load dataframes into postgres tables
-    load_postgres_tables(airtable_source, multi_select_tables_dict, bridge_tables_dict)
+    load_postgres_tables(airtable_source, multi_select_tables_dict, bridge_tables_dict, engine)
+
+    # Delete old entries
+    drop_old_entries(engine)
+
     return
 
 
@@ -256,3 +279,4 @@ if __name__ == '__main__':
     beginning = time()
     main()
     diff = time() - beginning
+    print(diff)

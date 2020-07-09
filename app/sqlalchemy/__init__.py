@@ -1,1 +1,2 @@
-from .models import AirtableSource
+from .models import *
+from .base import db_session
