@@ -103,6 +103,7 @@ def get_all_records():
 
 
 def isotype_col(isotype_string, x):
+    # Function for creating isotype boolean columns
     if x:
         return True if isotype_string in x else False
     return False
@@ -136,13 +137,21 @@ def create_airtable_source_df(original_data):
 def create_multi_select_tables(original_data, cols):
     # Create dictionary to store multi select tables
     multi_select_tables_dict = {}
+
+    # Create one multi select table per multi select column
     for col in cols:
         id_col = '{}_id'.format(col)
         name_col = '{}_name'.format(col)
+
+        # Create dataframe for table with an id column, a name column, and a created_at column
         new_df_cols = [id_col, name_col, 'created_at']
         col_specific_df = pd.DataFrame(columns=new_df_cols)
         original_column = original_data[col].dropna()
+
+        # Get all unique values in the multi select column
         unique_nam_col = list({item for sublist in original_column for item in sublist})
+
+        # Create name all df columns and add as value to dictionary
         col_specific_df[name_col] = unique_nam_col
         col_specific_df[id_col] = [uuid4() for i in range(len(unique_nam_col))]
         col_specific_df['created_at'] = datetime.now()
@@ -156,9 +165,12 @@ def create_bridge_tables(original_data, multi_select_tables):
     # Create bridge tables dict
     bridge_tables_dict = {}
 
+    # Create one bridge table per multi select column
     for col in multi_select_cols:
         id_col = '{}_id'.format(col)
         name_col = '{}_name'.format(col)
+
+        # Create dataframe with id, source_id, multi select id and created at column
         new_df_cols = ['id', 'source_id', id_col, 'created_at']
         bridge_table_df = pd.DataFrame(columns=new_df_cols)
         multi_select_table = multi_select_tables[col]
@@ -174,14 +186,46 @@ def create_bridge_tables(original_data, multi_select_tables):
     return bridge_tables_dict
 
 
+def load_postgres_tables(airtable_table, multi_select_tables_dict, bridge_tables_dict):
+    # Create engine to connect to whiteclaw database
+    engine = create_engine('postgresql://{username}:{password}@localhost/whiteclaw'.format(
+        username=os.getenv('DATABASE_USERNAME'),
+        password=os.getenv('DATABASE_PASSWORD')))
+
+    # Load dataframes into postgres tables
+    airtable_table.to_sql('airtable_source',
+                          schema='public',
+                          con=engine,
+                          if_exists='append',
+                          index=False)
+
+    for table_name, table_value in multi_select_tables_dict.items():
+        table_value.to_sql(table_name,
+                           schema='public',
+                           con=engine,
+                           if_exists='append',
+                           index=False)
+
+    for table_name, table_value in bridge_tables_dict.items():
+        table_value.to_sql('{}_bridge'.format(table_name),
+                           schema='public',
+                           con=engine,
+                           if_exists='append',
+                           index=False)
+    return
+
+
 def main():
+    # Get all records with airtable API request and load into dataframe
     json = get_all_records()
     data = pd.DataFrame(json)
 
+    # List of columns that are single select (cannot have multiple values)
     single_select_cols = ['source_name', 'publication_date', 'first_author', 'url', 'source_type', 'source_publisher',
                           'summary', 'study_type', 'study_status', 'country', 'lead_organization',
                           'overall_risk_of_bias']
 
+    # List of columns that are multi select (can have multiple values)
     multi_select_cols = ['city', 'state', 'age', 'population_group', 'test_manufacturer', 'approving_regulator',
                          'test_type', 'specimen_type']
 
@@ -198,36 +242,13 @@ def main():
     # Create dictionary to store bridge tables
     bridge_tables_dict = create_bridge_tables(airtable_source, multi_select_tables_dict)
 
-    # Drop columns not needed
+    # Drop columns that are not needed not needed
     airtable_source = airtable_source.drop(columns=['city', 'state', 'age', 'population_group',
                                                     'test_manufacturer', 'approving_regulator', 'test_type',
                                                     'specimen_type'])
 
-    # Create engine to connect to whiteclaw database
-    engine = create_engine('postgresql://{username}:{password}@localhost/whiteclaw'.format(
-        username=os.getenv('DATABASE_USERNAME'),
-        password=os.getenv('DATABASE_PASSWORD')))
-
     # Load dataframes into postgres tables
-    airtable_source.to_sql('airtable_source',
-                           schema='public',
-                           con=engine,
-                           if_exists='append',
-                           index=False)
-
-    for table_name, table_value in multi_select_tables_dict.items():
-        table_value.to_sql(table_name,
-                           schema='public',
-                           con=engine,
-                           if_exists='append',
-                           index=False)
-
-    for table_name, table_value in bridge_tables_dict.items():
-        table_value.to_sql('{}_bridge'.format(table_name),
-                           schema='public',
-                           con=engine,
-                           if_exists='append',
-                           index=False)
+    load_postgres_tables(airtable_source, multi_select_tables_dict, bridge_tables_dict)
     return
 
 
