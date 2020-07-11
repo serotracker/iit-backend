@@ -46,7 +46,7 @@ full_airtable_fields = {
    "Numerator Definition": "NUM_DEFINITION",
    "Serum positive prevalence": "SERUM_POS_PREVALENCE",
    "Overall Risk of Bias (JBI)": "OVERALL_RISK_OF_BIAS",
-   "Included?": "Included"
+   "Included?": "INCLUDED"
 }
 
 airtable_fields_config = {'dashboard': {k: full_airtable_fields[k] for k in dashboard_fields},
