@@ -12,7 +12,7 @@ research_fields = ['Source Name', 'Publication Date', 'First Author Full Name', 
                     'Sample Frame (sex)', 'Sample Frame (age)', 'Sample Frame (groups of interest)', 'Sampling Method',
                     'Test Manufacturer', 'Approving Regulator', 'Test Type', 'Specimen Type', 'Isotype(s) Reported',
                     'Sensitivity', 'Specificity', 'Include in N?', 'Denominator Value', 'Numerator Definition',
-                    'Serum positive prevalence', 'Overall Risk of Bias (JBI)']
+                    'Serum positive prevalence', 'Overall Risk of Bias (JBI)', 'Included?']
 
 full_airtable_fields = {
    "Source Name": "SOURCE_NAME",
@@ -45,7 +45,8 @@ full_airtable_fields = {
    "Denominator Value": "DENOMINATOR",
    "Numerator Definition": "NUM_DEFINITION",
    "Serum positive prevalence": "SERUM_POS_PREVALENCE",
-   "Overall Risk of Bias (JBI)": "OVERALL_RISK_OF_BIAS"
+   "Overall Risk of Bias (JBI)": "OVERALL_RISK_OF_BIAS",
+   "Included?": "Included"
 }
 
 airtable_fields_config = {'dashboard': {k: full_airtable_fields[k] for k in dashboard_fields},
