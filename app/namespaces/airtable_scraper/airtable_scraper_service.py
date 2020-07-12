@@ -77,7 +77,7 @@ def get_all_records(visualize_sero_filter, airtable_fields_json):
             records = _get_paginated_records(data, request_info)
         else:
             records = data['records']
-        formatted_records = _get_formatted_json_records(records)
+        formatted_records = _get_formatted_json_records(records, airtable_fields_json)
         return formatted_records, 200
 
     # If request was not successful, there will be no records field in response
