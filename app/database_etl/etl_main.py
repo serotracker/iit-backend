@@ -12,7 +12,7 @@ from app.sqlalchemy import db_session, AirtableSource, City, State, \
     Age, PopulationGroup, TestManufacturer, ApprovingRegulator, TestType, \
     SpecimenType, CityBridge, StateBridge, AgeBridge, PopulationGroupBridge, \
     TestManufacturerBridge, ApprovingRegulatorBridge, TestTypeBridge, SpecimenTypeBridge
-from app.utils import airtable_fields_config
+from app.utils import airtable_fields_config, send_api_error_email
 
 logger = logging.getLogger(__name__)
 
@@ -105,6 +105,8 @@ def get_all_records():
             "url": url,
             "headers": json.dumps(headers)
         }
+
+        send_api_error_email(body, data, error=e, request_info=request_info)
         return request_info
 
 
