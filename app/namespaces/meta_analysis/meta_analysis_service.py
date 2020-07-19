@@ -217,9 +217,17 @@ def get_meta_analysis_records(data, agg_var, transformation, technique):
     if agg_var is not None:
         for name, records in group_by_agg_var(data_df, agg_var).items():
             pooled_prev_results = calc_pooled_prevalence_for_subgroup(records, transformation, technique)
+            # If returned seroprevalence is 100%, re calculate using logit transformation
+            if pooled_prev_results['seroprevalence_percent'] == 100:
+                transformation = 'logit'
+                pooled_prev_results = calc_pooled_prevalence_for_subgroup(records, transformation, technique)
             if pooled_prev_results is not None:
                 meta_analysis_records[name] = pooled_prev_results
         return meta_analysis_records
     else:
         return_body = calc_pooled_prevalence_for_subgroup(data_df, transformation, technique)
+        # If returned seroprevalence is 100%, re calculate using logit transformation
+        if return_body['seroprevalence_percent'] == 100:
+            transformation = 'logit'
+            return_body = calc_pooled_prevalence_for_subgroup(data_df, transformation, technique)
         return return_body
