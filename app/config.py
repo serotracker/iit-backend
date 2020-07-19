@@ -12,7 +12,7 @@ class ApiConfig:
     AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
     AIRTABLE_REQUEST_URL = "https://api.airtable.com/v0/{}/Rapid%20Review%3A%20Estimates?".format(AIRTABLE_BASE_ID)
     AIRTABLE_REQUEST_PARAMS = {'filterByFormula': '{Visualize on SeroTracker?}=1'}
-    AIRTABLE_TIME_DIFF = os.getenv('AIRTABLE_TIME_DIFF', 0)
+    AIRTABLE_TIME_DIFF = os.getenv('AIRTABLE_TIME_DIFF', 24)
     AIRTABLE_CACHED_RESULTS_PATH = 'app/namespaces/airtable_scraper/cached_results.json'
 
     # JHU config vars
