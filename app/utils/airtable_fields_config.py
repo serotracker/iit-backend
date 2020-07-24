@@ -19,7 +19,7 @@ research_fields = ['Source Name', 'Publication Date', 'First Author Full Name', 
                    'Sensitivity Denominator', 'Specificity Denominator', 'Test Validation', 'Independent Se', 
                    'Independent Se n', 'Independent Sp', 'Independent Sp n', 'Independent Eval Link',
                    'Independent Eval Lab', 'Average age', 'Measure of age', 'Age variation', 'Age variation measure',
-                   'Number of females', 'Number of males']
+                   'Number of females', 'Number of males', 'Rapid Review: Study', 'Primary Estimate']
 
 full_airtable_fields = {'Source Name': 'SOURCE_NAME',
                         'Publication Date': 'PUB_DATE',
@@ -84,7 +84,9 @@ full_airtable_fields = {'Source Name': 'SOURCE_NAME',
                         'Age variation': 'AGE_VARIATION',
                         'Age variation measure': 'AGE_VARIATION_MEASURE',
                         'Number of females': 'NUMBER_OF_FEMALES',
-                        'Number of males': 'NUMBER_OF_MALES'}
+                        'Number of males': 'NUMBER_OF_MALES',
+                        'Rapid Review: Study': 'STUDY_NAME',
+                        'Primary Estimate': 'PRIMARY_ESTIMATE'}
 
 airtable_fields_config = {'dashboard': {k: full_airtable_fields[k] for k in dashboard_fields},
                           'research': {k: full_airtable_fields[k] for k in research_fields}}
