@@ -54,10 +54,10 @@ def back_transform_prevalence(t, n, method):
     elif method == 'double_arcsin_precise':
         if t < 0:
             return 0
-        elif t > pi / 4:
+        elif t > pi / 2:
             return 1
         else:
-            return 0.5 * (1 - sign(cos(t)) * sqrt(1 - (sin(2 * t) + (sin(2 * t) - 2 * sin(2 * t)) / n) ** 2))
+            return 0.5 * (1 - sign(cos(2 * t)) * sqrt(1 - (sin(2 * t) + (sin(2 * t) - 2 * sin(2 * t)) / n) ** 2))
 
 
 def calc_between_study_variance(records):
@@ -218,17 +218,8 @@ def get_meta_analysis_records(data, agg_var, transformation, technique):
         for name, records in group_by_agg_var(data_df, agg_var).items():
             pooled_prev_results = calc_pooled_prevalence_for_subgroup(records, transformation, technique)
             if pooled_prev_results is not None:
-                # If returned seroprevalence is 100%, re calculate using logit transformation
-                if pooled_prev_results['seroprevalence_percent'] == 100:
-                    transformation = 'logit'
-                    pooled_prev_results = calc_pooled_prevalence_for_subgroup(records, transformation, technique)
                 meta_analysis_records[name] = pooled_prev_results
         return meta_analysis_records
     else:
         return_body = calc_pooled_prevalence_for_subgroup(data_df, transformation, technique)
-        if return_body is not None:
-            # If returned seroprevalence is 100%, re calculate using logit transformation
-            if return_body['seroprevalence_percent'] == 100:
-                transformation = 'logit'
-                return_body = calc_pooled_prevalence_for_subgroup(data_df, transformation, technique)
         return return_body
