@@ -31,6 +31,7 @@ full_airtable_fields = {
     'Source Publisher': 'source_publisher',
     'One-Line Summary': 'summary',
     'Study Type': 'study_type',
+    'Grade of Estimate Scope': 'estimate_grade',
     'Study Status': 'study_status',
     'Country': 'country',
     'Lead Organization': 'lead_organization',
