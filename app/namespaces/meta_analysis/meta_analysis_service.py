@@ -54,10 +54,10 @@ def back_transform_prevalence(t, n, method):
     elif method == 'double_arcsin_precise':
         if t < 0:
             return 0
-        elif t > pi / 4:
+        elif t > pi / 2:
             return 1
         else:
-            return 0.5 * (1 - sign(cos(t)) * sqrt(1 - (sin(2 * t) + (sin(2 * t) - 2 * sin(2 * t)) / n) ** 2))
+            return 0.5 * (1 - sign(cos(2 * t)) * sqrt(1 - (sin(2 * t) + (sin(2 * t) - 2 * sin(2 * t)) / n) ** 2))
 
 
 def calc_between_study_variance(records):
