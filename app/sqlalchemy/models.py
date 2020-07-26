@@ -29,7 +29,6 @@ class AirtableSource(Base):
     specificity = Column(Float)
     include_in_n = Column(Boolean)
     denominator_value = Column(Integer)
-    numerator_value = Column(Integer)
     numerator_definition = Column(String(512))
     serum_pos_prevalence = Column(Float)
     overall_risk_of_bias = Column(String(16))

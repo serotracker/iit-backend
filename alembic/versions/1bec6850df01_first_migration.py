@@ -39,7 +39,6 @@ def upgrade():
                     Column('specificity', Float),
                     Column('include_in_n', Boolean),
                     Column('denominator_value', Integer),
-                    Column('numerator_value', Integer),
                     Column('numerator_definition', String(512)),
                     Column('serum_pos_prevalence', Float),
                     Column('overall_risk_of_bias', String(16)),

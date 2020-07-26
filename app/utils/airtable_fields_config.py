@@ -52,7 +52,7 @@ full_airtable_fields = {
     'Specificity': 'specificity',
     'Include in N?': 'include_in_n',
     'Denominator Value': 'denominator_value',
-    'Numerator Definition': 'numerator_value',
+    'Numerator Definition': 'numerator_definition',
     'Serum positive prevalence': 'serum_pos_prevalence',
     'Serum + prevalence, 95% CI Lower': 'seroprev_95_ci_lower',
     'Serum + prevalence, 95% CI Upper': 'seroprev_95_ci_upper',

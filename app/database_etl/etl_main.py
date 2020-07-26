@@ -117,12 +117,6 @@ def isotype_col(isotype_string, x):
     return False
 
 
-def modify_date_col(x):
-    # Convert to a datetime
-    new_x = datetime.strptime(x, '%Y-%m-%d') if x is not None else x
-    return new_x
-
-
 def create_airtable_source_df(original_data):
     # Length of records
     num_records = original_data.shape[0]
@@ -262,14 +256,6 @@ def main():
 
     # Create airtable source df
     airtable_source = create_airtable_source_df(data)
-    print(airtable_source.columns)
-    print(airtable_source.iloc[0])
-    # for i, r in airtable_source.iterrows():
-    #     date = r['sampling_end_date']
-    #     if date is not None and '2020' not in str(date):
-    #         print(i)
-    #         print(date)
-    # exit()
 
     # Create dictionary to store multi select tables
     multi_select_tables_dict = create_multi_select_tables(data, multi_select_cols)
