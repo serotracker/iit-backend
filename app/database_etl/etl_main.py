@@ -8,7 +8,7 @@ from time import time
 
 import pandas as pd
 from sqlalchemy import create_engine
-from app.sqlalchemy import db_session, AirtableSource, City, State, \
+from app.serotracker_sqlalchemy import db_session, AirtableSource, City, State, \
     Age, PopulationGroup, TestManufacturer, ApprovingRegulator, TestType, \
     SpecimenType, CityBridge, StateBridge, AgeBridge, PopulationGroupBridge, \
     TestManufacturerBridge, ApprovingRegulatorBridge, TestTypeBridge, SpecimenTypeBridge
