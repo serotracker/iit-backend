@@ -3,11 +3,9 @@ import subprocess
 
 from dotenv import load_dotenv
 from flask_script import Manager
-
-from app import create_app
+from app import app, db
 
 load_dotenv()
-app = create_app()
 manager = Manager(app)
 
 
