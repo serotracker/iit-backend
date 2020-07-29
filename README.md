@@ -140,6 +140,17 @@ format = %(levelname)-5.5s [%(name)s] %(message)s
 datefmt = %H:%M:%S
 ```
 
+### Run migrations
+1. In the terminal, run ```alembic upgrade head```.
+
+    This will run the migration with the most recent version code in ```alembic/versions``` and bring your database
+    to the most up-to-date state with all the necessary tables.
+
+2. Check that new tables have been created in the whitelcaw database running on your local Postgres server.
+
+3. To revert a migration, run ```alembic downgrade -1```
+
+
 ### Populate local database
 
 Run the script `python app/database_etl/etl_main.py`.
