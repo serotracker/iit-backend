@@ -23,7 +23,7 @@ def upgrade():
                     Column('source_name', String(256), nullable=True),
                     Column('publication_date', DateTime()),
                     Column('first_author', String(128)),
-                    Column('url', String(512)),
+                    Column('url', String(1024)),
                     Column('source_type', String(64)),
                     Column('source_publisher', String(256)),
                     Column('summary', String(1024)),
@@ -39,7 +39,7 @@ def upgrade():
                     Column('specificity', Float),
                     Column('include_in_n', Boolean),
                     Column('denominator_value', Integer),
-                    Column('numerator_definition', String(512)),
+                    Column('numerator_definition', String(1024)),
                     Column('serum_pos_prevalence', Float),
                     Column('overall_risk_of_bias', String(16)),
                     Column('isotype_igg', Boolean),
@@ -152,7 +152,6 @@ def upgrade():
                     Column('created_at', DateTime))
 
 
-
 def downgrade():
     # Drop all created tables
     tables = ('airtable_source', 'city', 'state', 'age', 'population_group', 'test_manufacturer', 'approving_regulator',
@@ -160,3 +159,4 @@ def downgrade():
               'test_manufacturer_bridge', 'approving_regulator_bridge', 'test_type_bridge', 'specimen_type_bridge')
     for table in tables:
         op.drop_table(table)
+
