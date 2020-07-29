@@ -21,10 +21,14 @@ Server side code for the International Immunity Tracker
 Add a `.env` file to the top level of the repository to store environment variables. This file should be formatted as follows:
 
 ```bash
-FLASK_ENV=foo
-AIRTABLE_API_KEY=bar
-AIRTABLE_BASE_ID=baz
-GMAIL_PASS=foobar
+PYTHONUNBUFFERED=1;
+FLASK_ENV=test;
+AIRTABLE_BASE_ID=airtableidaaa;
+AIRTABLE_API_KEY=keyaaaaa;
+GMAIL_PASS=password;
+DATABASE_USERNAME=username;
+DATABASE_PASSWORD=password!;
+DATABASE_NAME=database
 ```
 
 Ask someone on the Data team for the actual environment variables you'll need! 
