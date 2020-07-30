@@ -20,16 +20,16 @@ def upgrade():
     # Create airtable source table
     op.create_table('airtable_source',
                     Column('source_id', UUID(as_uuid=True), primary_key=True, nullable=False),
-                    Column('source_name', String(256), nullable=True),
+                    Column('source_name', String(), nullable=True),
                     Column('publication_date', DateTime()),
                     Column('first_author', String(128)),
-                    Column('url', String(1024)),
+                    Column('url', String()),
                     Column('source_type', String(64)),
                     Column('source_publisher', String(256)),
-                    Column('summary', String(1024)),
+                    Column('summary', String()),
                     Column('study_type', String(128)),
                     Column('study_status', String(32)),
-                    Column('country', String(32)),
+                    Column('country', String(64)),
                     Column('lead_organization', String(128)),
                     Column('sampling_start_date', DateTime),
                     Column('sampling_end_date', DateTime),
@@ -39,7 +39,7 @@ def upgrade():
                     Column('specificity', Float),
                     Column('include_in_n', Boolean),
                     Column('denominator_value', Integer),
-                    Column('numerator_definition', String(1024)),
+                    Column('numerator_definition', String()),
                     Column('serum_pos_prevalence', Float),
                     Column('overall_risk_of_bias', String(16)),
                     Column('isotype_igg', Boolean),
@@ -50,49 +50,49 @@ def upgrade():
     # Create city table
     op.create_table('city',
                     Column('city_id', UUID, primary_key=True),
-                    Column('city_name', String(64)),
+                    Column('city_name', String(128)),
                     Column('created_at', DateTime))
 
     # Create state table
     op.create_table('state',
                     Column('state_id', UUID, primary_key=True),
-                    Column('state_name', String(64)),
+                    Column('state_name', String(128)),
                     Column('created_at', DateTime))
 
     # Create age table
     op.create_table('age',
                     Column('age_id', UUID, primary_key=True),
-                    Column('age_name', String(32)),
+                    Column('age_name', String(64)),
                     Column('created_at', DateTime))
 
     # Create population_group table
     op.create_table('population_group',
                     Column('population_group_id', UUID, primary_key=True),
-                    Column('population_group_name', String(64)),
+                    Column('population_group_name', String(128)),
                     Column('created_at', DateTime))
 
     # Create test_manufacturer table
     op.create_table('test_manufacturer',
                     Column('test_manufacturer_id', UUID, primary_key=True),
-                    Column('test_manufacturer_name', String(64)),
+                    Column('test_manufacturer_name', String(128)),
                     Column('created_at', DateTime))
 
     # Create approving_regulator table
     op.create_table('approving_regulator',
                     Column('approving_regulator_id', UUID, primary_key=True),
-                    Column('approving_regulator_name', String(128)),
+                    Column('approving_regulator_name', String(256)),
                     Column('created_at', DateTime))
 
     # Create test_type table
     op.create_table('test_type',
                     Column('test_type_id', UUID, primary_key=True),
-                    Column('test_type_name', String(64)),
+                    Column('test_type_name', String(128)),
                     Column('created_at', DateTime))
 
     # Create specimen_type table
     op.create_table('specimen_type',
                     Column('specimen_type_id', UUID, primary_key=True),
-                    Column('specimen_type_name', String(32)),
+                    Column('specimen_type_name', String(64)),
                     Column('created_at', DateTime))
 
     # Create city_bridge table
