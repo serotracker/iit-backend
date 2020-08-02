@@ -62,7 +62,7 @@ def get_all_records():
         entity_names = [f"{t['entity']}_name" for t in table_infos]
 
         # Create list of fields in AirtableSource that we're interested in 
-        field_strings = ['source_name', 'country', 'denominator_value', 'overall_risk_of_bias', 'serum_pos_prevalence']
+        field_strings = ['source_name', 'country', 'denominator_value', 'overall_risk_of_bias', 'serum_pos_prevalence', 'isotype_igm', 'isotype_iga', 'isotype_igg']
         fields_list = [AirtableSource.source_id]
         for field_string in field_strings:
             fields_list.append(getattr(AirtableSource, field_string))
@@ -100,14 +100,25 @@ def get_all_records():
 
         # Reduce entities for every entity_name key that we selected
         def process_record(record_list):
+            processed_record = None
             if len(record_list) == 1:
                 record = record_list[0]
                 for entity in entity_names:
                     record[entity] = {record[entity]} if record[entity] is not None else set()
-                return record
+                processed_record = record
             else:
-                return reduce(reduce_entities, record_list)
+                processed_record = reduce(reduce_entities, record_list)
 
+            processed_record['isotypes_reported'] = set()
+            isotype_mapping = {'isotype_igm':'IGM', 'isotype_iga':'IGA', 'isotype_igg':'IGG'}
+
+            for k,v in isotype_mapping.items():
+                if processed_record[k]: 
+                    processed_record['isotypes_reported'].add(v)
+                processed_record.pop(k, None)
+
+            return processed_record
+            
         # `query_dicts` is a list of rows (represented as dicts) with unique source_id and sets of 
         # their associated entities 
         query_dicts = [process_record(list(group)) for _, group in groupby(query_dict, key=lambda x: x["source_id"])]
@@ -134,6 +145,7 @@ def get_filtered_records(filters=None):
     result = []
 
     for k,v in filters.items(): 
+        import pdb;pdb.set_trace()
         result.extend([d for d in query_dicts if d[k] in v])
 
     return result
@@ -141,9 +153,9 @@ def get_filtered_records(filters=None):
 '''
 Note: `page_index` is zero-indexed here!
 '''
-def get_paginated_records(query_dicts, page_index=0, per_page=10): 
+def get_paginated_records(query_dicts, sorting_key='source_id', page_index=0, per_page=10): 
     # Order the records first
-    sorted_records = sorted(query_dicts, key=lambda x: x['source_id'])
+    sorted_records = sorted(query_dicts, key=lambda x: x[sorting_key])
     
     start = page_index*per_page
     end = page_index*per_page + per_page
