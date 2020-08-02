@@ -129,8 +129,8 @@ def get_all_records():
 '''
 Filter are in the following format: 
 { 
-  'age_name' : [{'Youth (13-17)', 'All'}],
-  'country' : ['United States']
+  'age_name' : {'Youth (13-17)', 'All'},
+  'country' : {'United States'}
 }
 
 Output: set of records represented by dicts
@@ -144,9 +144,22 @@ def get_filtered_records(filters=None):
 
     result = []
 
+    def should_include(d, k, v): 
+        if isinstance(d[k], str) and d[k] in v:
+            return True
+        elif isinstance(d[k], set) and d[k].intersection(v): 
+            return True
+        return False
+
     for k,v in filters.items(): 
-        import pdb;pdb.set_trace()
-        result.extend([d for d in query_dicts if d[k] in v])
+        # Add records passing the first filter
+        if not result:
+            for d in query_dicts:
+                if should_include(d, k, v):
+                    result.append(d) 
+            continue
+
+        result = list(filter(lambda x: should_include(x,k,v), result))
 
     return result
 
@@ -161,11 +174,4 @@ def get_paginated_records(query_dicts, sorting_key='source_id', page_index=0, pe
     end = page_index*per_page + per_page
 
     return sorted_records[start : end]
-
-# Test
-f = {'age_name': [{'Adults (18-64)', 'All'}]}
-# f = {'age_name': [{'All'}]}
-filtered = get_filtered_records(f)
-print(filtered)
-print(get_paginated_records(filtered))
 
