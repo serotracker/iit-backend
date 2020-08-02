@@ -11,89 +11,132 @@ from functools import reduce
 engine = create_engine('postgresql://{username}:{password}@localhost/whiteclaw'.format(
     username=os.getenv('DATABASE_USERNAME'),
     password=os.getenv('DATABASE_PASSWORD')))
-with db_session(engine) as session:
-    # Get all records for now, join on all tables
-    table_infos = [
-        {
-            "bridge_table": AgeBridge,
-            "main_table": Age,
-            "entity": "age"
-        },
-        {
-            "bridge_table": CityBridge,
-            "main_table": City,
-            "entity": "city"
-        },
-        {
-            "bridge_table": StateBridge,
-            "main_table": State,
-            "entity": "state"
-        },
-        {
-            "bridge_table": PopulationGroupBridge,
-            "main_table": PopulationGroup,
-            "entity": "population_group"
-        },
-        {
-            "bridge_table": TestManufacturerBridge,
-            "main_table": TestManufacturer,
-            "entity": "test_manufacturer"
-        },
-        {
-            "bridge_table": ApprovingRegulatorBridge,
-            "main_table": ApprovingRegulator,
-            "entity": "approving_regulator"
-        },
-        {
-            "bridge_table": TestTypeBridge,
-            "main_table": TestType,
-            "entity": "test_type"
-        },
-        {
-            "bridge_table": SpecimenTypeBridge,
-            "main_table": SpecimenType,
-            "entity": "specimen_type"
-        },
-    ]
-    entity_names = [f"{t['entity']}_name" for t in table_infos]
-    field_strings = ['source_name', 'country', 'denominator_value', 'overall_risk_of_bias', 'serum_pos_prevalence']
-    fields_list = [AirtableSource.source_id]
-    for field_string in field_strings:
-        fields_list.append(getattr(AirtableSource, field_string))
-    for table_info in table_infos:
-        fields_list.append(getattr(table_info["bridge_table"], "id"))
-        fields_list.append(getattr(table_info["main_table"], f"{table_info['entity']}_name"))
-    query = session.query(*fields_list)
-    for table_info in table_infos:
-        bridge_table = table_info["bridge_table"]
-        main_table = table_info["main_table"]
-        entity = f"{table_info['entity']}_id"
-        try:
-            query = query.join(bridge_table, getattr(bridge_table, "source_id")==AirtableSource.source_id, isouter=True)\
-                .join(main_table, getattr(main_table, entity)==getattr(bridge_table, entity), isouter=True)
-        except Exception as e:
-            print(e)
-    query = query.all()
-    query_dict = [q._asdict() for q in query]
 
-    def my_reduce(a, b):
-        for entity in entity_names:
-            if isinstance(a[entity], str):
-                a[entity] = {a[entity]} if a[entity] is not None else set()
-            if b[entity] is not None:
-                a[entity].add(b[entity])
-        return a
+def get_all_records():
+    with db_session(engine) as session:
+        # Get all records for now, join on all tables
+        table_infos = [
+            {
+                "bridge_table": AgeBridge,
+                "main_table": Age,
+                "entity": "age"
+            },
+            {
+                "bridge_table": CityBridge,
+                "main_table": City,
+                "entity": "city"
+            },
+            {
+                "bridge_table": StateBridge,
+                "main_table": State,
+                "entity": "state"
+            },
+            {
+                "bridge_table": PopulationGroupBridge,
+                "main_table": PopulationGroup,
+                "entity": "population_group"
+            },
+            {
+                "bridge_table": TestManufacturerBridge,
+                "main_table": TestManufacturer,
+                "entity": "test_manufacturer"
+            },
+            {
+                "bridge_table": ApprovingRegulatorBridge,
+                "main_table": ApprovingRegulator,
+                "entity": "approving_regulator"
+            },
+            {
+                "bridge_table": TestTypeBridge,
+                "main_table": TestType,
+                "entity": "test_type"
+            },
+            {
+                "bridge_table": SpecimenTypeBridge,
+                "main_table": SpecimenType,
+                "entity": "specimen_type"
+            },
+        ]
 
-    def process_record(record_list):
-        if len(record_list) == 1:
-            record = record_list[0]
+        # Create list of entity_name keys such as "age_name" which would be "Youth (13-17)"
+        entity_names = [f"{t['entity']}_name" for t in table_infos]
+
+        # Create list of fields in AirtableSource that we're interested in 
+        field_strings = ['source_name', 'country', 'denominator_value', 'overall_risk_of_bias', 'serum_pos_prevalence']
+        fields_list = [AirtableSource.source_id]
+        for field_string in field_strings:
+            fields_list.append(getattr(AirtableSource, field_string))
+
+        for table_info in table_infos:
+            fields_list.append(getattr(table_info["bridge_table"], "id"))
+            fields_list.append(getattr(table_info["main_table"], f"{table_info['entity']}_name"))
+
+        query = session.query(*fields_list)
+
+        # There are entries that have multiple field values for a certain entity
+        # e.g., an entry may be associated with two different age groups, "Youth (13-17)" and "Children (0-12)"
+        # Gather up all of these rows
+        for table_info in table_infos:
+            bridge_table = table_info["bridge_table"]
+            main_table = table_info["main_table"]
+            entity = f"{table_info['entity']}_id"
+            try:
+                query = query.join(bridge_table, getattr(bridge_table, "source_id")==AirtableSource.source_id, isouter=True)\
+                    .join(main_table, getattr(main_table, entity)==getattr(bridge_table, entity), isouter=True)
+            except Exception as e:
+                print(e)
+        query = query.all()
+        query_dict = [q._asdict() for q in query]
+
+        # Merge entities of the same entry into a single set of entity values
+        # e.g., set("Youth (13-17)", "Children (0-12)")
+        def reduce_entities(a, b):
             for entity in entity_names:
-                record[entity] = {record[entity]} if record[entity] is not None else set()
-            return record
-        else:
-            return reduce(my_reduce, record_list)
+                if isinstance(a[entity], str):
+                    a[entity] = {a[entity]} if a[entity] is not None else set()
+                if b[entity] is not None:
+                    a[entity].add(b[entity])
+            return a
 
-    query_dict = [process_record(list(group)) for _, group in groupby(query_dict, key=lambda x: x["source_id"])]
-    print(len(query_dict))
+        # Reduce entities for every entity_name key that we selected
+        def process_record(record_list):
+            if len(record_list) == 1:
+                record = record_list[0]
+                for entity in entity_names:
+                    record[entity] = {record[entity]} if record[entity] is not None else set()
+                return record
+            else:
+                return reduce(reduce_entities, record_list)
 
-    session.commit()
+        # `query_dicts` is a list of rows (represented as dicts) with unique source_id and sets of 
+        # their associated entities 
+        query_dicts = [process_record(list(group)) for _, group in groupby(query_dict, key=lambda x: x["source_id"])]
+
+        session.commit()
+        return query_dicts
+
+# Filter are in the following format: 
+# { 
+#   'age_name' : [{'Youth (13-17)', 'All'}],
+#   'country' : ['United States']
+# }
+# 
+# Output: set of records represented by dicts
+def get_filtered_records(filters=None): 
+    query_dicts = get_all_records()
+
+    # Return all records if no filters are passed in
+    if not filters: 
+        return query_dicts
+
+    result = []
+
+    for k,v in filters.items(): 
+        result.extend([d for d in query_dicts if d[k] in v])
+
+    return result
+
+# Test
+f = {'age_name': [{'Adults (18-64)', 'All'}]}
+print(get_filtered_records(f))
+
