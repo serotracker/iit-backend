@@ -115,13 +115,15 @@ def get_all_records():
         session.commit()
         return query_dicts
 
-# Filter are in the following format: 
-# { 
-#   'age_name' : [{'Youth (13-17)', 'All'}],
-#   'country' : ['United States']
-# }
-# 
-# Output: set of records represented by dicts
+'''
+Filter are in the following format: 
+{ 
+  'age_name' : [{'Youth (13-17)', 'All'}],
+  'country' : ['United States']
+}
+
+Output: set of records represented by dicts
+'''
 def get_filtered_records(filters=None): 
     query_dicts = get_all_records()
 
@@ -136,7 +138,22 @@ def get_filtered_records(filters=None):
 
     return result
 
+'''
+Note: `page_index` is zero-indexed here!
+'''
+def get_paginated_records(query_dicts, page_index=0, per_page=10): 
+    # Order the records first
+    sorted_records = sorted(query_dicts, key=lambda x: x['source_id'])
+    
+    start = page_index*per_page
+    end = page_index*per_page + per_page
+
+    return sorted_records[start : end]
+
 # Test
 f = {'age_name': [{'Adults (18-64)', 'All'}]}
-print(get_filtered_records(f))
+# f = {'age_name': [{'All'}]}
+filtered = get_filtered_records(f)
+print(filtered)
+print(get_paginated_records(filtered))
 
