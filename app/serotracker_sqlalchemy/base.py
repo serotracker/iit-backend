@@ -17,3 +17,4 @@ def db_session(engine):
         session.rollback()
     finally:
         session.close()
+
