@@ -106,7 +106,6 @@ def get_all_records(visualize_sero_filter, airtable_fields_json):
 def get_country_seroprev_summaries(records):
     # Turn records into df and remove list from country
     records_df = pd.DataFrame(records)
-    records_df['country'] = records_df['country'].apply(lambda x: x[0])
 
     # Get unique list of countries
     countries = records_df.country.unique()
