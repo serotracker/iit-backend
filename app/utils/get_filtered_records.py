@@ -93,9 +93,9 @@ def get_all_records():
         def reduce_entities(a, b):
             for entity in entity_names:
                 if isinstance(a[entity], str):
-                    a[entity] = {a[entity]} if a[entity] is not None else set()
+                    a[entity] = [a[entity]] if a[entity] is not None else []
                 if b[entity] is not None:
-                    a[entity].add(b[entity])
+                    a[entity].append(b[entity])
             return a
 
         # Reduce entities for every entity_name key that we selected
@@ -104,22 +104,22 @@ def get_all_records():
             if len(record_list) == 1:
                 record = record_list[0]
                 for entity in entity_names:
-                    record[entity] = {record[entity]} if record[entity] is not None else set()
+                    record[entity] = [record[entity]] if record[entity] is not None else []
                 processed_record = record
             else:
                 processed_record = reduce(reduce_entities, record_list)
 
-            processed_record['isotypes_reported'] = set()
+            processed_record['isotypes_reported'] = []
             isotype_mapping = {'isotype_igm':'IGM', 'isotype_iga':'IGA', 'isotype_igg':'IGG'}
 
             for k,v in isotype_mapping.items():
                 if processed_record[k]: 
-                    processed_record['isotypes_reported'].add(v)
+                    processed_record['isotypes_reported'].append(v)
                 processed_record.pop(k, None)
 
             return processed_record
             
-        # `query_dicts` is a list of rows (represented as dicts) with unique source_id and sets of 
+        # `query_dicts` is a list of rows (represented as dicts) with unique source_id and lists of 
         # their associated entities 
         query_dicts = [process_record(list(group)) for _, group in groupby(query_dict, key=lambda x: x["source_id"])]
 
@@ -147,7 +147,7 @@ def get_filtered_records(filters=None):
     def should_include(d, k, v): 
         if isinstance(d[k], str) and d[k] in v:
             return True
-        elif isinstance(d[k], set) and d[k].intersection(v): 
+        elif isinstance(d[k], list) and set(d[k]).intersection(set(v)): 
             return True
         return False
 
@@ -167,6 +167,19 @@ def get_filtered_records(filters=None):
 Note: `page_index` is zero-indexed here!
 '''
 def get_paginated_records(query_dicts, sorting_key='source_id', page_index=0, per_page=10): 
+    if not sorting_key:
+        sorting_key = 'source_id'
+
+    if not page_index: 
+        page_index = 0
+    else: 
+        page_index = int(page_index)
+
+    if not per_page: 
+        per_page = 10
+    else: 
+        per_page = int(per_page)
+
     # Order the records first
     sorted_records = sorted(query_dicts, key=lambda x: x[sorting_key])
     
