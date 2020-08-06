@@ -140,35 +140,37 @@ Output: set of records represented by dicts
 def get_filtered_records(filters=None, start_date=None, end_date=None):
     query_dicts = get_all_records()
 
-    # Return all records if no filters are passed in
-    if not filters: 
-        return query_dicts
-
     result = []
 
-    def should_include(d, k, v):
-        if isinstance(d[k], str) and d[k] in v:
-            return True
-        elif isinstance(d[k], list) and set(d[k]).intersection(set(v)): 
-            return True
-        return False
+    # Return all records if no filters are passed in
+    if filters: 
+        def should_include(d, k, v):
+            if isinstance(d[k], str) and d[k] in v:
+                return True
+            elif isinstance(d[k], list) and set(d[k]).intersection(set(v)): 
+                return True
+            return False
 
-    for k,v in filters.items(): 
-        # Add records passing the first filter
-        if not result:
-            for d in query_dicts:
-                if should_include(d, k, v):
-                    result.append(d) 
-            continue
+        for k,v in filters.items(): 
+            # Add records passing the first filter
+            if not result:
+                for d in query_dicts:
+                    if should_include(d, k, v):
+                        result.append(d) 
+                continue
 
-        result = list(filter(lambda x: should_include(x,k,v), result))
+            result = list(filter(lambda x: should_include(x,k,v), result))
+
+    else:
+        result = query_dicts
 
     def date_filter(record, start_date=None, end_date=None):
         status = True
+
         if start_date is not None:
-            status = True if start_date >= record["sampling_end_date"] else False
+            status = status and record["sampling_end_date"] and start_date <= record["sampling_end_date"]
         if end_date is not None:
-            status = True if end_date <= record["sampling_end_date"] else False
+            status = status and record["sampling_end_date"] and end_date >= record["sampling_end_date"]
         return status
 
     result = list(filter(lambda x: date_filter(x,start_date=start_date,end_date=end_date), result))
@@ -198,7 +200,7 @@ def get_paginated_records(query_dicts, sorting_key='source_id', page_index=0, pe
         reverse = bool(reverse)
 
     # Order the records first
-    sorted_records = sorted(query_dicts, key=lambda x: x[sorting_key], reverse=reverse)
+    sorted_records = sorted(query_dicts, key=lambda x: (x[sorting_key] is None, x[sorting_key]), reverse=reverse)
     
     start = page_index*per_page
     end = page_index*per_page + per_page
