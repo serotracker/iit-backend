@@ -11,7 +11,7 @@ airtable_scraper_ns = Namespace('airtable_scraper', description='An endpoint for
 @airtable_scraper_ns.route('/record_details/<string:source_id>', methods=['GET'])
 @airtable_scraper_ns.param('source_id', 'The primary key of the Airtable Source table that identifies a record.')
 class AirtableScraperRecordDetails(Resource):
-    @airtable_scraper_ns.doc('An endpoint for getting the details of a recording based on source id.')
+    @airtable_scraper_ns.doc('An endpoint for getting the details of a record based on source id.')
     def get(self, source_id):
         # Validate input
         payload, status_code = validate_request_input_against_schema({'source_id': source_id}, RecordDetailsSchema())
