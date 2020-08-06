@@ -166,7 +166,7 @@ def get_filtered_records(filters=None):
 '''
 Note: `page_index` is zero-indexed here!
 '''
-def get_paginated_records(query_dicts, sorting_key='source_id', page_index=0, per_page=10): 
+def get_paginated_records(query_dicts, sorting_key='source_id', page_index=0, per_page=10, reverse=False): 
     if not sorting_key:
         sorting_key = 'source_id'
 
@@ -180,8 +180,13 @@ def get_paginated_records(query_dicts, sorting_key='source_id', page_index=0, pe
     else: 
         per_page = int(per_page)
 
+    if not reverse:
+        reverse = False
+    else:
+        reverse = bool(reverse)
+
     # Order the records first
-    sorted_records = sorted(query_dicts, key=lambda x: x[sorting_key])
+    sorted_records = sorted(query_dicts, key=lambda x: x[sorting_key], reverse=reverse)
     
     start = page_index*per_page
     end = page_index*per_page + per_page

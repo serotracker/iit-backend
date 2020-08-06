@@ -25,9 +25,10 @@ class Records(Resource):
         sorting_key = data.get('sorting_key')
         page_index = data.get('page_index')
         per_page = data.get('per_page')
+        reverse = data.get('reverse')
 
         filtered_records = get_filtered_records(filters)
-        result = get_paginated_records(filtered_records, sorting_key, page_index, per_page)
+        result = get_paginated_records(filtered_records, sorting_key, page_index, per_page, reverse)
 
         return jsonify(result)
 
