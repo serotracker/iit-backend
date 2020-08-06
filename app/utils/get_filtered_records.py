@@ -62,7 +62,9 @@ def get_all_records():
         entity_names = [f"{t['entity']}_name" for t in table_infos]
 
         # Create list of fields in AirtableSource that we're interested in 
-        field_strings = ['source_name', 'source_type', 'study_status', 'country', 'denominator_value', 'overall_risk_of_bias', 'serum_pos_prevalence', 'isotype_igm', 'isotype_iga', 'isotype_igg', "sex"]
+        field_strings = ['source_name', 'source_type', 'study_status', 'country', 'denominator_value',
+                         'overall_risk_of_bias', 'serum_pos_prevalence', 'isotype_igm', 'isotype_iga',
+                         'isotype_igg', "sex", "sampling_end_date"]
         fields_list = [AirtableSource.source_id]
         for field_string in field_strings:
             fields_list.append(getattr(AirtableSource, field_string))
@@ -135,7 +137,7 @@ Filter are in the following format:
 
 Output: set of records represented by dicts
 '''
-def get_filtered_records(filters=None): 
+def get_filtered_records(filters=None, start_date=None, end_date=None):
     query_dicts = get_all_records()
 
     # Return all records if no filters are passed in
@@ -144,7 +146,7 @@ def get_filtered_records(filters=None):
 
     result = []
 
-    def should_include(d, k, v): 
+    def should_include(d, k, v):
         if isinstance(d[k], str) and d[k] in v:
             return True
         elif isinstance(d[k], list) and set(d[k]).intersection(set(v)): 
@@ -160,6 +162,16 @@ def get_filtered_records(filters=None):
             continue
 
         result = list(filter(lambda x: should_include(x,k,v), result))
+
+    def date_filter(record, start_date=None, end_date=None):
+        status = True
+        if start_date is not None:
+            status = True if start_date >= record["sampling_end_date"] else False
+        if end_date is not None:
+            status = True if end_date <= record["sampling_end_date"] else False
+        return status
+
+    result = list(filter(lambda x: date_filter(x,start_date=start_date,end_date=end_date), result))
 
     return result
 

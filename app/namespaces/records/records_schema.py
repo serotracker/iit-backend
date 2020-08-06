@@ -13,3 +13,6 @@ class RecordsSchema(Schema):
                                                     "sex", "age_name", "isotypes_reported", "test_type_name", "specimen_type_name"])),
         values=fields.List(fields.String())
     )
+    # Date fields should be supplied as unix timestamp
+    start_date = fields.Integer()
+    end_date = fields.Integer()

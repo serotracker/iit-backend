@@ -16,10 +16,7 @@ records_ns =\
 class Records(Resource):
     @records_ns.doc('An endpoint for getting all records from database')
     def post(self): 
-        data = request.form
-
-        # Make it not immutable so that we can validate
-        data = dict(data)
+        data = request.get_json()
 
         # All of these params can be empty, in which case, our utility functions will just return all records
         filters = data.get('filters')
@@ -38,7 +35,14 @@ class Records(Resource):
         per_page = data.get('per_page')
         reverse = data.get('reverse')
 
-        filtered_records = get_filtered_records(filters)
+        start_date = data.get('start_date')
+        if start_date:
+            start_date = datetime.utcfromtimestamp(start_date)
+        end_date = data.get('end_date')
+        if end_date:
+            end_date = datetime.utcfromtimestamp(end_date)
+
+        filtered_records = get_filtered_records(filters, start_date=start_date, end_date=end_date)
         result = get_paginated_records(filtered_records, sorting_key, page_index, per_page, reverse)
 
         return jsonify(result)
