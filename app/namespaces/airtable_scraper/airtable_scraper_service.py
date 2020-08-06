@@ -11,9 +11,10 @@ from sqlalchemy import create_engine, case, and_
 
 def _get_engine():
     # Create engine to connect to whiteclaw database
-    engine = create_engine('postgresql://{username}:{password}@localhost/whiteclaw'.format(
+    engine = create_engine('postgresql://{username}:{password}@{host}/whiteclaw'.format(
         username=os.getenv('DATABASE_USERNAME'),
-        password=os.getenv('DATABASE_PASSWORD')))
+        password=os.getenv('DATABASE_PASSWORD'),
+        host=os.getenv('DATABASE_HOST')))
     return engine
 
 
@@ -40,7 +41,9 @@ def _get_isotype_col_expression():
                      AirtableSource.isotype_iga == 'true'), 'IgA'),
                     (and_(AirtableSource.isotype_igg == 'false',
                      AirtableSource.isotype_igm == 'true',
-                     AirtableSource.isotype_iga == 'false'), 'IgM')], else_='').label("isotypes")
+                     AirtableSource.isotype_iga == 'false'), 'IgM')
+                ],
+                else_='').label("isotypes")
     return expression
 
 
