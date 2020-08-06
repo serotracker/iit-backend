@@ -62,7 +62,7 @@ def get_all_records():
         entity_names = [f"{t['entity']}_name" for t in table_infos]
 
         # Create list of fields in AirtableSource that we're interested in 
-        field_strings = ['source_name', 'country', 'denominator_value', 'overall_risk_of_bias', 'serum_pos_prevalence', 'isotype_igm', 'isotype_iga', 'isotype_igg']
+        field_strings = ['source_name', 'source_type', 'study_status', 'country', 'denominator_value', 'overall_risk_of_bias', 'serum_pos_prevalence', 'isotype_igm', 'isotype_iga', 'isotype_igg', "sex"]
         fields_list = [AirtableSource.source_id]
         for field_string in field_strings:
             fields_list.append(getattr(AirtableSource, field_string))
@@ -94,7 +94,7 @@ def get_all_records():
             for entity in entity_names:
                 if isinstance(a[entity], str):
                     a[entity] = [a[entity]] if a[entity] is not None else []
-                if b[entity] is not None:
+                if b[entity] is not None and b[entity] not in a[entity]:
                     a[entity].append(b[entity])
             return a
 
