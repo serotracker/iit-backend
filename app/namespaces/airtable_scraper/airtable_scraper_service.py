@@ -114,6 +114,7 @@ def get_country_seroprev_summaries(records):
     # For each country, create a payload with all the seroprev summary info
     for country in countries:
         country_seroprev_summary_dict = {}
+        country_seroprev_summary_dict['name'] = country
         records_for_country = records_df[records_df['country'] == country]
 
         # Get total number of seroprev estimates in country
@@ -143,6 +144,6 @@ def get_country_seroprev_summaries(records):
                 estimate_grade_dict['max_estimate'] = records_for_grade.serum_pos_prevalence.max()
             grades_seroprev_summaries_dict[grade] = estimate_grade_dict
         country_seroprev_summary_dict['seroprevalence_estimate_summary'] = grades_seroprev_summaries_dict
-        study_counts_list.append({country: country_seroprev_summary_dict})
+        study_counts_list.append(country_seroprev_summary_dict)
     return study_counts_list
 
