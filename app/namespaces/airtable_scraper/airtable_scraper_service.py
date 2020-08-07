@@ -114,7 +114,7 @@ def get_country_seroprev_summaries(records):
     # For each country, create a payload with all the seroprev summary info
     for country in countries:
         country_seroprev_summary_dict = {}
-        country_seroprev_summary_dict['name'] = country
+        country_seroprev_summary_dict['country'] = country
         records_for_country = records_df[records_df['country'] == country]
 
         # Get total number of seroprev estimates in country
