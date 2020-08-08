@@ -76,9 +76,12 @@ def get_valid_filtered_records(records, transformation):
     # Remove records based on criteria for prevalence and denominator fields
     filtered_records = records[(records['SERUM_POS_PREVALENCE'].notna()) &
                                (records['DENOMINATOR'].notna()) &
-                               (records['DENOMINATOR'] >= app.config['MIN_DENOMINATOR']) &
                                (records[
                                     'SERUM_POS_PREVALENCE'] != 0 if transformation in SP_ZERO_BLACKLIST else True)]
+
+    # If at least one record meets min denom criteria, filter out the rest that do not
+    if (records['DENOMINATOR'] >= app.config['MIN_DENOMINATOR']).any():
+        filtered_records = records[records['DENOMINATOR'] >= app.config['MIN_DENOMINATOR']]
     return filtered_records
 
 
