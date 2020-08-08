@@ -8,7 +8,7 @@ def test_airtable_fields_config():
 
 def test_get_airtable_records(client):
     # Make request and get response
-    response = client.get('airtable_scraper/records')
+    response = client.get('estimates_provider/records')
     data = response.get_json()
     assert type(data) is dict
     assert response.status_code == 200
@@ -27,7 +27,7 @@ def test_get_airtable_records(client):
 
 def test_get_airtable_records_correct_config(client):
     # Make request and check response has successful airtable request status code
-    response = client.get('airtable_scraper/records')
+    response = client.get('estimates_provider/records')
     data = response.get_json()
     airtable_request_status_code = data['airtable_request_status_code']
     assert airtable_request_status_code == 200

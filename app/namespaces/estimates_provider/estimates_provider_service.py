@@ -3,9 +3,7 @@ import os
 import pandas as pd
 import numpy
 
-from app.serotracker_sqlalchemy import db_session, AirtableSource, Age, PopulationGroup, TestManufacturer, \
-    ApprovingRegulator, TestType, AgeBridge, PopulationGroupBridge, \
-    TestManufacturerBridge, ApprovingRegulatorBridge, TestTypeBridge
+from app.serotracker_sqlalchemy import db_session, AirtableSource, db_model_config
 from sqlalchemy import create_engine, case, and_
 
 
@@ -49,8 +47,7 @@ def _get_isotype_col_expression():
 
 def _get_parsed_record(results):
     # Store columns that are multi select and that need to be converted to list
-    multi_select_cols = ['age_name', 'population_group_name', 'test_manufacturer_name',
-                         'approving_regulator_name', 'test_type_name']
+    multi_select_cols = db_model_config['multi_select_columns']
     results_df = pd.DataFrame(results)
 
     # Create one dictionary of record details to return
@@ -111,33 +108,7 @@ def get_record_details(source_id):
                 fields_list.append(getattr(AirtableSource, col))
 
             # Store info about supplementary tables to join to airtable source
-            table_infos = [
-                {
-                    "bridge_table": AgeBridge,
-                    "main_table": Age,
-                    "entity": "age"
-                },
-                {
-                    "bridge_table": PopulationGroupBridge,
-                    "main_table": PopulationGroup,
-                    "entity": "population_group"
-                },
-                {
-                    "bridge_table": TestManufacturerBridge,
-                    "main_table": TestManufacturer,
-                    "entity": "test_manufacturer"
-                },
-                {
-                    "bridge_table": ApprovingRegulatorBridge,
-                    "main_table": ApprovingRegulator,
-                    "entity": "approving_regulator"
-                },
-                {
-                    "bridge_table": TestTypeBridge,
-                    "main_table": TestType,
-                    "entity": "test_type"
-                }
-            ]
+            table_infos = db_model_config['supplementary_table_info']
 
             # Add columns from supplementary tables and add isotype col expression
             for sup_table in table_infos:
@@ -160,8 +131,8 @@ def get_record_details(source_id):
 
             # If multiple records are returned, parse results to return one record
             if len(result) > 1:
-                record = _get_parsed_record(result)
+                result = _get_parsed_record(result)
         except Exception as e:
             print(e)
-    return record
+    return result
 

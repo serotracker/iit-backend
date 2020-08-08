@@ -4,7 +4,7 @@ import os
 class ApiConfig:
     DEBUG = True
     FLASK_DEBUG = True
-    APP_NAMESPACES = os.getenv('APP_NAMESPACES', ['healthcheck', 'airtable_scraper',
+    APP_NAMESPACES = os.getenv('APP_NAMESPACES', ['healthcheck', 'estimates_provider',
                                                   'cases_count_scraper', 'meta_analysis'])
     # Airtable config vars
     AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
@@ -12,7 +12,7 @@ class ApiConfig:
     AIRTABLE_REQUEST_URL = "https://api.airtable.com/v0/{}/Rapid%20Review%3A%20Estimates?".format(AIRTABLE_BASE_ID)
     AIRTABLE_REQUEST_PARAMS = {'filterByFormula': '{Visualize on SeroTracker?}=1'}
     AIRTABLE_TIME_DIFF = os.getenv('AIRTABLE_TIME_DIFF', 24)
-    AIRTABLE_CACHED_RESULTS_PATH = 'app/namespaces/airtable_scraper/cached_results.json'
+    AIRTABLE_CACHED_RESULTS_PATH = 'app/namespaces/estimates_provider/cached_results.json'
 
     # JHU config vars
     JHU_REQUEST_URL = "https://api.covid19api.com/summary"
