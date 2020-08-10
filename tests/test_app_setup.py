@@ -8,7 +8,7 @@ def test_flask_environment_variable():
 
 def test_app_namespaces(app):
     app_namespaces = app.config['APP_NAMESPACES']
-    namespace_options = ['healthcheck', 'estimates_provider', 'cases_count_scraper', 'meta_analysis']
+    namespace_options = ['healthcheck', 'data_provider', 'cases_count_scraper', 'meta_analysis']
     for namespace in app_namespaces:
         assert namespace in namespace_options
 

@@ -13,6 +13,7 @@ engine = create_engine('postgresql://{username}:{password}@{host}/whiteclaw'.for
     password=os.getenv('DATABASE_PASSWORD'),
     host=os.getenv('DATABASE_HOST')))
 
+
 def get_all_records():
     with db_session(engine) as session:
         # Get all records for now, join on all tables
@@ -131,6 +132,7 @@ def get_all_records():
         session.commit()
         return query_dicts
 
+
 '''
 Filter are in the following format: 
 { 
@@ -140,6 +142,8 @@ Filter are in the following format:
 
 Output: set of records represented by dicts
 '''
+
+
 def get_filtered_records(filters=None, start_date=None, end_date=None):
     query_dicts = get_all_records()
 
@@ -180,9 +184,12 @@ def get_filtered_records(filters=None, start_date=None, end_date=None):
 
     return result
 
+
 '''
 Note: `page_index` is zero-indexed here!
 '''
+
+
 def get_paginated_records(query_dicts, sorting_key='source_id', page_index=0, per_page=10, reverse=False): 
     sorting_key = sorting_key or 'source_id'
     page_index = page_index or 0

@@ -16,4 +16,8 @@ class RecordsSchema(Schema):
     # Date fields should be supplied as unix timestamp
     start_date = fields.Integer()
     end_date = fields.Integer()
-    
+
+
+class RecordDetailsSchema(Schema):
+    source_id = fields.UUID(required=True)
+
