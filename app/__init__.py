@@ -6,7 +6,7 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 
 from .config import config_by_name
-from .namespaces import healthcheck_ns, airtable_scraper_ns, cases_count_scraper_ns, meta_analysis_ns, records_ns
+from .namespaces import healthcheck_ns, data_provider_ns, cases_count_scraper_ns, meta_analysis_ns
 from .utils import init_namespace
 
 
