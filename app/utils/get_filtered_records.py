@@ -146,6 +146,8 @@ Output: set of records represented by dicts
 
 def get_filtered_records(filters=None, start_date=None, end_date=None):
     query_dicts = get_all_records()
+    if query_dicts == None or len(query_dicts) == 0:
+        return []
 
     result = []
 
