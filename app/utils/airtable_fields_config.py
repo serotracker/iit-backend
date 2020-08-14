@@ -4,7 +4,7 @@ dashboard_fields = ['Source Name', 'Publication Date', 'First Author Full Name',
                     'Sample Frame (sex)', 'Sample Frame (age)', 'Sample Frame (groups of interest)', 'Sampling Method',
                     'Test Manufacturer', 'Approving Regulator', 'Test Type', 'Specimen Type', 'Isotype(s) Reported',
                     'Sensitivity', 'Specificity', 'Include in N?', 'Denominator Value', 'Numerator Definition',
-                    'Serum positive prevalence', 'Overall Risk of Bias (JBI)']
+                    'Serum positive prevalence', 'Overall Risk of Bias (JBI)', 'Grade of Estimate Scope']
 
 research_fields = ['Source Name', 'Publication Date', 'First Author Full Name', 'URL', 'Source Type',
                    'Source Publisher', 'One-Line Summary', 'Study Type', 'Study Status', 'Country',
