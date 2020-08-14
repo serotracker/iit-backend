@@ -35,6 +35,7 @@ class AirtableSource(Base):
     isotype_igg = Column(Boolean)
     isotype_igm = Column(Boolean)
     isotype_iga = Column(Boolean)
+    estimate_grade = Column(String(32))
     created_at = Column(DateTime)
 
 
