@@ -10,7 +10,8 @@ class RecordsSchema(Schema):
     filters = fields.Dict(
         keys=fields.String(validate=validate.OneOf(["country", "source_type", "overall_risk_of_bias",
                                                     "study_status", "source_name", "population_group_name",
-                                                    "sex", "age_name", "isotypes_reported", "test_type_name", "specimen_type_name"])),
+                                                    "sex", "age_name", "isotypes_reported", "test_type_name",
+                                                    "specimen_type_name", "estimate_grade"])),
         values=fields.List(fields.String())
     )
     # Date fields should be supplied as unix timestamp
