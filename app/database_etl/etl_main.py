@@ -241,17 +241,17 @@ def main():
     json = get_all_records()
     data = pd.DataFrame(json)
 
-    # List of columns that are single select (cannot have multiple values)
-    single_select_cols = ['source_name', 'publication_date', 'first_author', 'url', 'source_type', 'source_publisher',
-                          'summary', 'study_type', 'study_status', 'country', 'lead_organization',
-                          'overall_risk_of_bias']
+    # List of columns that are lookup fields and therefore only have one element in the list
+    single_element_list_cols = ['source_name', 'publication_date', 'first_author', 'url', 'source_type',
+                                'source_publisher', 'summary', 'study_type', 'study_status', 'country',
+                                'lead_organization', 'overall_risk_of_bias']
 
     # List of columns that are multi select (can have multiple values)
     multi_select_cols = ['city', 'state', 'age', 'population_group', 'test_manufacturer', 'approving_regulator',
                          'test_type', 'specimen_type']
 
     # Remove lists from single select columns
-    for col in single_select_cols:
+    for col in single_element_list_cols:
         data[col] = data[col].apply(lambda x: x[0] if x is not None else x)
 
     # Create airtable source df
