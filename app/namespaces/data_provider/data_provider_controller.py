@@ -20,12 +20,12 @@ class Records(Resource):
         return jsonify(result)
 
     def post(self):
+        # Convert input payload to json and throw error if it doesn't exist
         data = request.get_json()
+        if not data:
+            return {"message": "No input payload provided"}, 400
         # All of these params can be empty, in which case, our utility functions will just return all records
         filters = data.get('filters')
-        if filters:
-            filters = json.loads(filters)
-            data["filters"] = filters
 
         # Validate input payload
         payload, status_code = validate_request_input_against_schema(data, RecordsSchema())
