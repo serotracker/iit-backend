@@ -63,7 +63,6 @@ def get_all_records():
 
         # Reduce entities for every entity_name key that we selected
         def process_record(record_list):
-            processed_record = None
             if len(record_list) == 1:
                 record = record_list[0]
                 for entity in entity_names:
