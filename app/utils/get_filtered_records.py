@@ -79,8 +79,9 @@ def get_all_records(columns=None):
         def process_record(record_list):
             if len(record_list) == 1:
                 record = record_list[0]
-                for entity in entity_names:
-                    record[entity] = [record[entity]] if record[entity] is not None else []
+                if entity_names:
+                    for entity in entity_names:
+                        record[entity] = [record[entity]] if record[entity] is not None else []
                 processed_record = record
             else:
                 processed_record = reduce(reduce_entities, record_list)
@@ -89,7 +90,7 @@ def get_all_records(columns=None):
             isotype_mapping = {'isotype_igm': 'IgM', 'isotype_iga': 'IgA', 'isotype_igg': 'IgG'}
 
             for k, v in isotype_mapping.items():
-                if processed_record[k]:
+                if k in processed_record.keys() and processed_record[k]:
                     processed_record['isotypes_reported'].append(v)
                 processed_record.pop(k, None)
             return processed_record
