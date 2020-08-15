@@ -15,8 +15,17 @@ data_provider_ns = Namespace('data_provider', description='Endpoints for getting
 class Records(Resource):
     @data_provider_ns.doc('An endpoint for getting all records from database with or without filters.')
     def get(self):
-        all_records = get_filtered_records(filters=None, start_date=None, end_date=None)
-        result = get_paginated_records(all_records)
+        # Parse pagination request args if they are present
+        sorting_key = request.args.get('sorting_key', None, type=str)
+        reverse = request.args.get('reverse', None, type=bool)
+        page_index = request.args.get('page_index', None, type=int)
+        per_page = request.args.get('per_page', None, type=int)
+
+        result = get_filtered_records(filters=None, start_date=None, end_date=None)
+
+        # Only paginate if all the pagination parameters have been specified
+        if page_index is not None and per_page is not None and sorting_key is not None and reverse is not None:
+            result = get_paginated_records(result, sorting_key, page_index, per_page, reverse)
         return jsonify(result)
 
     def post(self):
