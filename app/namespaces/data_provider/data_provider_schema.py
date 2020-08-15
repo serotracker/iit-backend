@@ -14,6 +14,7 @@ class RecordsSchema(Schema):
                                                     "specimen_type_name", "estimate_grade"])),
         values=fields.List(fields.String())
     )
+    columns = fields.List(fields.String())
     # Date fields should be supplied as unix timestamp
     start_date = fields.Integer()
     end_date = fields.Integer()

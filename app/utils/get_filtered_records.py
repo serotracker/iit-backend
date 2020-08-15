@@ -12,24 +12,34 @@ engine = create_engine('postgresql://{username}:{password}@{host}/whiteclaw'.for
     host=os.getenv('DATABASE_HOST')))
 
 
-def get_all_records():
+def get_all_records(columns=None):
     with db_session(engine) as session:
         # Get all records for now, join on all tables
         table_infos = db_model_config['supplementary_table_info']
 
         # Create list of entity_name keys such as "age_name" which would be "Youth (13-17)"
-        entity_names = [f"{t['entity']}_name" for t in table_infos]
+        entity_names = [f"{t['entity']}_name" for t in table_infos if (columns is None or t['entity'] in columns)]
 
-        # Create list of fields in AirtableSource that we're interested in 
+        # Create list of fields in AirtableSource to query unless the specific columns are specified
         field_strings = ['source_name', 'source_type', 'study_status', 'country', 'denominator_value',
                          'overall_risk_of_bias', 'serum_pos_prevalence', 'isotype_igm', 'isotype_iga',
                          'isotype_igg', 'sex', 'sampling_end_date', 'estimate_grade']
+
+        # If columns are specified, just take the field strings from the Airtable Source table that are in columns
+        if columns is not None:
+            field_strings = [i for i in field_strings if i in columns or (any("isotype" in s for s in columns)
+                                                                          and "isotype" in i)]
         fields_list = [AirtableSource.source_id]
         for field_string in field_strings:
             fields_list.append(getattr(AirtableSource, field_string))
 
         for table_info in table_infos:
-            fields_list.append(getattr(table_info["main_table"], f"{table_info['entity']}_name"))
+            # If columns are specified, only table bridge table fields in the columns list
+            if columns is not None:
+                if table_info['entity'] in columns:
+                    fields_list.append(getattr(table_info["main_table"], f"{table_info['entity']}_name"))
+            else:
+                fields_list.append(getattr(table_info["main_table"], f"{table_info['entity']}_name"))
 
         query = session.query(*fields_list)
 
@@ -37,6 +47,10 @@ def get_all_records():
         # e.g., an entry may be associated with two different age groups, "Youth (13-17)" and "Children (0-12)"
         # Gather up all of these rows
         for table_info in table_infos:
+            # If columns are specified, only join bridge tables with linking fields in the columns list
+            if columns is not None:
+                if table_info['entity'] not in columns:
+                    continue
             bridge_table = table_info["bridge_table"]
             main_table = table_info["main_table"]
             entity = f"{table_info['entity']}_id"
@@ -78,14 +92,11 @@ def get_all_records():
                 if processed_record[k]:
                     processed_record['isotypes_reported'].append(v)
                 processed_record.pop(k, None)
-
             return processed_record
 
         # `query_dicts` is a list of rows (represented as dicts) with unique source_id and lists of 
         # their associated entities 
         query_dicts = [process_record(list(group)) for _, group in groupby(query_dict, key=lambda x: x["source_id"])]
-
-        session.commit()
         return query_dicts
 
 
@@ -100,8 +111,8 @@ Output: set of records represented by dicts
 '''
 
 
-def get_filtered_records(filters=None, start_date=None, end_date=None):
-    query_dicts = get_all_records()
+def get_filtered_records(filters=None, columns=None, start_date=None, end_date=None):
+    query_dicts = get_all_records(columns)
     if query_dicts is None or len(query_dicts) == 0:
         return []
 

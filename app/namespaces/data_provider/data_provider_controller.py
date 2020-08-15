@@ -37,6 +37,7 @@ class Records(Resource):
         page_index = data.get('page_index')
         per_page = data.get('per_page')
         reverse = data.get('reverse')
+        columns = data.get('columns')
 
         start_date = data.get('start_date')
         if start_date:
@@ -45,7 +46,7 @@ class Records(Resource):
         if end_date:
             end_date = datetime.utcfromtimestamp(end_date)
 
-        filtered_records = get_filtered_records(filters, start_date=start_date, end_date=end_date)
+        filtered_records = get_filtered_records(filters, columns, start_date=start_date, end_date=end_date)
         result = get_paginated_records(filtered_records, sorting_key, page_index, per_page, reverse)
         return jsonify(result)
 
