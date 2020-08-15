@@ -46,8 +46,11 @@ class Records(Resource):
         if end_date:
             end_date = datetime.utcfromtimestamp(end_date)
 
-        filtered_records = get_filtered_records(filters, columns, start_date=start_date, end_date=end_date)
-        result = get_paginated_records(filtered_records, sorting_key, page_index, per_page, reverse)
+        result = get_filtered_records(filters, columns, start_date=start_date, end_date=end_date)
+
+        # Only paginate if all the pagination parameters have been specified
+        if page_index is not None and per_page is not None and sorting_key is not None and reverse is not None:
+            result = get_paginated_records(result, sorting_key, page_index, per_page, reverse)
         return jsonify(result)
 
 
