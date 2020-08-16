@@ -24,3 +24,6 @@ class RecordsSchema(Schema):
 class RecordDetailsSchema(Schema):
     source_id = fields.UUID(required=True)
 
+
+class StudyCountSchema(Schema):
+    records = fields.List(fields.Dict, required=True)

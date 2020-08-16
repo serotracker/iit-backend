@@ -4,8 +4,8 @@ from datetime import datetime
 from flask_restplus import Resource, Namespace
 from flask import jsonify, make_response, request
 
-from .data_provider_service import get_record_details
-from .data_provider_schema import RecordDetailsSchema, RecordsSchema
+from .data_provider_service import get_record_details, get_country_seroprev_summaries
+from .data_provider_schema import RecordDetailsSchema, RecordsSchema, StudyCountSchema
 from app.utils import validate_request_input_against_schema, get_filtered_records, get_paginated_records
 
 data_provider_ns = Namespace('data_provider', description='Endpoints for getting database records.')
@@ -77,3 +77,22 @@ class RecordDetails(Resource):
         # Get record details based on the source_id of the record
         record_details = get_record_details(source_id)
         return jsonify(record_details)
+
+
+@data_provider_ns.route('/country_seroprev_summary', methods=['POST'])
+class GeogStudyCount(Resource):
+    @data_provider_ns.doc('An endpoint for summarizing the seroprevalence data of a country.')
+    def post(self):
+        # Ensure payload is present
+        json_input = request.get_json()
+        if not json_input:
+            return make_response({"message": "No input payload provided"}, 400)
+
+        # Validate input payload
+        payload, status_code = validate_request_input_against_schema(json_input, StudyCountSchema())
+        if status_code != 200:
+            # If there was an error with the input payload, return the error and 422 response
+            return make_response(payload, status_code)
+
+        country_seroprev_summaries = get_country_seroprev_summaries(json_input['records'])
+        return jsonify(country_seroprev_summaries)
