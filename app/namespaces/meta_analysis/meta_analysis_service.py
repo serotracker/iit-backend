@@ -74,14 +74,14 @@ def calc_between_study_variance(records):
 
 def get_valid_filtered_records(records, transformation):
     # Remove records based on criteria for prevalence and denominator fields
-    filtered_records = records[(records['SERUM_POS_PREVALENCE'].notna()) &
-                               (records['DENOMINATOR'].notna()) &
+    filtered_records = records[(records['serum_pos_prevalence'].notna()) &
+                               (records['denominator_value'].notna()) &
                                (records[
-                                    'SERUM_POS_PREVALENCE'] != 0 if transformation in SP_ZERO_BLACKLIST else True)]
+                                    'serum_pos_prevalence'] != 0 if transformation in SP_ZERO_BLACKLIST else True)]
 
     # If at least one record meets min denom criteria, filter out the rest that do not
-    if (filtered_records['DENOMINATOR'] >= app.config['MIN_DENOMINATOR']).any():
-        filtered_records = filtered_records[filtered_records['DENOMINATOR'] >= app.config['MIN_DENOMINATOR']]
+    if (filtered_records['denominator_value'] >= app.config['MIN_DENOMINATOR']).any():
+        filtered_records = filtered_records[filtered_records['denominator_value'] >= app.config['MIN_DENOMINATOR']]
     return filtered_records
 
 
@@ -123,13 +123,13 @@ def calc_pooled_prevalence_for_subgroup(records, meta_transformation='double_arc
 
         # Add columns for transformed prevalence and transformed variance based on specified transformation method
         filtered_records['TRANSFORMED_PREVALENCE'] = filtered_records.apply(
-            lambda row: calc_transformed_prevalence(row['SERUM_POS_PREVALENCE'],
-                                                    row['DENOMINATOR'],
+            lambda row: calc_transformed_prevalence(row['serum_pos_prevalence'],
+                                                    row['denominator_value'],
                                                     meta_transformation),
             axis=1)
         filtered_records['TRANSFORMED_VARIANCE'] = filtered_records.apply(
-            lambda row: calc_transformed_variance(row['SERUM_POS_PREVALENCE'],
-                                                  row['DENOMINATOR'],
+            lambda row: calc_transformed_variance(row['serum_pos_prevalence'],
+                                                  row['denominator_value'],
                                                   meta_transformation),
             axis=1)
 
@@ -147,17 +147,17 @@ def calc_pooled_prevalence_for_subgroup(records, meta_transformation='double_arc
             get_trans_pooled_prev_and_ci(fixed_weighted_prevalence_sum, fixed_weight_sum, variance_sum)
 
         # Calculate the sum of all the populations across all studies
-        population_sum = sum(filtered_records['DENOMINATOR'])
+        population_sum = sum(filtered_records['denominator_value'])
 
         # Calculate the overall study population size across all studies using harmonic mean
-        average_population_size = hmean(filtered_records['DENOMINATOR'].tolist())
+        average_population_size = hmean(filtered_records['denominator_value'].tolist())
 
         # If meta analysis technique is fixed effects, back transformed prevalence and error and return body
         if meta_technique == 'fixed':
             pooled_prevalence, error =\
                 get_pooled_prevalence_and_error(trans_pooled_prevalence, average_population_size,
                                                 meta_transformation, trans_conf_inter)
-            return get_return_body(pooled_prevalence, error, population_sum, n_studies, filtered_records['COUNTRY'])
+            return get_return_body(pooled_prevalence, error, population_sum, n_studies, filtered_records['country'])
 
         # If meta analysis technique is random effects, add between study variance to all calculations
         else:
@@ -180,12 +180,12 @@ def calc_pooled_prevalence_for_subgroup(records, meta_transformation='double_arc
 
             pooled_prevalence, error = get_pooled_prevalence_and_error(trans_pooled_prevalence, average_population_size,
                                                                        meta_transformation, trans_conf_inter)
-            return get_return_body(pooled_prevalence, error, population_sum, n_studies, filtered_records['COUNTRY'])
+            return get_return_body(pooled_prevalence, error, population_sum, n_studies, filtered_records['country'])
     else:
         # Remove records where prevalence is null, or denominator is null or 0
-        filtered_records = records[(records['SERUM_POS_PREVALENCE'].notna()) &
-                                   (records['DENOMINATOR'].notna()) &
-                                   (records['DENOMINATOR'] > 0)]
+        filtered_records = records[(records['serum_pos_prevalence'].notna()) &
+                                   (records['denominator_value'].notna()) &
+                                   (records['denominator_value'] > 0)]
 
         # If there are no remaining records, return None for pooled prevalence estimate
         n_studies = filtered_records.shape[0]
@@ -193,18 +193,18 @@ def calc_pooled_prevalence_for_subgroup(records, meta_transformation='double_arc
             return None
 
         # Calculate pooled prevalence based on median prevalence
-        prevalence_list = filtered_records['SERUM_POS_PREVALENCE'].tolist()
+        prevalence_list = filtered_records['serum_pos_prevalence'].tolist()
         median_prevalence = median(prevalence_list)
 
         # Calculate error based on first and third quartiles
         q1 = quantile(prevalence_list, 0.25)
         q3 = quantile(prevalence_list, 0.75)
         error = [abs(median_prevalence - i) for i in [q1, q3]]
-        population_sum = sum(filtered_records['DENOMINATOR'])
+        population_sum = sum(filtered_records['denominator_value'])
 
         # Get return body and add number of countries if there are multiple countries
         return_body =\
-            get_return_body(median_prevalence, error, population_sum, n_studies, filtered_records['COUNTRY'])
+            get_return_body(median_prevalence, error, population_sum, n_studies, filtered_records['country'])
         return return_body
 
 
