@@ -35,10 +35,7 @@ def get_all_records(columns=None):
 
         for table_info in table_infos:
             # If columns are specified, only table bridge table fields in the columns list
-            if columns is not None:
-                if table_info['entity'] in columns:
-                    fields_list.append(getattr(table_info["main_table"], f"{table_info['entity']}_name"))
-            else:
+            if columns is None or table_info['entity'] in columns:
                 fields_list.append(getattr(table_info["main_table"], f"{table_info['entity']}_name"))
 
         query = session.query(*fields_list)
@@ -48,18 +45,16 @@ def get_all_records(columns=None):
         # Gather up all of these rows
         for table_info in table_infos:
             # If columns are specified, only join bridge tables with linking fields in the columns list
-            if columns is not None:
-                if table_info['entity'] not in columns:
-                    continue
-            bridge_table = table_info["bridge_table"]
-            main_table = table_info["main_table"]
-            entity = f"{table_info['entity']}_id"
-            try:
-                query = query.join(bridge_table, getattr(bridge_table, "source_id") ==
-                                   AirtableSource.source_id, isouter=True) \
-                    .join(main_table, getattr(main_table, entity) == getattr(bridge_table, entity), isouter=True)
-            except Exception as e:
-                print(e)
+            if columns is None or table_info['entity'] in columns:
+                bridge_table = table_info["bridge_table"]
+                main_table = table_info["main_table"]
+                entity = f"{table_info['entity']}_id"
+                try:
+                    query = query.join(bridge_table, getattr(bridge_table, "source_id") ==
+                                       AirtableSource.source_id, isouter=True) \
+                        .join(main_table, getattr(main_table, entity) == getattr(bridge_table, entity), isouter=True)
+                except Exception as e:
+                    print(e)
         query = query.all()
         query_dict = [q._asdict() for q in query]
 
@@ -90,7 +85,7 @@ def get_all_records(columns=None):
             isotype_mapping = {'isotype_igm': 'IgM', 'isotype_iga': 'IgA', 'isotype_igg': 'IgG'}
 
             for k, v in isotype_mapping.items():
-                if k in processed_record.keys() and processed_record[k]:
+                if processed_record.get(k, None) is not None:
                     processed_record['isotypes_reported'].append(v)
                 processed_record.pop(k, None)
             return processed_record
