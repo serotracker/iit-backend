@@ -101,7 +101,7 @@ def get_pooled_prevalence_and_error(transformed_prev, overall_n, transformation,
 
 
 def get_return_body(prevalence, error, total_population, total_studies, countries_col):
-    num_countries = len({item for sublist in countries_col for item in sublist})
+    num_countries = len(countries_col.unique())
     body = {
             'seroprevalence_percent': prevalence * 100,
             'error_percent': [i * 100 for i in error],
@@ -209,7 +209,7 @@ def calc_pooled_prevalence_for_subgroup(records, meta_transformation='double_arc
 
 
 def group_by_agg_var(data, agg_var):
-    options = {item for sublist in data[agg_var] for item in sublist}
+    options = list(data[agg_var].unique())
     data.dropna(subset=[agg_var], inplace=True)
     return {name: data[data[agg_var].apply(lambda x: name in x)] for name in options}
 

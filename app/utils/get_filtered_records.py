@@ -13,7 +13,6 @@ engine = create_engine('postgresql://{username}:{password}@{host}/whiteclaw'.for
 
 
 def get_all_records(columns=None):
-    print(columns)
     with db_session(engine) as session:
         # Get all records for now, join on all tables
         table_infos = db_model_config['supplementary_table_info']
@@ -110,7 +109,6 @@ Output: set of records represented by dicts
 
 
 def get_filtered_records(filters=None, columns=None, start_date=None, end_date=None):
-    print(filters, columns)
     query_dicts = get_all_records(columns)
     if query_dicts is None or len(query_dicts) == 0:
         return []

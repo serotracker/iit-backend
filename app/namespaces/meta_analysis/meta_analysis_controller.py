@@ -52,12 +52,9 @@ class MetaAnalysis(Resource):
             meta_technique = 'fixed'
 
         # Query all the records with the desired filters. Pull only country, denom, and seroprev cols
-        filters = json_input['filters']
-        print(filters)
-        columns = ['country', 'denominator_value', 'serum_pos_prevalence', 'age_name']
-        print(columns)
+        filters = json_input.get('filters', None)
+        columns = ['country', 'denominator_value', 'serum_pos_prevalence']
         records = get_filtered_records(filters=filters, columns=columns)
-        print(records)
 
         meta_analysis_results = get_meta_analysis_records(records, agg_var, meta_transformation, meta_technique)
         return meta_analysis_results
