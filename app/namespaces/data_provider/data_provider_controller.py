@@ -11,17 +11,30 @@ from app.utils import validate_request_input_against_schema, get_filtered_record
 data_provider_ns = Namespace('data_provider', description='Endpoints for getting database records.')
 
 
-@data_provider_ns.route('/records', methods=['POST'])
+@data_provider_ns.route('/records', methods=['GET', 'POST'])
 class Records(Resource):
-    @data_provider_ns.doc('An endpoint for getting all records from database')
-    def post(self):
-        data = request.get_json()
+    @data_provider_ns.doc('An endpoint for getting all records from database with or without filters.')
+    def get(self):
+        # Parse pagination request args if they are present
+        sorting_key = request.args.get('sorting_key', None, type=str)
+        reverse = request.args.get('reverse', None, type=bool)
+        page_index = request.args.get('page_index', None, type=int)
+        per_page = request.args.get('per_page', None, type=int)
 
+        result = get_filtered_records(filters=None, start_date=None, end_date=None)
+
+        # Only paginate if all the pagination parameters have been specified
+        if page_index is not None and per_page is not None and sorting_key is not None and reverse is not None:
+            result = get_paginated_records(result, sorting_key, page_index, per_page, reverse)
+        return jsonify(result)
+
+    def post(self):
+        # Convert input payload to json and throw error if it doesn't exist
+        data = request.get_json()
+        if not data:
+            return {"message": "No input payload provided"}, 400
         # All of these params can be empty, in which case, our utility functions will just return all records
         filters = data.get('filters')
-        if filters:
-            filters = json.loads(filters)
-            data["filters"] = filters
 
         # Validate input payload
         payload, status_code = validate_request_input_against_schema(data, RecordsSchema())
@@ -33,6 +46,7 @@ class Records(Resource):
         page_index = data.get('page_index')
         per_page = data.get('per_page')
         reverse = data.get('reverse')
+        columns = data.get('columns')
 
         start_date = data.get('start_date')
         if start_date:
@@ -41,9 +55,11 @@ class Records(Resource):
         if end_date:
             end_date = datetime.utcfromtimestamp(end_date)
 
-        filtered_records = get_filtered_records(filters, start_date=start_date, end_date=end_date)
-        result = get_paginated_records(filtered_records, sorting_key, page_index, per_page, reverse)
+        result = get_filtered_records(filters, columns, start_date=start_date, end_date=end_date)
 
+        # Only paginate if all the pagination parameters have been specified
+        if page_index is not None and per_page is not None and sorting_key is not None and reverse is not None:
+            result = get_paginated_records(result, sorting_key, page_index, per_page, reverse)
         return jsonify(result)
 
 
