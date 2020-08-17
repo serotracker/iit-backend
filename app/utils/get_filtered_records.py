@@ -102,8 +102,8 @@ def get_all_records(columns=None):
 '''
 Filter are in the following format: 
 { 
-  'age_name' : {'Youth (13-17)', 'All'},
-  'country' : {'United States'}
+  'age' : ['Youth (13-17)', 'All'],
+  'country' : ['United States']
 }
 
 Output: set of records represented by dicts
