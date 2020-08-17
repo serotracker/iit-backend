@@ -112,7 +112,7 @@ def get_record_details(source_id):
 
             # Add columns from supplementary tables and add isotype col expression
             for sup_table in table_infos:
-                fields_list.append(getattr(sup_table['main_table'], f"{sup_table['entity']}_name"))
+                fields_list.append(getattr(sup_table['main_table'], f"{sup_table['entity']}_name").label(sup_table['entity']))
 
             query = session.query(*fields_list, isotype_case_expression)
 
