@@ -10,9 +10,9 @@ class RecordsSchema(Schema):
     reverse = fields.Boolean()
     filters = fields.Dict(
         keys=fields.String(validate=validate.OneOf(["country", "source_type", "overall_risk_of_bias",
-                                                    "study_status", "source_name", "population_group_name",
-                                                    "sex", "age_name", "isotypes_reported", "test_type_name",
-                                                    "specimen_type_name", "estimate_grade"])),
+                                                    "study_status", "source_name", "population_group",
+                                                    "sex", "age", "isotypes_reported", "test_type",
+                                                    "specimen_type", "estimate_grade"])),
         values=fields.List(fields.String())
     )
     columns = fields.List(fields.String())

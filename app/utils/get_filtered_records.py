@@ -18,7 +18,7 @@ def get_all_records(columns=None):
         table_infos = db_model_config['supplementary_table_info']
 
         # Create list of entity_name keys such as "age_name" which would be "Youth (13-17)"
-        entity_names = [f"{t['entity']}_name" for t in table_infos if (columns is None or t['entity'] in columns)]
+        entity_names = [f"{t['entity']}" for t in table_infos if (columns is None or t['entity'] in columns)]
 
         # Create list of fields in AirtableSource to query unless the specific columns are specified
         field_strings = ['source_name', 'source_type', 'study_status', 'country', 'denominator_value',
@@ -36,7 +36,9 @@ def get_all_records(columns=None):
         for table_info in table_infos:
             # If columns are specified, only table bridge table fields in the columns list
             if columns is None or table_info['entity'] in columns:
-                fields_list.append(getattr(table_info["main_table"], f"{table_info['entity']}_name"))
+                # The label method returns an alias for the column being queried
+                # Use case: We want to get fields from the bridge table without the _name suffix
+                fields_list.append(getattr(table_info["main_table"], f"{table_info['entity']}_name").label(table_info['entity']))
 
         query = session.query(*fields_list)
 
