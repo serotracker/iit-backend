@@ -81,13 +81,14 @@ def get_all_records(columns=None):
             else:
                 processed_record = reduce(reduce_entities, record_list)
 
-            processed_record['isotypes_reported'] = []
-            isotype_mapping = {'isotype_igm': 'IgM', 'isotype_iga': 'IgA', 'isotype_igg': 'IgG'}
+            if 'isotypes_reported' in columns:
+                processed_record['isotypes_reported'] = []
+                isotype_mapping = {'isotype_igm': 'IgM', 'isotype_iga': 'IgA', 'isotype_igg': 'IgG'}
 
-            for k, v in isotype_mapping.items():
-                if processed_record.get(k, None) is not None:
-                    processed_record['isotypes_reported'].append(v)
-                processed_record.pop(k, None)
+                for k, v in isotype_mapping.items():
+                    if processed_record.get(k, None) is not None:
+                        processed_record['isotypes_reported'].append(v)
+                    processed_record.pop(k, None)
             return processed_record
 
         # `query_dicts` is a list of rows (represented as dicts) with unique source_id and lists of 

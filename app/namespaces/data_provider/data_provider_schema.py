@@ -26,4 +26,7 @@ class RecordDetailsSchema(Schema):
 
 
 class StudyCountSchema(Schema):
-    records = fields.List(fields.Dict, required=True)
+    filters = fields.Dict(
+        keys=fields.String(validate=validate.OneOf(["country"])),
+        values=fields.List(fields.String())
+    )

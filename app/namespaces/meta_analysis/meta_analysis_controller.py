@@ -3,7 +3,7 @@ import logging
 from flask_restplus import Resource, Namespace
 from flask import make_response, request
 
-from app.utils import validate_request_input_against_schema
+from app.utils import validate_request_input_against_schema, get_filtered_records
 from .meta_analysis_schema import MetaSchema
 from .meta_analysis_service import get_meta_analysis_records
 
@@ -30,7 +30,6 @@ class MetaAnalysis(Resource):
             return make_response(payload, status_code)
 
         # If payload was successfully validated, extract fields
-        records = json_input['records']
         agg_var = json_input.get('aggregation_variable', None)
 
         # Extract meta transformation variable if present and validate it, else set to default
@@ -51,6 +50,11 @@ class MetaAnalysis(Resource):
                 meta_technique = 'fixed'
         except KeyError:
             meta_technique = 'fixed'
+
+        # Query all the records with the desired filters. Pull only country, denom, and seroprev cols
+        filters = json_input.get('filters', None)
+        columns = ['country', 'denominator_value', 'serum_pos_prevalence']
+        records = get_filtered_records(filters=filters, columns=columns)
 
         meta_analysis_results = get_meta_analysis_records(records, agg_var, meta_transformation, meta_technique)
         return meta_analysis_results

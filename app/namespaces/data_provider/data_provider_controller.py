@@ -21,7 +21,7 @@ class Records(Resource):
         page_index = request.args.get('page_index', None, type=int)
         per_page = request.args.get('per_page', None, type=int)
 
-        result = get_filtered_records(filters=None, start_date=None, end_date=None)
+        result = get_filtered_records(filters=None, columns=None, start_date=None, end_date=None)
 
         # Only paginate if all the pagination parameters have been specified
         if page_index is not None and per_page is not None and sorting_key is not None and reverse is not None:
@@ -79,9 +79,18 @@ class RecordDetails(Resource):
         return jsonify(record_details)
 
 
-@data_provider_ns.route('/country_seroprev_summary', methods=['POST'])
+@data_provider_ns.route('/country_seroprev_summary', methods=['GET', 'POST'])
 class GeogStudyCount(Resource):
     @data_provider_ns.doc('An endpoint for summarizing the seroprevalence data of a country.')
+    def get(self):
+        # Query all the records with no filters but only grab certain columns
+        columns = ['country', 'denominator_value', 'serum_pos_prevalence', 'estimate_grade']
+        records = get_filtered_records(filters=None, columns=columns, start_date=None, end_date=None)
+
+        # Compute seroprevalence summaries per country per estimate grade level
+        country_seroprev_summaries = get_country_seroprev_summaries(records)
+        return jsonify(country_seroprev_summaries)
+
     def post(self):
         # Ensure payload is present
         json_input = request.get_json()
@@ -94,5 +103,11 @@ class GeogStudyCount(Resource):
             # If there was an error with the input payload, return the error and 422 response
             return make_response(payload, status_code)
 
-        country_seroprev_summaries = get_country_seroprev_summaries(json_input['records'])
+        # Query all the records with the desired filters. Pull only country, denom, and seroprev cols
+        filters = json_input['filters']
+        columns = ['country', 'denominator_value', 'serum_pos_prevalence', 'estimate_grade']
+        records = get_filtered_records(filters, columns)
+
+        # Compute seroprevalence summaries per country per estimate grade level
+        country_seroprev_summaries = get_country_seroprev_summaries(records)
         return jsonify(country_seroprev_summaries)

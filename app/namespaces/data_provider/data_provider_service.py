@@ -155,7 +155,7 @@ def get_country_seroprev_summaries(records):
         country_seroprev_summary_dict['n_estimates'] = records_for_country.shape[0]
 
         # Get total number of tests administered in country
-        country_seroprev_summary_dict['n_tests_administered'] = int(records_for_country.denominator.sum())
+        country_seroprev_summary_dict['n_tests_administered'] = int(records_for_country.denominator_value.sum())
 
         # Summarize seroprev estimate info at each estimate grade level
         estimate_grades = ['National', 'Regional', 'Local', 'Sublocal']
