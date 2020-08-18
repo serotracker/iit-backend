@@ -83,7 +83,9 @@ def get_all_records(columns=None):
             else:
                 processed_record = reduce(reduce_entities, record_list)
 
-            if columns is not None and 'isotypes_reported' in columns:
+            # Isotypes_reported should be included if no columns specified or
+            # if isotypes_reported is supplied in the columns argument
+            if columns is None or 'isotypes_reported' in columns:
                 processed_record['isotypes_reported'] = []
                 isotype_mapping = {'isotype_igm': 'IgM', 'isotype_iga': 'IgA', 'isotype_igg': 'IgG'}
 
