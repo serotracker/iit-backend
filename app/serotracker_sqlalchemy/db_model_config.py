@@ -3,8 +3,8 @@ from app.serotracker_sqlalchemy import AgeBridge, Age, CityBridge, City, StateBr
     ApprovingRegulatorBridge, ApprovingRegulator, TestTypeBridge, TestType, SpecimenTypeBridge, SpecimenType
 
 db_model_config = {
-    'multi_select_columns': ['age_name', 'population_group_name', 'test_manufacturer_name',
-                             'approving_regulator_name', 'test_type_name'],
+    'multi_select_columns': ['age', 'population_group', 'test_manufacturer',
+                             'approving_regulator', 'test_type'],
     'supplementary_table_info': [
         {
             "bridge_table": AgeBridge,
