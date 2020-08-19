@@ -34,6 +34,8 @@ class RecordsSchema(Schema):
 
 class RecordDetailsSchema(Schema):
     source_id = fields.UUID(required=True)
+    start_date = fields.Integer()
+    end_date = fields.Integer()
 
 
 class StudyCountSchema(Schema):
@@ -41,3 +43,6 @@ class StudyCountSchema(Schema):
         keys=fields.String(validate=validate.OneOf(["country"])),
         values=fields.List(fields.String())
     )
+    start_date = fields.Integer()
+    end_date = fields.Integer()
+
