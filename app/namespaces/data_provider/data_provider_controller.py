@@ -1,12 +1,10 @@
-import json
-from datetime import datetime
-
 from flask_restplus import Resource, Namespace
 from flask import jsonify, make_response, request
 
 from .data_provider_service import get_record_details, get_country_seroprev_summaries
 from .data_provider_schema import RecordDetailsSchema, RecordsSchema, StudyCountSchema
-from app.utils import validate_request_input_against_schema, get_filtered_records, get_paginated_records
+from app.utils import validate_request_input_against_schema, get_filtered_records,\
+    get_paginated_records, convert_start_end_dates
 
 data_provider_ns = Namespace('data_provider', description='Endpoints for getting database records.')
 
@@ -47,13 +45,7 @@ class Records(Resource):
         per_page = data.get('per_page')
         reverse = data.get('reverse')
         columns = data.get('columns')
-
-        start_date = data.get('start_date')
-        if start_date:
-            start_date = datetime.utcfromtimestamp(start_date)
-        end_date = data.get('end_date')
-        if end_date:
-            end_date = datetime.utcfromtimestamp(end_date)
+        start_date, end_date = convert_start_end_dates(data)
 
         result = get_filtered_records(filters, columns, start_date=start_date, end_date=end_date)
 
@@ -105,8 +97,9 @@ class GeogStudyCount(Resource):
 
         # Query all the records with the desired filters. Pull only country, denom, and seroprev cols
         filters = json_input['filters']
+        start_date, end_date = convert_start_end_dates(json_input)
         columns = ['country', 'denominator_value', 'serum_pos_prevalence', 'estimate_grade']
-        records = get_filtered_records(filters, columns)
+        records = get_filtered_records(filters, columns, start_date=start_date, end_date=end_date)
 
         # Compute seroprevalence summaries per country per estimate grade level
         country_seroprev_summaries = get_country_seroprev_summaries(records)

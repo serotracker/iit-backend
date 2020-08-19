@@ -3,7 +3,7 @@ import logging
 from flask_restplus import Resource, Namespace
 from flask import make_response, request
 
-from app.utils import validate_request_input_against_schema, get_filtered_records
+from app.utils import validate_request_input_against_schema, get_filtered_records, convert_start_end_dates
 from .meta_analysis_schema import MetaSchema
 from .meta_analysis_service import get_meta_analysis_records
 
@@ -53,8 +53,9 @@ class MetaAnalysis(Resource):
 
         # Query all the records with the desired filters. Pull only country, denom, and seroprev cols
         filters = json_input.get('filters', None)
+        start_date, end_date = convert_start_end_dates(json_input)
         columns = ['country', 'denominator_value', 'serum_pos_prevalence']
-        records = get_filtered_records(filters=filters, columns=columns)
+        records = get_filtered_records(filters, columns, start_date=start_date, end_date=end_date)
 
         meta_analysis_results = get_meta_analysis_records(records, agg_var, meta_transformation, meta_technique)
         return meta_analysis_results
