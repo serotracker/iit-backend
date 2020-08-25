@@ -5,13 +5,14 @@ import logging
 from datetime import datetime
 from uuid import uuid4
 from time import time
+from marshmallow import ValidationError
 
 import pandas as pd
 from sqlalchemy import create_engine
 from app.serotracker_sqlalchemy import db_session, AirtableSource, City, State, \
     Age, PopulationGroup, TestManufacturer, ApprovingRegulator, TestType, \
     SpecimenType, CityBridge, StateBridge, AgeBridge, PopulationGroupBridge, \
-    TestManufacturerBridge, ApprovingRegulatorBridge, TestTypeBridge, SpecimenTypeBridge
+    TestManufacturerBridge, ApprovingRegulatorBridge, TestTypeBridge, SpecimenTypeBridge, AirtableSourceSchema
 from app.utils import airtable_fields_config, send_api_error_email
 
 logger = logging.getLogger(__name__)
@@ -129,6 +130,8 @@ def create_airtable_source_df(original_data):
     original_data['isotype_igg'] = original_data['isotypes'].apply(lambda x: isotype_col('IgG', x))
     original_data['isotype_igm'] = original_data['isotypes'].apply(lambda x: isotype_col('IgM', x))
     original_data['isotype_iga'] = original_data['isotypes'].apply(lambda x: isotype_col('IgA', x))
+    # testing
+    # original_data['sex'] = "hahahahahahahahahahah"
     original_data = original_data.drop(columns=['isotypes'])
 
     # Create created at column
@@ -230,6 +233,18 @@ def drop_old_entries(engine):
         session.commit()
     return
 
+def validate_dataframes(airtable_table, multi_select_tables_dict, bridge_tables_dict):
+    airtable_source_dict = airtable_table.to_dict(orient='records')
+    #multi_select_tables_dict = multi_select_tables_dict.to_dict(orient='records')
+    #bridge_tables_dict = bridge_tables_dict.to_dict(orient='records')
+    for a in airtable_source_dict:
+        try:
+            payload = AirtableSourceSchema().load(a)
+        except ValidationError as err:
+            print(err.messages)
+        break
+    return
+
 
 def main():
     # Create engine to connect to whiteclaw database
@@ -267,6 +282,9 @@ def main():
     airtable_source = airtable_source.drop(columns=['city', 'state', 'age', 'population_group',
                                                     'test_manufacturer', 'approving_regulator', 'test_type',
                                                     'specimen_type'])
+
+    # Validate...
+    validate_dataframes(airtable_source, multi_select_tables_dict, bridge_tables_dict)
 
     # Load dataframes into postgres tables
     load_postgres_tables(airtable_source, multi_select_tables_dict, bridge_tables_dict, engine)
