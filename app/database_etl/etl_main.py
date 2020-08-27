@@ -5,7 +5,7 @@ import logging
 from datetime import datetime
 from uuid import uuid4
 from time import time
-from marshmallow import ValidationError
+from marshmallow import ValidationError, INCLUDE
 
 import pandas as pd
 from sqlalchemy import create_engine
@@ -130,8 +130,6 @@ def create_airtable_source_df(original_data):
     original_data['isotype_igg'] = original_data['isotypes'].apply(lambda x: isotype_col('IgG', x))
     original_data['isotype_igm'] = original_data['isotypes'].apply(lambda x: isotype_col('IgM', x))
     original_data['isotype_iga'] = original_data['isotypes'].apply(lambda x: isotype_col('IgA', x))
-    # testing
-    # original_data['sex'] = "hahahahahahahahahahah"
     original_data = original_data.drop(columns=['isotypes'])
 
     # Create created at column
@@ -233,17 +231,24 @@ def drop_old_entries(engine):
         session.commit()
     return
 
-def validate_dataframes(airtable_table, multi_select_tables_dict, bridge_tables_dict):
-    airtable_source_dict = airtable_table.to_dict(orient='records')
-    #multi_select_tables_dict = multi_select_tables_dict.to_dict(orient='records')
-    #bridge_tables_dict = bridge_tables_dict.to_dict(orient='records')
-    for a in airtable_source_dict:
+def validate_records(airtable_source):
+    airtable_source_dicts = airtable_source.to_dict(orient='records')
+    good_airtable_records = []
+    bad_airtable_records = []
+    error_msgs = []
+    schema = AirtableSourceSchema()
+    for d in airtable_source_dicts:
         try:
-            payload = AirtableSourceSchema().load(a)
+            payload = schema.load(d, unknown=INCLUDE)
+            good_airtable_records.append(d)
         except ValidationError as err:
-            print(err.messages)
-        break
-    return
+            error_msgs.append(err.messages)
+            bad_airtable_records.append(d)
+    new_airtable_source = pd.DataFrame(good_airtable_records)
+
+    # Email bad records and log to file here
+
+    return new_airtable_source
 
 
 def main():
@@ -272,6 +277,9 @@ def main():
     # Create airtable source df
     airtable_source = create_airtable_source_df(data)
 
+    # Validate the airtable source df
+    airtable_source = validate_records(airtable_source)
+
     # Create dictionary to store multi select tables
     multi_select_tables_dict = create_multi_select_tables(data, multi_select_cols)
 
@@ -282,9 +290,6 @@ def main():
     airtable_source = airtable_source.drop(columns=['city', 'state', 'age', 'population_group',
                                                     'test_manufacturer', 'approving_regulator', 'test_type',
                                                     'specimen_type'])
-
-    # Validate...
-    validate_dataframes(airtable_source, multi_select_tables_dict, bridge_tables_dict)
 
     # Load dataframes into postgres tables
     load_postgres_tables(airtable_source, multi_select_tables_dict, bridge_tables_dict, engine)

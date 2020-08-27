@@ -1,77 +1,42 @@
 from marshmallow import Schema, fields, validate
 
 class AirtableSourceSchema(Schema):
-    source_id = fields.UUID()
-    source_name = fields.Str()
+    source_id = fields.UUID(allow_none=True)
+    source_name = fields.Str(allow_none=True)
     #publication_date = fields.DateTime()
-    first_author = fields.Str(validate=validate.Length(max=128))
-    url = fields.Str()
-    source_type = fields.Str(validate=validate.Length(max=64))
-    source_publisher = fields.Str(validate=validate.Length(max=256))
-    summary = fields.Str()
-    study_type = fields.Str(validate=validate.Length(max=128))
-    study_status = fields.Str(validate=validate.Length(max=32))
-    country = fields.Str(validate=validate.Length(max=64))
-    lead_organization = fields.Str(validate=validate.Length(max=128))
+    first_author = fields.Str(validate=validate.Length(max=128), allow_none=True)
+    url = fields.Str(allow_none=True)
+    source_type = fields.Str(validate=validate.Length(max=64), allow_none=True)
+    source_publisher = fields.Str(validate=validate.Length(max=256), allow_none=True)
+    summary = fields.Str(allow_none=True)
+    study_type = fields.Str(validate=validate.Length(max=128), allow_none=True)
+    study_status = fields.Str(validate=validate.Length(max=32), allow_none=True)
+    country = fields.Str(validate=validate.Length(max=64), allow_none=True)
+    lead_organization = fields.Str(validate=validate.Length(max=128), allow_none=True)
     #sampling_start_date = fields.DateTime()
     #sampling_end_date = fields.DateTime()
-    sex = fields.Str(validate=validate.Length(max=16))
-    sampling_method = fields.Str(validate=validate.Length(max=128))
-    sensitivity = fields.Float()
-    specificity = fields.Float()
-    include_in_n = fields.Boolean()
-    denominator_value = fields.Integer()
-    numerator_definition = fields.Str()
-    serum_pos_prevalence = fields.Float()
-    overall_risk_of_bias = fields.Str(validate=validate.Length(max=128))
-    isotype_igg = fields.Boolean()
-    isotype_igm = fields.Boolean()
-    isotype_iga = fields.Boolean()
-    estimate_grade = fields.Str(validate=validate.Length(max=32))
+    sex = fields.Str(validate=validate.Length(max=3), allow_none=True)
+    sampling_method = fields.Str(validate=validate.Length(max=128), allow_none=True)
+    sensitivity = fields.Float(allow_none=True, allow_nan=True)
+    specificity = fields.Float(allow_none=True, allow_nan=True)
+    include_in_n = fields.Boolean(allow_none=True)
+    # Should be an int but doing this so that we can guard against NaN values
+    denominator_value = fields.Float(allow_none=True, allow_nan=True)
+    numerator_definition = fields.Str(allow_none=True)
+    serum_pos_prevalence = fields.Float(allow_none=True, allow_nan=True)
+    overall_risk_of_bias = fields.Str(validate=validate.Length(max=128), allow_none=True)
+    isotype_igg = fields.Boolean(allow_none=True)
+    isotype_igm = fields.Boolean(allow_none=True)
+    isotype_iga = fields.Boolean(allow_none=True)
+    estimate_grade = fields.Str(validate=validate.Length(max=32), allow_none=True)
     #created_at = fields.DateTime()
+    # Multi select fields
+    city = fields.List(fields.Str(validate=validate.Length(max=128)), allow_none=True)
+    state = fields.List(fields.Str(validate=validate.Length(max=128)), allow_none=True)
+    age = fields.List(fields.Str(validate=validate.Length(max=64)), allow_none=True)
+    population_group = fields.List(fields.Str(validate=validate.Length(max=128)), allow_none=True)
+    test_manufacturer = fields.List(fields.Str(validate=validate.Length(max=128)), allow_none=True)
+    approving_regulator = fields.List(fields.Str(validate=validate.Length(max=256)), allow_none=True)
+    test_type = fields.List(fields.Str(validate=validate.Length(max=256)), allow_none=True)
+    specimen_type = fields.List(fields.Str(validate=validate.Length(max=64)), allow_none=True)
 
-# Multi select table schemas
-class CitySchema(Schema):
-    city_id = fields.UUID()
-    city_name = fields.Str(validate=validate.Length(max=128))
-    # created_at = fields.DateTime()
-
-class StateSchema(Schema):
-    state_id = fields.UUID()
-    state_name = fields.Str(validate=validate.Length(max=128))
-    # created_at = fields.DateTime()
-
-class AgeSchema(Schema):
-    age_id = fields.UUID()
-    age_name = fields.Str(validate=validate.Length(max=64))
-    # created_at = fields.DateTime()
-
-
-class PopulationGroupSchema(Schema):
-    population_group_id = fields.UUID()
-    population_group_name = fields.Str(validate=validate.Length(max=128))
-    # created_at = fields.DateTime()
-
-
-class TestManufacturerSchema(Schema):
-    test_manufacturer_id = fields.UUID()
-    test_manufacturer_name = fields.Str(validate=validate.Length(max=128))
-    #created_at = fields.DateTime()
-
-
-class ApprovingRegulatorSchema(Schema):
-    approving_regulator_id = fields.UUID()
-    approving_regulator_name = fields.Str(validate=validate.Length(max=256))
-    # created_at = fields.DateTime()
-
-
-class TestTypeSchema(Schema):
-    test_type_id = fields.UUID()
-    test_type_name = fields.Str(validate=validate.Length(max=256))
-    # created_at = fields.DateTime()
-
-
-class SpecimenTypeSchema(Schema):
-    specimen_type_id = fields.UUID()
-    specimen_type_name = fields.Str(validate=validate.Length(max=64))
-    # created_at = fields.DateTime()
