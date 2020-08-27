@@ -29,3 +29,49 @@ class AirtableSourceSchema(Schema):
     isotype_iga = fields.Boolean()
     estimate_grade = fields.Str(validate=validate.Length(max=32))
     #created_at = fields.DateTime()
+
+# Multi select table schemas
+class CitySchema(Schema):
+    city_id = fields.UUID()
+    city_name = fields.Str(validate=validate.Length(max=128))
+    # created_at = fields.DateTime()
+
+class StateSchema(Schema):
+    state_id = fields.UUID()
+    state_name = fields.Str(validate=validate.Length(max=128))
+    # created_at = fields.DateTime()
+
+class AgeSchema(Schema):
+    age_id = fields.UUID()
+    age_name = fields.Str(validate=validate.Length(max=64))
+    # created_at = fields.DateTime()
+
+
+class PopulationGroupSchema(Schema):
+    population_group_id = fields.UUID()
+    population_group_name = fields.Str(validate=validate.Length(max=128))
+    # created_at = fields.DateTime()
+
+
+class TestManufacturerSchema(Schema):
+    test_manufacturer_id = fields.UUID()
+    test_manufacturer_name = fields.Str(validate=validate.Length(max=128))
+    #created_at = fields.DateTime()
+
+
+class ApprovingRegulatorSchema(Schema):
+    approving_regulator_id = fields.UUID()
+    approving_regulator_name = fields.Str(validate=validate.Length(max=256))
+    # created_at = fields.DateTime()
+
+
+class TestTypeSchema(Schema):
+    test_type_id = fields.UUID()
+    test_type_name = fields.Str(validate=validate.Length(max=256))
+    # created_at = fields.DateTime()
+
+
+class SpecimenTypeSchema(Schema):
+    specimen_type_id = fields.UUID()
+    specimen_type_name = fields.Str(validate=validate.Length(max=64))
+    # created_at = fields.DateTime()
