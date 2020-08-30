@@ -1,3 +1,6 @@
+# Alembic Configuration
+alembic.ini
+
 # Cached Results
 cached_results.json
 
