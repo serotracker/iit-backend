@@ -249,7 +249,10 @@ def validate_records(airtable_source):
     if unacceptable_records_map:
         send_schema_validation_error_email(unacceptable_records_map)
 
-    return pd.DataFrame(acceptable_records)
+    if acceptable_records:
+        return pd.DataFrame(acceptable_records)
+
+    exit("EXITING – No acceptable records found.")
 
 
 def main():
