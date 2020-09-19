@@ -8,11 +8,14 @@ from email.mime.text import MIMEText
 port = 465
 context = ssl.create_default_context()
 sender = 'iitbackendalerts@gmail.com'
-recipients = ['abeljohnjoseph@gmail.com', 'ewanmay3@gmail.com', 'simonarocco09@gmail.com', 'austin.atmaja@gmail.com']  # Add additional email addresses here
 password = os.getenv('GMAIL_PASS')
 
 
 def send_api_error_email(body, data, error=None, request_info=None):
+    # Set recipients
+    recipients = ['abeljohnjoseph@gmail.com', 'ewanmay3@gmail.com', 'simonarocco09@gmail.com',
+                  'austin.atmaja@gmail.com']  # Add additional email addresses here
+
     # Configure the full email body
     body = "Hello Data Team,\n\n" + body
 
@@ -38,6 +41,31 @@ def send_api_error_email(body, data, error=None, request_info=None):
 
         msg = MIMEText(body)
         msg['Subject'] = "ALERT: Unsuccessful Record Retrieval"
+        msg['From'] = sender
+        msg['To'] = ", ".join(recipients)
+        server.sendmail(sender, recipients, msg.as_string())
+    return
+
+
+def send_schema_validation_error_email(unacceptable_records_map):
+    # Set recipients
+    recipients = ['abeljohnjoseph@gmail.com', 'simonarocco09@gmail.com',
+                  'austin.atmaja@gmail.com', 'msjoannac@gmail.com']  # Add additional email addresses here
+
+    # Configure the full email body
+    body = "Hello Data Team,\n\nThere were one or more records that did not meet the schema criteria, as follows:\n\n"
+
+    for record, errors in unacceptable_records_map.items():
+        body += f"Record: {record}\n"
+        body += f"Errors: {errors}\n\n"
+
+    body += "\nSincerely,\nIIT Backend Alerts"
+
+    with smtplib.SMTP_SSL('smtp.gmail.com', port, context=context) as server:
+        server.login(sender, password)
+
+        msg = MIMEText(body)
+        msg['Subject'] = "ALERT: Schema Validation Failed for Record(s)"
         msg['From'] = sender
         msg['To'] = ", ".join(recipients)
         server.sendmail(sender, recipients, msg.as_string())

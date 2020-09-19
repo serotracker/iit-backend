@@ -1,8 +1,3 @@
-import smtplib
-import ssl
-
-from email.mime.text import MIMEText
-
 import requests
 import json
 import os
@@ -19,6 +14,7 @@ from app.serotracker_sqlalchemy import db_session, AirtableSource, City, State, 
     SpecimenType, CityBridge, StateBridge, AgeBridge, PopulationGroupBridge, \
     TestManufacturerBridge, ApprovingRegulatorBridge, TestTypeBridge, SpecimenTypeBridge, AirtableSourceSchema
 from app.utils import airtable_fields_config, send_api_error_email
+from app.utils.send_error_email import send_schema_validation_error_email
 
 logger = logging.getLogger(__name__)
 
@@ -28,14 +24,6 @@ AIRTABLE_REQUEST_URL = "https://api.airtable.com/v0/{}/Rapid%20Review%3A%20Estim
 AIRTABLE_REQUEST_PARAMS = {'filterByFormula': '{Visualize on SeroTracker?}=1'}
 
 CURR_TIME = datetime.now()
-
-# SMTP setup
-port = 465
-context = ssl.create_default_context()
-sender = 'iitbackendalerts@gmail.com'
-recipients = ['abeljohnjoseph@gmail.com', 'simonarocco09@gmail.com',
-              'austin.atmaja@gmail.com']  # Add additional email addresses here
-password = os.getenv('GMAIL_PASS')
 
 
 def _add_fields_to_url(url):
@@ -81,27 +69,6 @@ def _get_paginated_records(data, api_request_info):
         data = r.json()
         records += data['records']
     return records
-
-
-def _send_schema_validation_error_email(unacceptable_records_map):
-    # Configure the full email body
-    body = "Hello Data Team,\n\nThere were one or more records that did not meet the schema criteria, as follows:\n\n"
-
-    for record, errors in unacceptable_records_map.items():
-        body += f"Record: {record}\n"
-        body += f"Errors: {errors}\n\n"
-
-    body += "\nSincerely,\nIIT Backend Alerts"
-
-    with smtplib.SMTP_SSL('smtp.gmail.com', port, context=context) as server:
-        server.login(sender, password)
-
-        msg = MIMEText(body)
-        msg['Subject'] = "ALERT: Schema Validation Failed for Record(s)"
-        msg['From'] = sender
-        msg['To'] = ", ".join(recipients)
-        server.sendmail(sender, recipients, msg.as_string())
-    return
 
 
 def get_all_records():
@@ -280,7 +247,7 @@ def validate_records(airtable_source):
 
     # Email unacceptable records and log to file here
     if unacceptable_records_map:
-        _send_schema_validation_error_email(unacceptable_records_map)
+        send_schema_validation_error_email(unacceptable_records_map)
 
     return pd.DataFrame(acceptable_records)
 
