@@ -12,33 +12,28 @@ engine = create_engine('postgresql://{username}:{password}@{host}/whiteclaw'.for
     host=os.getenv('DATABASE_HOST')))
 
 
-def get_all_records(columns=None):
+def get_all_records():
     with db_session(engine) as session:
         # Get all records for now, join on all tables
         table_infos = db_model_config['supplementary_table_info']
 
         # Create list of entity_name keys such as "age_name" which would be "Youth (13-17)"
-        entity_names = [f"{t['entity']}" for t in table_infos if (columns is None or t['entity'] in columns)]
+        entity_names = [f"{t['entity']}" for t in table_infos]
 
         # Create list of fields in AirtableSource to query unless the specific columns are specified
         field_strings = ['source_name', 'source_type', 'study_status', 'country', 'denominator_value',
                          'overall_risk_of_bias', 'serum_pos_prevalence', 'isotype_igm', 'isotype_iga',
                          'isotype_igg', 'sex', 'sampling_end_date', 'estimate_grade']
 
-        # If columns are specified, just take the field strings from the Airtable Source table that are in columns
-        if columns is not None:
-            field_strings = [i for i in field_strings if i in columns or (any("isotype" in s for s in columns)
-                                                                          and "isotype" in i)]
         fields_list = [AirtableSource.source_id]
         for field_string in field_strings:
             fields_list.append(getattr(AirtableSource, field_string))
 
         for table_info in table_infos:
-            # If columns are specified, only table bridge table fields in the columns list
-            if columns is None or table_info['entity'] in columns:
-                # The label method returns an alias for the column being queried
-                # Use case: We want to get fields from the bridge table without the _name suffix
-                fields_list.append(getattr(table_info["main_table"], f"{table_info['entity']}_name").label(table_info['entity']))
+            # The label method returns an alias for the column being queried
+            # Use case: We want to get fields from the bridge table without the _name suffix
+            fields_list.append(getattr(table_info["main_table"], f"{table_info['entity']}_name").label(
+                table_info['entity']))
 
         query = session.query(*fields_list)
 
@@ -46,17 +41,15 @@ def get_all_records(columns=None):
         # e.g., an entry may be associated with two different age groups, "Youth (13-17)" and "Children (0-12)"
         # Gather up all of these rows
         for table_info in table_infos:
-            # If columns are specified, only join bridge tables with linking fields in the columns list
-            if columns is None or table_info['entity'] in columns:
-                bridge_table = table_info["bridge_table"]
-                main_table = table_info["main_table"]
-                entity = f"{table_info['entity']}_id"
-                try:
-                    query = query.join(bridge_table, getattr(bridge_table, "source_id") ==
-                                       AirtableSource.source_id, isouter=True) \
-                        .join(main_table, getattr(main_table, entity) == getattr(bridge_table, entity), isouter=True)
-                except Exception as e:
-                    print(e)
+            bridge_table = table_info["bridge_table"]
+            main_table = table_info["main_table"]
+            entity = f"{table_info['entity']}_id"
+            try:
+                query = query.join(bridge_table, getattr(bridge_table, "source_id") ==
+                                   AirtableSource.source_id, isouter=True) \
+                    .join(main_table, getattr(main_table, entity) == getattr(bridge_table, entity), isouter=True)
+            except Exception as e:
+                print(e)
         query = query.all()
         query_dict = [q._asdict() for q in query]
 
@@ -83,16 +76,14 @@ def get_all_records(columns=None):
             else:
                 processed_record = reduce(reduce_entities, record_list)
 
-            # Isotypes_reported should be included if no columns specified or
-            # if isotypes_reported is supplied in the columns argument
-            if columns is None or 'isotypes_reported' in columns:
-                processed_record['isotypes_reported'] = []
-                isotype_mapping = {'isotype_igm': 'IgM', 'isotype_iga': 'IgA', 'isotype_igg': 'IgG'}
+            # Format isotypes reported column
+            processed_record['isotypes_reported'] = []
+            isotype_mapping = {'isotype_igm': 'IgM', 'isotype_iga': 'IgA', 'isotype_igg': 'IgG'}
 
-                for k, v in isotype_mapping.items():
-                    if processed_record.get(k, None) is not None:
-                        processed_record['isotypes_reported'].append(v)
-                    processed_record.pop(k, None)
+            for k, v in isotype_mapping.items():
+                if processed_record.get(k, None) is not None:
+                    processed_record['isotypes_reported'].append(v)
+                processed_record.pop(k, None)
             return processed_record
 
         # `query_dicts` is a list of rows (represented as dicts) with unique source_id and lists of 
@@ -113,7 +104,7 @@ Output: set of records represented by dicts
 
 
 def get_filtered_records(filters=None, columns=None, start_date=None, end_date=None):
-    query_dicts = get_all_records(columns)
+    query_dicts = get_all_records()
     if query_dicts is None or len(query_dicts) == 0:
         return []
 
@@ -152,8 +143,10 @@ def get_filtered_records(filters=None, columns=None, start_date=None, end_date=N
 
     result = list(filter(lambda x: date_filter(x, start_date=start_date, end_date=end_date), result))
 
+    # Finally, if columns have been supplied, only return those columns
+    if columns is not None:
+        result = [{k:v} for i in result for k,v in i.items() if k in columns]
     return result
-
 
 '''
 Note: `page_index` is zero-indexed here!
