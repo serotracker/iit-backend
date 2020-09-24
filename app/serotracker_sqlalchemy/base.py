@@ -15,6 +15,6 @@ def db_session(engine):
     except Exception as e:
         logging.debug('Database session exception occurred: {}'.format(e))
         session.rollback()
+        raise e
     finally:
         session.close()
-

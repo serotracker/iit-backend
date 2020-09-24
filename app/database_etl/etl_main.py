@@ -308,4 +308,3 @@ if __name__ == '__main__':
     beginning = time()
     main()
     diff = time() - beginning
-    print(diff)
