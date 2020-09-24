@@ -2,11 +2,13 @@ import os
 import subprocess
 
 from dotenv import load_dotenv
+from flask_migrate import Migrate
 from flask_script import Manager
 from app import app, db
 
 load_dotenv()
 manager = Manager(app)
+migrate = Migrate(app, db)
 
 
 @manager.command
