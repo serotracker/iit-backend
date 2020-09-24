@@ -5,14 +5,16 @@ import logging
 from datetime import datetime
 from uuid import uuid4
 from time import time
+from marshmallow import ValidationError, INCLUDE
 
 import pandas as pd
 from sqlalchemy import create_engine
 from app.serotracker_sqlalchemy import db_session, AirtableSource, City, State, \
     Age, PopulationGroup, TestManufacturer, ApprovingRegulator, TestType, \
     SpecimenType, CityBridge, StateBridge, AgeBridge, PopulationGroupBridge, \
-    TestManufacturerBridge, ApprovingRegulatorBridge, TestTypeBridge, SpecimenTypeBridge
+    TestManufacturerBridge, ApprovingRegulatorBridge, TestTypeBridge, SpecimenTypeBridge, AirtableSourceSchema
 from app.utils import airtable_fields_config, send_api_error_email
+from app.utils.send_error_email import send_schema_validation_error_email
 
 logger = logging.getLogger(__name__)
 
@@ -231,6 +233,28 @@ def drop_old_entries(engine):
     return
 
 
+def validate_records(airtable_source):
+    airtable_source_dicts = airtable_source.to_dict(orient='records')
+    acceptable_records = []
+    unacceptable_records_map = {}  # Map each record to its error messages
+    schema = AirtableSourceSchema()
+    for record in airtable_source_dicts:
+        try:
+            payload = schema.load(record, unknown=INCLUDE)
+            acceptable_records.append(record)
+        except ValidationError as err:
+            unacceptable_records_map[record] = err.messages
+
+    # Email unacceptable records and log to file here
+    if unacceptable_records_map:
+        send_schema_validation_error_email(unacceptable_records_map)
+
+    if acceptable_records:
+        return pd.DataFrame(acceptable_records)
+
+    exit("EXITING – No acceptable records found.")
+
+
 def main():
     # Create engine to connect to whiteclaw database
     engine = create_engine('postgresql://{username}:{password}@localhost/whiteclaw'.format(
@@ -256,6 +280,9 @@ def main():
 
     # Create airtable source df
     airtable_source = create_airtable_source_df(data)
+
+    # Validate the airtable source df
+    airtable_source = validate_records(airtable_source)
 
     # Create dictionary to store multi select tables
     multi_select_tables_dict = create_multi_select_tables(data, multi_select_cols)
