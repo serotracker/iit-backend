@@ -9,6 +9,7 @@ from marshmallow import ValidationError, INCLUDE
 
 import pandas as pd
 from sqlalchemy import create_engine
+from app import db
 from app.serotracker_sqlalchemy import db_session, AirtableSource, City, State, \
     Age, PopulationGroup, TestManufacturer, ApprovingRegulator, TestType, \
     SpecimenType, CityBridge, StateBridge, AgeBridge, PopulationGroupBridge, \
@@ -228,7 +229,7 @@ def drop_old_entries(engine):
     with db_session(engine) as session:
         for table in all_tables:
             # Drop record if it was not added during the current run
-            query = session.query(table).filter(table.created_at != CURR_TIME).delete()
+            session.query(table).filter(table.created_at != CURR_TIME).delete()
         session.commit()
     return
 
@@ -240,7 +241,7 @@ def validate_records(airtable_source):
     schema = AirtableSourceSchema()
     for record in airtable_source_dicts:
         try:
-            payload = schema.load(record, unknown=INCLUDE)
+            schema.load(record, unknown=INCLUDE)
             acceptable_records.append(record)
         except ValidationError as err:
             unacceptable_records_map[record] = err.messages
