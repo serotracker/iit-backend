@@ -9,7 +9,6 @@ from marshmallow import ValidationError, INCLUDE
 
 import pandas as pd
 from sqlalchemy import create_engine
-from app import db
 from app.serotracker_sqlalchemy import db_session, AirtableSource, City, State, \
     Age, PopulationGroup, TestManufacturer, ApprovingRegulator, TestType, \
     SpecimenType, CityBridge, StateBridge, AgeBridge, PopulationGroupBridge, \
@@ -244,7 +243,7 @@ def validate_records(airtable_source):
             schema.load(record, unknown=INCLUDE)
             acceptable_records.append(record)
         except ValidationError as err:
-            unacceptable_records_map[record] = err.messages
+            unacceptable_records_map[record['source_name']] = err.messages
 
     # Email unacceptable records and log to file here
     if unacceptable_records_map:

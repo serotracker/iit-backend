@@ -17,6 +17,13 @@ def run():
         subprocess.call(['gunicorn', '--bind', '0.0.0.0:5000', 'wsgi:app'])
 
 
+@manager.shell
+def make_shell_context():
+    from flask_sqlalchemy import get_debug_queries
+    from app.serotracker_sqlalchemy.models import AirtableSource
+    return dict(app=app, db=db, gq=get_debug_queries(), AirtableSource=AirtableSource)
+
+
 @manager.command
 def test():
     if os.getenv('FLASK_ENV') == 'test':
@@ -27,4 +34,3 @@ def test():
 
 if __name__ == '__main__':
     manager.run()
-
