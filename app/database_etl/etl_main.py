@@ -6,6 +6,7 @@ from datetime import datetime
 from uuid import uuid4
 from time import time
 from marshmallow import ValidationError, INCLUDE
+from dotenv import load_dotenv
 
 import pandas as pd
 from sqlalchemy import create_engine
@@ -16,6 +17,7 @@ from app.serotracker_sqlalchemy import db_session, AirtableSource, City, State, 
 from app.utils import airtable_fields_config, send_api_error_email
 from app.utils.send_error_email import send_schema_validation_error_email
 
+load_dotenv()
 logger = logging.getLogger(__name__)
 
 AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
