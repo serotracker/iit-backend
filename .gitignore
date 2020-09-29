@@ -1,5 +1,5 @@
 # Alembic Configuration
-alembic.ini
+migrations/alembic.ini
 
 # Cached Results
 cached_results.json

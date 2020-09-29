@@ -83,7 +83,7 @@ would start the app, but subsitute the ```run``` command for the ```shell``` com
 
 FINALLY:
 3. Delete the value of the ```version_num``` in the ```alembic_version``` table. Use
-```DELETE * FROM alembic_version```.
+```DELETE FROM alembic_version```.
 
 4. Delete your ```alembic``` folder where you previously stored all the migrations.
 
@@ -91,6 +91,8 @@ FINALLY:
 
 1. Make sure you are on the latest version of the branch. You should see a folder called 
 ```migrations``` at the top level (same level as ```app```)
+
+2. Move the ```alembic.ini``` file at the top level into your new ```migrations``` folder.
 
 2. Add the following environment variables to the ```.env``` file at the top level:
 * ```DATABASE_USERNAME=your_database_username```
