@@ -194,33 +194,14 @@ def create_bridge_tables(original_data, multi_select_tables):
                     option_id = multi_select_table[multi_select_table[name_col] == option].iloc[0][id_col]
                     new_row = {'id': uuid4(), 'source_id': source_id, id_col: option_id, 'created_at': CURR_TIME}
                     bridge_table_df = bridge_table_df.append(new_row, ignore_index=True)
-        bridge_tables_dict[col] = bridge_table_df
+        bridge_tables_dict[f'{col}_bridge'] = bridge_table_df
     return bridge_tables_dict
 
 
-def load_postgres_tables(airtable_table, country_df, multi_select_tables_dict, bridge_tables_dict, engine):
+def load_postgres_tables(tables_dict, engine):
     # Load dataframes into postgres tables
-    airtable_table.to_sql('airtable_source',
-                          schema='public',
-                          con=engine,
-                          if_exists='append',
-                          index=False)
-
-    country_df.to_sql('country',
-                          schema='public',
-                          con=engine,
-                          if_exists='append',
-                          index=False)
-
-    for table_name, table_value in multi_select_tables_dict.items():
+    for table_name, table_value in tables_dict.items():
         table_value.to_sql(table_name,
-                           schema='public',
-                           con=engine,
-                           if_exists='append',
-                           index=False)
-
-    for table_name, table_value in bridge_tables_dict.items():
-        table_value.to_sql('{}_bridge'.format(table_name),
                            schema='public',
                            con=engine,
                            if_exists='append',
@@ -315,8 +296,13 @@ def main():
                                                     'test_manufacturer', 'approving_regulator', 'test_type',
                                                     'specimen_type', 'country'])
 
+    # key = table name, value = table df
+    tables_dict = {**multi_select_tables_dict, **bridge_tables_dict}
+    tables_dict['airtable_source'] = airtable_source
+    tables_dict['country'] = country_df
+
     # Load dataframes into postgres tables
-    load_postgres_tables(airtable_source, country_df, multi_select_tables_dict, bridge_tables_dict, engine)
+    load_postgres_tables(tables_dict, engine)
 
     # Delete old entries
     drop_old_entries(engine)
