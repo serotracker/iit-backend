@@ -198,9 +198,15 @@ def create_bridge_tables(original_data, multi_select_tables):
     return bridge_tables_dict
 
 
-def load_postgres_tables(airtable_table, multi_select_tables_dict, bridge_tables_dict, engine):
+def load_postgres_tables(airtable_table, country_df, multi_select_tables_dict, bridge_tables_dict, engine):
     # Load dataframes into postgres tables
     airtable_table.to_sql('airtable_source',
+                          schema='public',
+                          con=engine,
+                          if_exists='append',
+                          index=False)
+
+    country_df.to_sql('country',
                           schema='public',
                           con=engine,
                           if_exists='append',
@@ -284,6 +290,18 @@ def main():
     # Create airtable source df
     airtable_source = create_airtable_source_df(data)
 
+    # Create country table df
+    country_df = pd.DataFrame(columns=['country_name', 'country_id'])
+    country_df['country_name'] = airtable_source['country'].unique()
+    country_df['country_id'] = [uuid4() for i in range(len(country_df['country_name']))]
+
+    # Add country_id's to airtable_source df
+    # country_dict maps country_name to country_id
+    country_dict = {}
+    for index, row in country_df.iterrows():
+        country_dict[row['country_name']] = row['country_id']
+    airtable_source['country_id'] = airtable_source['country'].map(lambda a: country_dict[a])
+
     # Validate the airtable source df
     airtable_source = validate_records(airtable_source)
 
@@ -296,10 +314,10 @@ def main():
     # Drop columns that are not needed not needed
     airtable_source = airtable_source.drop(columns=['city', 'state', 'age', 'population_group',
                                                     'test_manufacturer', 'approving_regulator', 'test_type',
-                                                    'specimen_type'])
+                                                    'specimen_type', 'country'])
 
     # Load dataframes into postgres tables
-    load_postgres_tables(airtable_source, multi_select_tables_dict, bridge_tables_dict, engine)
+    load_postgres_tables(airtable_source, country_df, multi_select_tables_dict, bridge_tables_dict, engine)
 
     # Delete old entries
     drop_old_entries()
