@@ -40,6 +40,7 @@ class ApiTestingConfig(ApiConfig):
 class ApiProductionConfig(ApiConfig):
     DEBUG = False
     FLASK_DEBUG = False
+    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI')
 
     def __init__(self):
         super(ApiConfig)
