@@ -1,6 +1,6 @@
 import os
 
-from app.serotracker_sqlalchemy import db_session, AirtableSource, Country, db_model_config
+from app.serotracker_sqlalchemy import db_session, AirtableSource, Country, State, City, db_model_config
 from sqlalchemy import create_engine
 from itertools import groupby
 from functools import reduce
@@ -37,6 +37,13 @@ def get_all_records():
 
         # Alias for country name
         fields_list.append(Country.country_name.label("country"))
+        # Aliases for lat lngs
+        fields_list.append(Country.latitude.label("country_latitude"))
+        fields_list.append(Country.longitude.label("country_longitude"))
+        fields_list.append(State.latitude.label("state_latitude"))
+        fields_list.append(State.longitude.label("state_longitude"))
+        fields_list.append(City.latitude.label("city_latitude"))
+        fields_list.append(City.longitude.label("city_longitude"))
 
         query = session.query(*fields_list)
 
