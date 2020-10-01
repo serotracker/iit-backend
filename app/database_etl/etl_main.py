@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 
 import pandas as pd
 from sqlalchemy import create_engine
-from app.serotracker_sqlalchemy import db_session, AirtableSource, City, State, \
+from app.serotracker_sqlalchemy import db_session, AirtableSource, Country, City, State, \
     Age, PopulationGroup, TestManufacturer, ApprovingRegulator, TestType, \
     SpecimenType, CityBridge, StateBridge, AgeBridge, PopulationGroupBridge, \
     TestManufacturerBridge, ApprovingRegulatorBridge, TestTypeBridge, SpecimenTypeBridge, AirtableSourceSchema
@@ -211,7 +211,7 @@ def load_postgres_tables(tables_dict, engine):
 
 def drop_old_entries(engine):
     all_tables = [AirtableSource, City, State, Age, PopulationGroup,
-                  TestManufacturer, ApprovingRegulator, TestType, SpecimenType,
+                  TestManufacturer, ApprovingRegulator, TestType, SpecimenType, Country,
                   CityBridge, StateBridge, AgeBridge, PopulationGroupBridge,
                   TestManufacturerBridge, ApprovingRegulatorBridge, TestTypeBridge, SpecimenTypeBridge]
     with db_session(engine) as session:
@@ -243,6 +243,22 @@ def validate_records(airtable_source):
 
     exit("EXITING – No acceptable records found.")
 
+def get_coords(place_name, place_type):
+    url = f"https://api.mapbox.com/geocoding/v5/mapbox.places/{place_name}.json?" \
+          f"access_token={os.getenv('MAPBOX_API_KEY')}"
+    r = requests.get(url)
+    data = r.json()
+    coords = None
+    if data is not None and "features" in data and len(data['features']) > 0:
+        # Check if we have any results of the right place type
+        # Otherwise fallback to the first result we get
+        for feature in data['features']:
+            if place_type in feature['place_type']:
+                coords = feature['center']
+                break
+        if coords is None:
+            coords = data['features'][0]['center']
+    return coords
 
 def main():
     # Create engine to connect to whiteclaw database
@@ -274,6 +290,11 @@ def main():
     country_df = pd.DataFrame(columns=['country_name', 'country_id'])
     country_df['country_name'] = airtable_source['country'].unique()
     country_df['country_id'] = [uuid4() for i in range(len(country_df['country_name']))]
+    country_df['created_at'] = CURR_TIME
+    country_df['coords'] = country_df['country_name'].map(lambda a: get_coords(a, 'country'))
+    country_df['longitude'] = country_df['coords'].map(lambda a: a[0] if isinstance(a, list) else None)
+    country_df['latitude'] = country_df['coords'].map(lambda a: a[1] if isinstance(a, list) else None)
+    country_df = country_df.drop(columns=['coords'])
 
     # Add country_id's to airtable_source df
     # country_dict maps country_name to country_id
