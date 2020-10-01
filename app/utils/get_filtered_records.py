@@ -1,6 +1,6 @@
 import os
 
-from app.serotracker_sqlalchemy import db_session, AirtableSource, db_model_config
+from app.serotracker_sqlalchemy import db_session, AirtableSource, Country, db_model_config
 from sqlalchemy import create_engine
 from itertools import groupby
 from functools import reduce
@@ -21,7 +21,7 @@ def get_all_records():
         entity_names = [f"{t['entity']}" for t in table_infos]
 
         # Create list of fields in AirtableSource to query unless the specific columns are specified
-        field_strings = ['source_name', 'source_type', 'study_status', 'country', 'denominator_value',
+        field_strings = ['source_name', 'source_type', 'study_status', 'denominator_value',
                          'overall_risk_of_bias', 'serum_pos_prevalence', 'isotype_igm', 'isotype_iga',
                          'isotype_igg', 'sex', 'sampling_end_date', 'estimate_grade']
 
@@ -34,6 +34,9 @@ def get_all_records():
             # Use case: We want to get fields from the bridge table without the _name suffix
             fields_list.append(getattr(table_info["main_table"], f"{table_info['entity']}_name").label(
                 table_info['entity']))
+
+        # Alias for country name
+        fields_list.append(Country.country_name.label("country"))
 
         query = session.query(*fields_list)
 
@@ -50,6 +53,8 @@ def get_all_records():
                     .join(main_table, getattr(main_table, entity) == getattr(bridge_table, entity), isouter=True)
             except Exception as e:
                 print(e)
+        # Join on country table
+        query = query.join(Country, Country.country_id == AirtableSource.country_id, isouter=True)
         query = query.all()
         query_dict = [q._asdict() for q in query]
 
