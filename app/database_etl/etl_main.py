@@ -260,6 +260,13 @@ def get_coords(place_name, place_type):
             coords = data['features'][0]['center']
     return coords
 
+def add_latlng_to_df(place_type, name_col, df):
+    df['coords'] = df[name_col].map(lambda a: get_coords(a, place_type))
+    df['longitude'] = df['coords'].map(lambda a: a[0] if isinstance(a, list) else None)
+    df['latitude'] = df['coords'].map(lambda a: a[1] if isinstance(a, list) else None)
+    df = df.drop(columns=['coords'])
+    return df
+
 def main():
     # Create engine to connect to whiteclaw database
     engine = create_engine('postgresql://{username}:{password}@localhost/whiteclaw'.format(
@@ -291,10 +298,7 @@ def main():
     country_df['country_name'] = airtable_source['country'].unique()
     country_df['country_id'] = [uuid4() for i in range(len(country_df['country_name']))]
     country_df['created_at'] = CURR_TIME
-    country_df['coords'] = country_df['country_name'].map(lambda a: get_coords(a, 'country'))
-    country_df['longitude'] = country_df['coords'].map(lambda a: a[0] if isinstance(a, list) else None)
-    country_df['latitude'] = country_df['coords'].map(lambda a: a[1] if isinstance(a, list) else None)
-    country_df = country_df.drop(columns=['coords'])
+    country_df = add_latlng_to_df("country", "country_name", country_df)
 
     # Add country_id's to airtable_source df
     # country_dict maps country_name to country_id
@@ -308,6 +312,11 @@ def main():
 
     # Create dictionary to store multi select tables
     multi_select_tables_dict = create_multi_select_tables(data, multi_select_cols)
+    # Add lat/lng to cities and states
+    state_df = add_latlng_to_df("region", "state_name", multi_select_tables_dict["state"])
+    city_df = add_latlng_to_df("place", "city_name", multi_select_tables_dict["city"])
+    multi_select_tables_dict["state"] = state_df
+    multi_select_tables_dict["city"] = city_df
 
     # Create dictionary to store bridge tables
     bridge_tables_dict = create_bridge_tables(airtable_source, multi_select_tables_dict)
