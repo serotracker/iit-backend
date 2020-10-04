@@ -259,9 +259,10 @@ def validate_records(airtable_source):
 
 def main():
     # Create engine to connect to whiteclaw database
-    engine = create_engine('postgresql://{username}:{password}@localhost/whiteclaw'.format(
+    engine = create_engine('postgresql://{username}:{password}@{host_address}/whiteclaw'.format(
         username=os.getenv('DATABASE_USERNAME'),
-        password=os.getenv('DATABASE_PASSWORD')))
+        password=os.getenv('DATABASE_PASSWORD'),
+        host_address=os.getenv('DATABASE_HOST_ADDRESS')))
 
     # Get all records with airtable API request and load into dataframe
     json = get_all_records()
