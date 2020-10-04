@@ -53,106 +53,64 @@ Once on the pgAdmin dashboard, create a new server named `serotracker` (right cl
 
 Inside your new server, `serotracker`, create a new database named `whiteclaw`.  
 
-### Alembic
+## Changing Alembic to use Flask SQLAlchemy
 
-Create a file named `alembic.ini` at the top level and paste the following: 
+We are switching to use Flask migrations instead of just Alembic. Here is how to switch over:
 
-```bash
-# A generic, single database configuration.
+## Delete Previous Tables & Migrations
 
-[alembic]
-# path to migration scripts
-script_location = alembic
+1. Make sure you are on ```architecture-v2``` branch. We aren't merging to master yet due to
+rearchitecture.
+2. Drop all the tables in the ```public``` schema in your local Postgres.
 
-# template used to generate migration files
-# file_template = %%(rev)s_%%(slug)s
+  * You can do this manually by querying ```DROP TABLE public.<table_name>``` in Postgres for every table in the schema EXCEPT the
+  ```alembic_version``` table (do not delete this!).
 
-# timezone to use when rendering the date
-# within the migration file as well as the filename.
-# string value is passed to dateutil.tz.gettz()
-# leave blank for localtime
-# timezone =
+  * You can leverage the application's shell, and the attached db to drop all associated tables.
 
-# max length of characters to apply to the
-# "slug" field
-# truncate_slug_length = 40
+    * Run ```python manage.py shell``` in your terminal. You will need all the environment variables that
+you currently use to run the app through ```python manage.py run```, so just start the shell like you
+would start the app, but subsitute the ```run``` command for the ```shell``` command.
 
-# set to 'true' to run the environment during
-# the 'revision' command, regardless of autogenerate
-# revision_environment = false
+    * The application's shell should start (look's like a Python console)
 
-# set to 'true' to allow .pyc and .pyo files without
-# a source .py file to be detected as revisions in the
-# versions/ directory
-# sourceless = false
+    * Run ```from flask import current_app as app, db```
 
-# version location specification; this defaults
-# to alembic/versions.  When using multiple version
-# directories, initial revisions must be specified with --version-path
-# version_locations = %(here)s/bar %(here)s/bat alembic/versions
+    * Run ```db.drop_all()```
 
-# the output encoding used when revision files
-# are written from script.py.mako
-# output_encoding = utf-8
+    * Check your Postgres server to see that the only table left in the ```public``` schema is the
+```alembic_version``` table.
 
-sqlalchemy.url = postgresql://{USERNAME}:{PASSWORD}@localhost:5432/whiteclaw
+FINALLY:
+3. Delete the value of the ```version_num``` in the ```alembic_version``` table. Use
+```DELETE FROM alembic_version```.
 
-[post_write_hooks]
-# post_write_hooks defines scripts or Python functions that are run
-# on newly generated revision scripts.  See the documentation for further
-# detail and examples
+4. Delete your ```alembic``` folder where you previously stored all the migrations.
 
-# format using "black" - use the console_scripts runner, against the "black" entrypoint
-# hooks=black
-# black.type=console_scripts
-# black.entrypoint=black
-# black.options=-l 79
+## Upgrade to Using Newest Migrations
 
-# Logging configuration
-[loggers]
-keys = root,sqlalchemy,alembic
+1. Make sure you are on the latest version of the branch. You should see a folder called 
+```migrations``` at the top level (same level as ```app```)
 
-[handlers]
-keys = console
+2. Move the ```alembic.ini``` file at the top level into your new ```migrations``` folder.
 
-[formatters]
-keys = generic
+2. Add the following environment variables to the ```.env``` file at the top level:
+* ```DATABASE_USERNAME=your_database_username```
+* ```DATABASE_PASSWORD=your_database_password```
+* ```DATABASE_NAME=whiteclaw```
 
-[logger_root]
-level = WARN
-handlers = console
-qualname =
-
-[logger_sqlalchemy]
-level = WARN
-handlers =
-qualname = sqlalchemy.engine
-
-[logger_alembic]
-level = INFO
-handlers =
-qualname = alembic
-
-[handler_console]
-class = StreamHandler
-args = (sys.stderr,)
-level = NOTSET
-formatter = generic
-
-[formatter_generic]
-format = %(levelname)-5.5s [%(name)s] %(message)s
-datefmt = %H:%M:%S
-```
+Finally, apply the migration to upgrade your ```alembic_version``` table to the latest version, and 
+recreate all the tables in the schema: ```flask db upgrade```
 
 ### Run migrations
-1. In the terminal, run ```alembic upgrade head```.
+1. In the terminal, run ```flask db upgrade```.
 
-    This will run the migration with the most recent version code in ```alembic/versions``` and bring your database
+    This will run the migration with the most recent version code in ```migrations/versions``` and bring your database
     to the most up-to-date state with all the necessary tables.
 
 2. Check that new tables have been created in the whitelcaw database running on your local Postgres server.
 
-3. To revert a migration, run ```alembic downgrade -1```
+3. To revert a migration, run ```flask db downgrade```
 
 
 ### Populate local database

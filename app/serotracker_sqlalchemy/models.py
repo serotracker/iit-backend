@@ -1,12 +1,10 @@
-from sqlalchemy.ext.declarative import declarative_base
+from app import db
 from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime
 from sqlalchemy.dialects.postgresql import UUID
 
-Base = declarative_base()
-
 
 # Create airtable source table
-class AirtableSource(Base):
+class AirtableSource(db.Model):
     __tablename__ = 'airtable_source'
 
     source_id = Column(UUID, primary_key=True)
@@ -40,7 +38,7 @@ class AirtableSource(Base):
 
 
 # Create base multi select tables
-class City(Base):
+class City(db.Model):
     __tablename__ = 'city'
 
     city_id = Column(UUID, primary_key=True)
@@ -48,7 +46,7 @@ class City(Base):
     created_at = Column(DateTime)
 
 
-class State(Base):
+class State(db.Model):
     __tablename__ = 'state'
 
     state_id = Column(UUID, primary_key=True)
@@ -56,7 +54,7 @@ class State(Base):
     created_at = Column(DateTime)
 
 
-class Age(Base):
+class Age(db.Model):
     __tablename__ = 'age'
 
     age_id = Column(UUID, primary_key=True)
@@ -64,7 +62,7 @@ class Age(Base):
     created_at = Column(DateTime)
 
 
-class PopulationGroup(Base):
+class PopulationGroup(db.Model):
     __tablename__ = 'population_group'
 
     population_group_id = Column(UUID, primary_key=True)
@@ -72,7 +70,7 @@ class PopulationGroup(Base):
     created_at = Column(DateTime)
 
 
-class TestManufacturer(Base):
+class TestManufacturer(db.Model):
     __tablename__ = 'test_manufacturer'
 
     test_manufacturer_id = Column(UUID, primary_key=True)
@@ -80,7 +78,7 @@ class TestManufacturer(Base):
     created_at = Column(DateTime)
 
 
-class ApprovingRegulator(Base):
+class ApprovingRegulator(db.Model):
     __tablename__ = 'approving_regulator'
 
     approving_regulator_id = Column(UUID, primary_key=True)
@@ -88,7 +86,7 @@ class ApprovingRegulator(Base):
     created_at = Column(DateTime)
 
 
-class TestType(Base):
+class TestType(db.Model):
     __tablename__ = 'test_type'
 
     test_type_id = Column(UUID, primary_key=True)
@@ -96,7 +94,7 @@ class TestType(Base):
     created_at = Column(DateTime)
 
 
-class SpecimenType(Base):
+class SpecimenType(db.Model):
     __tablename__ = 'specimen_type'
 
     specimen_type_id = Column(UUID, primary_key=True)
@@ -105,7 +103,7 @@ class SpecimenType(Base):
 
 
 # Create bridge tables
-class CityBridge(Base):
+class CityBridge(db.Model):
     __tablename__ = 'city_bridge'
 
     id = Column(UUID, primary_key=True)
@@ -114,7 +112,7 @@ class CityBridge(Base):
     created_at = Column(DateTime)
 
 
-class StateBridge(Base):
+class StateBridge(db.Model):
     __tablename__ = 'state_bridge'
 
     id = Column(UUID, primary_key=True)
@@ -123,7 +121,7 @@ class StateBridge(Base):
     created_at = Column(DateTime)
 
 
-class AgeBridge(Base):
+class AgeBridge(db.Model):
     __tablename__ = 'age_bridge'
 
     id = Column(UUID, primary_key=True)
@@ -132,7 +130,7 @@ class AgeBridge(Base):
     created_at = Column(DateTime)
 
 
-class PopulationGroupBridge(Base):
+class PopulationGroupBridge(db.Model):
     __tablename__ = 'population_group_bridge'
 
     id = Column(UUID, primary_key=True)
@@ -141,7 +139,7 @@ class PopulationGroupBridge(Base):
     created_at = Column(DateTime)
 
 
-class TestManufacturerBridge(Base):
+class TestManufacturerBridge(db.Model):
     __tablename__ = 'test_manufacturer_bridge'
 
     id = Column(UUID, primary_key=True)
@@ -150,7 +148,7 @@ class TestManufacturerBridge(Base):
     created_at = Column(DateTime)
 
 
-class ApprovingRegulatorBridge(Base):
+class ApprovingRegulatorBridge(db.Model):
     __tablename__ = 'approving_regulator_bridge'
 
     id = Column(UUID, primary_key=True)
@@ -159,7 +157,7 @@ class ApprovingRegulatorBridge(Base):
     created_at = Column(DateTime)
 
 
-class TestTypeBridge(Base):
+class TestTypeBridge(db.Model):
     __tablename__ = 'test_type_bridge'
 
     id = Column(UUID, primary_key=True)
@@ -168,7 +166,7 @@ class TestTypeBridge(Base):
     created_at = Column(DateTime)
 
 
-class SpecimenTypeBridge(Base):
+class SpecimenTypeBridge(db.Model):
     __tablename__ = 'specimen_type_bridge'
 
     id = Column(UUID, primary_key=True)
