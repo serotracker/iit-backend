@@ -20,7 +20,8 @@ research_fields = ['Source Name', 'Publication Date', 'First Author Full Name', 
                    'Independent Se n', 'Independent Sp', 'Independent Sp n', 'Independent Eval Link',
                    'Independent Eval Lab', 'Average age', 'Measure of age', 'Age variation', 'Age variation measure',
                    'Number of females', 'Number of males', 'Prevalence Estimate Name', 'Rapid Review Study Name (Text)',
-                   'Primary Estimate (Text)', 'Notes on Sample Frame']
+                   'Primary Estimate (Text)', 'Notes on Sample Frame', 'Academic Primary Estimate', 
+                   'Dashboard Primary Estimate', 'Isotype combination', 'Dashboard or Weekly Report']                        
 
 full_airtable_fields = {'Source Name': 'SOURCE_NAME',
                         'Publication Date': 'PUB_DATE',
@@ -89,7 +90,12 @@ full_airtable_fields = {'Source Name': 'SOURCE_NAME',
                         'Prevalence Estimate Name': 'ESTIMATE_NAME',
                         'Rapid Review Study Name (Text)': 'STUDY_NAME',
                         'Primary Estimate (Text)': 'PRIMARY_ESTIMATE',
-                        'Notes on Sample Frame': 'SAMPLE_FRAME_INFO'}
+                        'Notes on Sample Frame': 'SAMPLE_FRAME_INFO',
+                        'Academic Primary Estimate': 'ACADEMIC_PRIMARY_ESTIMATE',
+                        'Dashboard Primary Estimate': 'DASHBOARD_PRIMARY_ESTIMATE',
+                        'Isotype combination': 'ISOTYPE_COMB',
+                        'Dashboard or Weekly Report': 'DASHBOARD_WEEKLY_REPORT',
+                        }
 
 airtable_fields_config = {'dashboard': {k: full_airtable_fields[k] for k in dashboard_fields},
                           'research': {k: full_airtable_fields[k] for k in research_fields}}
