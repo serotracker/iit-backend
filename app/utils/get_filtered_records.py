@@ -145,7 +145,13 @@ def get_filtered_records(filters=None, columns=None, start_date=None, end_date=N
 
     # Finally, if columns have been supplied, only return those columns
     if columns is not None:
-        result = [{k:v} for i in result for k,v in i.items() if k in columns]
+        def grab_cols(result, columns):
+            ret = {}
+            for col in columns:
+                ret[col] = result.get(col)
+            return ret
+
+        result = [grab_cols(i, columns) for i in result]
     return result
 
 '''
