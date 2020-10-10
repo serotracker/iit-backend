@@ -113,7 +113,9 @@ def get_filtered_records(filters=None, columns=None, start_date=None, end_date=N
     # Return all records if no filters are passed in
     if filters:
         def should_include(d, k, v):
-            if isinstance(d[k], str) and d[k] in v:
+            if len(v) == 0:
+                return True
+            elif isinstance(d[k], str) and d[k] in v:
                 return True
             elif isinstance(d[k], list) and set(d[k]).intersection(set(v)):
                 return True
