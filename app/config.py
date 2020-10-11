@@ -5,7 +5,7 @@ class ApiConfig:
     DEBUG = True
     FLASK_DEBUG = True
     APP_NAMESPACES = os.getenv('APP_NAMESPACES', ['healthcheck', 'data_provider',
-                                                  'cases_count_scraper', 'meta_analysis'])
+                                                  'cases_count_scraper', 'meta_analysis', 'airtable_scraper'])
     # Airtable config vars
     AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
     AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
