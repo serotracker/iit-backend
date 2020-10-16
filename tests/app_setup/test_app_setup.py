@@ -8,7 +8,7 @@ def test_flask_environment_variable():
 
 def test_app_namespaces(app):
     app_namespaces = app.config['APP_NAMESPACES']
-    namespace_options = ['healthcheck', 'data_provider', 'cases_count_scraper', 'meta_analysis']
+    namespace_options = ['airtable_scraper', 'healthcheck', 'data_provider', 'cases_count_scraper', 'meta_analysis']
     for namespace in app_namespaces:
         assert namespace in namespace_options
 
@@ -59,12 +59,13 @@ def test_meta_analysis_vars(app):
 def test_db_variables(app):
     db_username = app.config['DATABASE_USERNAME']
     db_pass = app.config['DATABASE_PASSWORD']
-    db_host = app.config['DATABASE_HOST']
+    db_host_address = app.config['DATABASE_HOST_ADDRESS']
     db_name = app.config['DATABASE_NAME']
     db_uri = app.config['SQLALCHEMY_DATABASE_URI']
     db_track_modifications = app.config['SQLALCHEMY_TRACK_MODIFICATIONS']
     assert db_username is not None
     assert db_pass is not None
+    assert db_host_address is not None
     assert db_name is not None
     assert db_uri is not None
     assert db_track_modifications is not None
