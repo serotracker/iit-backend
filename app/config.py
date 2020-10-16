@@ -5,7 +5,7 @@ class ApiConfig:
     DEBUG = True
     FLASK_DEBUG = True
     APP_NAMESPACES = os.getenv('APP_NAMESPACES', ['healthcheck', 'data_provider',
-                                                  'cases_count_scraper', 'meta_analysis'])
+                                                  'cases_count_scraper', 'meta_analysis', 'airtable_scraper'])
     # Airtable config vars
     AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
     AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
@@ -40,6 +40,16 @@ class ApiTestingConfig(ApiConfig):
 class ApiProductionConfig(ApiConfig):
     DEBUG = False
     FLASK_DEBUG = False
+    DATABASE_USERNAME = os.getenv('DATABASE_USERNAME')
+    DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD')
+    DATABASE_HOST_ADDRESS = os.getenv('DATABASE_HOST_ADDRESS')
+    DATABASE_NAME = 'whiteclaw'
+    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI',
+                                        'postgresql://{username}:{password}@{host_address}/{database_name}'.format(
+                                            username=DATABASE_USERNAME,
+                                            password=DATABASE_PASSWORD,
+                                            host_address=DATABASE_HOST_ADDRESS,
+                                            database_name=DATABASE_NAME))
 
     def __init__(self):
         super(ApiConfig)

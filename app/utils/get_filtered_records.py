@@ -1,13 +1,18 @@
+import os
+
+from app.serotracker_sqlalchemy import db_session, AirtableSource, db_model_config
 from sqlalchemy import create_engine
 from itertools import groupby
 from functools import reduce
-from flask import current_app as app
 
-from app.serotracker_sqlalchemy import db_session, AirtableSource, db_model_config
+# Create engine to connect to whiteclaw database
+engine = create_engine('postgresql://{username}:{password}@{host}/whiteclaw'.format(
+    username=os.getenv('DATABASE_USERNAME'),
+    password=os.getenv('DATABASE_PASSWORD'),
+    host=os.getenv('DATABASE_HOST_ADDRESS')))
 
 
 def get_all_records():
-    engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
     with db_session(engine) as session:
         # Get all records for now, join on all tables
         table_infos = db_model_config['supplementary_table_info']
@@ -108,7 +113,9 @@ def get_filtered_records(filters=None, columns=None, start_date=None, end_date=N
     # Return all records if no filters are passed in
     if filters:
         def should_include(d, k, v):
-            if isinstance(d[k], str) and d[k] in v:
+            if len(v) == 0:
+                return True
+            elif isinstance(d[k], str) and d[k] in v:
                 return True
             elif isinstance(d[k], list) and set(d[k]).intersection(set(v)):
                 return True
@@ -140,7 +147,13 @@ def get_filtered_records(filters=None, columns=None, start_date=None, end_date=N
 
     # Finally, if columns have been supplied, only return those columns
     if columns is not None:
-        result = [{k:v} for i in result for k,v in i.items() if k in columns]
+        def grab_cols(result, columns):
+            ret = {}
+            for col in columns:
+                ret[col] = result.get(col)
+            return ret
+
+        result = [grab_cols(i, columns) for i in result]
     return result
 
 '''

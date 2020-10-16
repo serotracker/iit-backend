@@ -6,6 +6,7 @@ from datetime import datetime
 from uuid import uuid4
 from time import time
 from marshmallow import ValidationError, INCLUDE
+from dotenv import load_dotenv
 
 import pandas as pd
 from sqlalchemy import create_engine
@@ -16,6 +17,7 @@ from app.serotracker_sqlalchemy import db_session, AirtableSource, City, State, 
 from app.utils import airtable_fields_config, send_api_error_email
 from app.utils.send_error_email import send_schema_validation_error_email
 
+load_dotenv()
 logger = logging.getLogger(__name__)
 
 AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
@@ -228,7 +230,7 @@ def drop_old_entries(engine):
     with db_session(engine) as session:
         for table in all_tables:
             # Drop record if it was not added during the current run
-            query = session.query(table).filter(table.created_at != CURR_TIME).delete()
+            session.query(table).filter(table.created_at != CURR_TIME).delete()
         session.commit()
     return
 
@@ -240,10 +242,10 @@ def validate_records(airtable_source):
     schema = AirtableSourceSchema()
     for record in airtable_source_dicts:
         try:
-            payload = schema.load(record, unknown=INCLUDE)
+            schema.load(record, unknown=INCLUDE)
             acceptable_records.append(record)
         except ValidationError as err:
-            unacceptable_records_map[record] = err.messages
+            unacceptable_records_map[record['source_name']] = err.messages
 
     # Email unacceptable records and log to file here
     if unacceptable_records_map:
@@ -257,9 +259,10 @@ def validate_records(airtable_source):
 
 def main():
     # Create engine to connect to whiteclaw database
-    engine = create_engine('postgresql://{username}:{password}@localhost/whiteclaw'.format(
+    engine = create_engine('postgresql://{username}:{password}@{host_address}/whiteclaw'.format(
         username=os.getenv('DATABASE_USERNAME'),
-        password=os.getenv('DATABASE_PASSWORD')))
+        password=os.getenv('DATABASE_PASSWORD'),
+        host_address=os.getenv('DATABASE_HOST_ADDRESS')))
 
     # Get all records with airtable API request and load into dataframe
     json = get_all_records()

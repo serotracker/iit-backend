@@ -15,7 +15,7 @@ class AirtableSourceSchema(Schema):
     lead_organization = fields.Str(validate=validate.Length(max=128), allow_none=True)
     #sampling_start_date = fields.DateTime()
     #sampling_end_date = fields.DateTime()
-    sex = fields.Str(validate=validate.Length(max=3), allow_none=True)
+    sex = fields.Str(validate=validate.Length(max=16), allow_none=True)
     sampling_method = fields.Str(validate=validate.Length(max=128), allow_none=True)
     sensitivity = fields.Float(allow_none=True, allow_nan=True)
     specificity = fields.Float(allow_none=True, allow_nan=True)

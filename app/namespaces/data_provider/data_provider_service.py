@@ -12,7 +12,7 @@ def _get_engine():
     engine = create_engine('postgresql://{username}:{password}@{host}/whiteclaw'.format(
         username=os.getenv('DATABASE_USERNAME'),
         password=os.getenv('DATABASE_PASSWORD'),
-        host=os.getenv('DATABASE_HOST')))
+        host=os.getenv('DATABASE_HOST_ADDRESS')))
     return engine
 
 
