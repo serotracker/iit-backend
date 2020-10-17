@@ -8,6 +8,13 @@ from flask import current_app as app
 logger = logging.getLogger(__name__)
 
 
+def delete_records(session, records):
+    for record in records:
+        session.delete(record)
+    session.commit()
+    return
+
+
 @contextmanager
 def db_session():
     engine_url = app.config['SQLALCHEMY_DATABASE_URI']
