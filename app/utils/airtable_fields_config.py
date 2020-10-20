@@ -22,7 +22,7 @@ research_fields = ['Source Name', 'Publication Date', 'First Author Full Name', 
                    'Number of females', 'Number of males', 'Prevalence Estimate Name', 'Rapid Review Study Name (Text)',
                    'Primary Estimate (Text)', 'Notes on Sample Frame', 'Academic Primary Estimate', 
                    'Dashboard Primary Estimate', 'Isotype combination', 'Dashboard or Weekly Report', 'Test Name', 
-                   'Numerator Value']                        
+                   'Numerator Value', 'Collaboration Type']                        
 
 full_airtable_fields = {'Source Name': 'SOURCE_NAME',
                         'Publication Date': 'PUB_DATE',
@@ -97,7 +97,8 @@ full_airtable_fields = {'Source Name': 'SOURCE_NAME',
                         'Isotype combination': 'ISOTYPE_COMB',
                         'Dashboard or Weekly Report': 'DASHBOARD_WEEKLY_REPORT',
                         'Test Name': 'TEST_NAME', 
-                        'Numerator Value': 'NUMERATOR_VALUE'
+                        'Numerator Value': 'NUMERATOR_VALUE',
+                        'Collaboration Type': 'COLLAB_TYPE'
                         }
 
 airtable_fields_config = {'dashboard': {k: full_airtable_fields[k] for k in dashboard_fields},
