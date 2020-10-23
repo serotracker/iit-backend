@@ -13,7 +13,7 @@ migrate = Migrate(app, db)
 
 @manager.command
 def run():
-    if os.getenv('FLASK_ENV') == 'test':
+    if os.getenv('FLASK_ENV') == 'dev':
         app.run()
     else:
         subprocess.call(['gunicorn', '--bind', '0.0.0.0:5000', 'wsgi:app'])
