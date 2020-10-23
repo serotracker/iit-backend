@@ -22,7 +22,12 @@ research_fields = ['Source Name', 'Publication Date', 'First Author Full Name', 
                    'Number of females', 'Number of males', 'Prevalence Estimate Name', 'Rapid Review Study Name (Text)',
                    'Primary Estimate (Text)', 'Notes on Sample Frame', 'Academic Primary Estimate', 
                    'Dashboard Primary Estimate', 'Isotype combination', 'Dashboard or Weekly Report', 'Test Name', 
-                   'Numerator Value', 'Collaboration Type']                        
+                   'Numerator Value', 'Collaboration Type', 'Cumulative Case Count on End Date',
+                   'Cumulative Case Count on -9 days from End Date', 'Cumulative Case Count on -14 Days from End Date',
+                   '2020 Population Count - Case', '2020 Population Count - Mortality', 
+                   'Cumulative Covid Mortality Count on +4 Days from End Date', 
+                   'Cumulative Covid Mortality Count on +11 Days from End Date',
+                   'Age Minimum', 'Age Maximum']
 
 full_airtable_fields = {'Source Name': 'SOURCE_NAME',
                         'Publication Date': 'PUB_DATE',
@@ -98,7 +103,16 @@ full_airtable_fields = {'Source Name': 'SOURCE_NAME',
                         'Dashboard or Weekly Report': 'DASHBOARD_WEEKLY_REPORT',
                         'Test Name': 'TEST_NAME', 
                         'Numerator Value': 'NUMERATOR_VALUE',
-                        'Collaboration Type': 'COLLAB_TYPE'
+                        'Collaboration Type': 'COLLAB_TYPE',
+                        'Cumulative Case Count on End Date': 'CASE_COUNT_0',
+                        'Cumulative Case Count on -9 days from End Date': 'CASE_COUNT_NEG9', 
+                        'Cumulative Case Count on -14 Days from End Date': 'CASE_COUNT_NEG14',
+                        '2020 Population Count - Case': 'CASE_POPULATION', 
+                        '2020 Population Count - Mortality': 'DEATHS_POPULATION', 
+                        'Cumulative Covid Mortality Count on +4 Days from End Date': 'DEATH_COUNT_+4', 
+                        'Cumulative Covid Mortality Count on +11 Days from End Date': 'DEATH_COUNT_+11',
+                        'Age Minimum': 'AGE_MIN', 
+                        'Age Maximum': 'AGE_MAX'
                         }
 
 airtable_fields_config = {'dashboard': {k: full_airtable_fields[k] for k in dashboard_fields},
