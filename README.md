@@ -22,7 +22,7 @@ Add a `.env` file to the top level of the repository to store environment vari
 
 ```bash
 PYTHONUNBUFFERED=1;
-FLASK_ENV=test;
+FLASK_ENV=dev;
 AIRTABLE_BASE_ID=airtableidaaa;
 AIRTABLE_API_KEY=keyaaaaa;
 GMAIL_PASS=password;
@@ -129,3 +129,7 @@ This can be done manually, or automatically using the following steps:
 which is the name of the Airtable CSV. The default is `"Airtable SOP.csv"`.
 4. Once you have run the script, you should see the new `airtable_fields_config.json` in app/utils.
 
+## Running test suite
+1. Create a config in which ```FLASK_ENV=test```
+2. Create an empty database called ```whiteclaw_test```
+3. Run ```python manage.py test```

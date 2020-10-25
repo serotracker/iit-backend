@@ -48,3 +48,21 @@ db_model_config = {
         }
     ]
 }
+
+db_tables = ['age',
+             'age_bridge',
+             'airtable_source',
+             'approving_regulator',
+             'approving_regulator_bridge',
+             'city',
+             'city_bridge',
+             'population_group',
+             'population_group_bridge',
+             'specimen_type',
+             'specimen_type_bridge',
+             'state',
+             'state_bridge',
+             'test_manufacturer',
+             'test_manufacturer_bridge',
+             'test_type',
+             'test_type_bridge']

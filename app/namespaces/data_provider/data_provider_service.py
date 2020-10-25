@@ -1,19 +1,8 @@
-import os
-
 import pandas as pd
 import numpy
 
 from app.serotracker_sqlalchemy import db_session, AirtableSource, db_model_config
-from sqlalchemy import create_engine, case, and_
-
-
-def _get_engine():
-    # Create engine to connect to whiteclaw database
-    engine = create_engine('postgresql://{username}:{password}@{host}/whiteclaw'.format(
-        username=os.getenv('DATABASE_USERNAME'),
-        password=os.getenv('DATABASE_PASSWORD'),
-        host=os.getenv('DATABASE_HOST_ADDRESS')))
-    return engine
+from sqlalchemy import case, and_
 
 
 def _get_isotype_col_expression():
@@ -80,8 +69,7 @@ def _get_parsed_record(results):
 
 
 def get_record_details(source_id):
-    engine = _get_engine()
-    with db_session(engine) as session:
+    with db_session() as session:
         try:
             # Construct case when expression to generate isotype column based on isotype bool cols
             isotype_case_expression = _get_isotype_col_expression()

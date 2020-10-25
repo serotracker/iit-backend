@@ -222,12 +222,12 @@ def load_postgres_tables(airtable_table, multi_select_tables_dict, bridge_tables
     return
 
 
-def drop_old_entries(engine):
+def drop_old_entries():
     all_tables = [AirtableSource, City, State, Age, PopulationGroup,
                   TestManufacturer, ApprovingRegulator, TestType, SpecimenType,
                   CityBridge, StateBridge, AgeBridge, PopulationGroupBridge,
                   TestManufacturerBridge, ApprovingRegulatorBridge, TestTypeBridge, SpecimenTypeBridge]
-    with db_session(engine) as session:
+    with db_session() as session:
         for table in all_tables:
             # Drop record if it was not added during the current run
             session.query(table).filter(table.created_at != CURR_TIME).delete()
@@ -302,8 +302,7 @@ def main():
     load_postgres_tables(airtable_source, multi_select_tables_dict, bridge_tables_dict, engine)
 
     # Delete old entries
-    drop_old_entries(engine)
-
+    drop_old_entries()
     return
 
 
@@ -311,4 +310,3 @@ if __name__ == '__main__':
     beginning = time()
     main()
     diff = time() - beginning
-    print(diff)
