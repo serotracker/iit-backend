@@ -18,7 +18,7 @@ class AirtableSource(db.Model):
     summary = Column(String())
     study_type = Column(String(128))
     study_status = Column(String(32))
-    country_id = Column(UUID)
+    country_id = Column(UUID(as_uuid=True))
     lead_organization = Column(String(128))
     sampling_start_date = Column(DateTime)
     sampling_end_date = Column(DateTime)

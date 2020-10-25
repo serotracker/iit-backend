@@ -25,7 +25,7 @@ def airtable_source_factory(_session, **kwargs):
         summary = factory.Sequence(lambda n: 'summary_%d' % n)
         study_type = factory.Sequence(lambda n: 'study_type_%d' % n)
         study_status = factory.Sequence(lambda n: 'study_status_%d' % n)
-        country = factory.Sequence(lambda n: 'country_%d' % n)
+        country_id = uuid.uuid4()
         lead_organization = factory.Sequence(lambda n: 'lead_organization_%d' % n)
         sampling_start_date = factory.LazyFunction(datetime.now)
         sampling_end_date = factory.LazyFunction(datetime.now)
@@ -119,6 +119,19 @@ def city_bridge_factory(_session, **kwargs):
         city_id = uuid.uuid4()
         created_at = factory.LazyFunction(datetime.now)
     return CityBridgeFactory(**kwargs)
+
+def country_factory(_session, **kwargs):
+    class CountryFactory(factory.alchemy.SQLAlchemyModelFactory):
+        class Meta:
+            model = Country
+            sqlalchemy_session = _session
+            sqlalchemy_session_persistence = 'commit'
+        country_id = uuid.uuid4()
+        country_name = factory.Sequence(lambda n: 'country_name_%d' % n)
+        latitude = random()
+        longitude = random()
+        created_at = factory.LazyFunction(datetime.now)
+    return CountryFactory(**kwargs)
 
 
 def population_group_factory(_session, **kwargs):

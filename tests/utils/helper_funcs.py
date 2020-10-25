@@ -12,6 +12,7 @@ def insert_record(session):
     # Insert main record into airtable source
     new_airtable_source_record = factories.airtable_source_factory(session)
     source_id = new_airtable_source_record.source_id
+    country_id = new_airtable_source_record.country_id
 
     # Insert joined record into age bridge table
     new_age_bridge_record = factories.age_bridge_factory(session, source_id=source_id)
@@ -33,6 +34,9 @@ def insert_record(session):
 
     # Insert joined record into city table
     factories.city_factory(session, city_id=city_id)
+
+    # Insert joined record into country table
+    factories.country_factory(session, country_id=country_id)
 
     # Insert joined record into population group bridge table
     new_population_group_record = factories.population_group_bridge_factory(session, source_id=source_id)
