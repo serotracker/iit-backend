@@ -58,7 +58,7 @@ class AirtableScraper(Resource):
                     max_sampling_end_date = d
         max_sampling_end_date = max_sampling_end_date.strftime('%Y-%m-%d')
 
-        result = {"airtable_request_status_code": status_code, "records": records, "last_publication_date": max_sampling_end_date}
+        result = {"airtable_request_status_code": status_code, "records": records, "updated_at": max_sampling_end_date}
         return jsonify(result)
 
 
