@@ -27,7 +27,7 @@ research_fields = ['Source Name', 'Publication Date', 'First Author Full Name', 
                    '2020 Population Count - Case', '2020 Population Count - Mortality', 
                    'Cumulative Covid Mortality Count on +4 Days from End Date', 
                    'Cumulative Covid Mortality Count on +11 Days from End Date',
-                   'Age Minimum', 'Age Maximum']
+                   'Age Minimum', 'Age Maximum', 'Subgroup category for analysis']
 
 full_airtable_fields = {'Source Name': 'SOURCE_NAME',
                         'Publication Date': 'PUB_DATE',
@@ -65,6 +65,7 @@ full_airtable_fields = {'Source Name': 'SOURCE_NAME',
                         'Overall Risk of Bias (JBI)': 'OVERALL_RISK_OF_BIAS',
                         'Included?': 'INCLUDED',
                         'Sub-grouping Variable': 'SUBGROUP_VAR',
+                        'Subgroup category for analysis': 'SUBGROUP_CAT',
                         'Geography Type': 'GEOG_TYPE',
                         'JBI 1': 'JBI_1',
                         'JBI 2': 'JBI_2',
