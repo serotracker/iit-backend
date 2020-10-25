@@ -40,7 +40,7 @@ class AirtableSource(db.Model):
 class Country(db.Model):
     __tablename__ = 'country'
 
-    country_id = Column(UUID, primary_key=True)
+    country_id = Column(UUID(as_uuid=True), primary_key=True)
     country_name = Column(String(128))
     latitude = Column(Float)
     longitude = Column(Float)

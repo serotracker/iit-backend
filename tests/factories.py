@@ -5,7 +5,7 @@ from random import random, randint, getrandbits
 import factory
 
 from app.serotracker_sqlalchemy.models import AirtableSource, Age, AgeBridge, ApprovingRegulator, \
-    ApprovingRegulatorBridge, City, CityBridge, PopulationGroup, PopulationGroupBridge, State, StateBridge, \
+    ApprovingRegulatorBridge, City, CityBridge, Country, PopulationGroup, PopulationGroupBridge, State, StateBridge, \
     SpecimenType, SpecimenTypeBridge, TestType, TestTypeBridge, TestManufacturer, TestManufacturerBridge
 
 
