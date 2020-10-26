@@ -145,7 +145,7 @@ def get_filtered_records(filters=None, columns=None, start_date=None, end_date=N
     result = list(filter(lambda x: date_filter(x, start_date=start_date, end_date=end_date), result))
 
     # Finally, if columns have been supplied, only return those columns
-    if columns is not None:
+    if columns is not None and len(columns) > 0:
         def grab_cols(result, columns):
             ret = {}
             for col in columns:
