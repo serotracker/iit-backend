@@ -49,7 +49,16 @@ class AirtableScraper(Resource):
             # Get all records from using airtable API
             records, status_code = get_all_records(visualize_on_serotracker_filter, airtable_fields_json_name)
             file_created_datetime = datetime.now()
-        result = {"airtable_request_status_code": status_code, "records": records, "updated_at": file_created_datetime}
+
+        max_pub_date = datetime.min
+        for record in records:
+            if record["PUB_DATE"] is not None:
+                d = datetime.strptime(record["PUB_DATE"][0], '%Y-%m-%d')
+                if d > max_pub_date:
+                    max_pub_date = d
+        max_pub_date = max_pub_date.strftime('%Y-%m-%d')
+
+        result = {"airtable_request_status_code": status_code, "records": records, "updated_at": max_pub_date}
         return jsonify(result)
 
 
