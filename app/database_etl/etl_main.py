@@ -249,19 +249,18 @@ def get_coords(place_name, place_type):
     r = requests.get(url)
     data = r.json()
     coords = None
-    if data is not None and "features" in data and len(data['features']) > 0:
+    if data and "features" in data and len(data['features']) > 0:
+        coords = data['features'][0]['center']
         # Check if we have any results of the right place type
         # Otherwise fallback to the first result we get
         for feature in data['features']:
             if place_type in feature['place_type']:
                 coords = feature['center']
                 break
-        if coords is None:
-            coords = data['features'][0]['center']
     return coords
 
-def add_latlng_to_df(place_type, name_col, df):
-    df['coords'] = df[name_col].map(lambda a: get_coords(a, place_type))
+def add_latlng_to_df(place_type, place_type_name, df):
+    df['coords'] = df[place_type_name].map(lambda a: get_coords(a, place_type))
     df['longitude'] = df['coords'].map(lambda a: a[0] if isinstance(a, list) else None)
     df['latitude'] = df['coords'].map(lambda a: a[1] if isinstance(a, list) else None)
     df = df.drop(columns=['coords'])
@@ -297,7 +296,7 @@ def main():
     # Create country table df
     country_df = pd.DataFrame(columns=['country_name', 'country_id'])
     country_df['country_name'] = airtable_source['country'].unique()
-    country_df['country_id'] = [uuid4() for i in range(len(country_df['country_name']))]
+    country_df['country_id'] = [uuid4() for name in country_df['country_name']]
     country_df['created_at'] = CURR_TIME
     country_df = add_latlng_to_df("country", "country_name", country_df)
 
