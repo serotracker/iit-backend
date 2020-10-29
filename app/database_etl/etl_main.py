@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 
 import pandas as pd
 from sqlalchemy import create_engine
-from app.serotracker_sqlalchemy import db_session, AirtableSource, City, State, \
+from app.serotracker_sqlalchemy import db_session, AirtableSource, Country, City, State, \
     Age, PopulationGroup, TestManufacturer, ApprovingRegulator, TestType, \
     SpecimenType, CityBridge, StateBridge, AgeBridge, PopulationGroupBridge, \
     TestManufacturerBridge, ApprovingRegulatorBridge, TestTypeBridge, SpecimenTypeBridge, AirtableSourceSchema
@@ -194,27 +194,14 @@ def create_bridge_tables(original_data, multi_select_tables):
                     option_id = multi_select_table[multi_select_table[name_col] == option].iloc[0][id_col]
                     new_row = {'id': uuid4(), 'source_id': source_id, id_col: option_id, 'created_at': CURR_TIME}
                     bridge_table_df = bridge_table_df.append(new_row, ignore_index=True)
-        bridge_tables_dict[col] = bridge_table_df
+        bridge_tables_dict[f'{col}_bridge'] = bridge_table_df
     return bridge_tables_dict
 
 
-def load_postgres_tables(airtable_table, multi_select_tables_dict, bridge_tables_dict, engine):
+def load_postgres_tables(tables_dict, engine):
     # Load dataframes into postgres tables
-    airtable_table.to_sql('airtable_source',
-                          schema='public',
-                          con=engine,
-                          if_exists='append',
-                          index=False)
-
-    for table_name, table_value in multi_select_tables_dict.items():
+    for table_name, table_value in tables_dict.items():
         table_value.to_sql(table_name,
-                           schema='public',
-                           con=engine,
-                           if_exists='append',
-                           index=False)
-
-    for table_name, table_value in bridge_tables_dict.items():
-        table_value.to_sql('{}_bridge'.format(table_name),
                            schema='public',
                            con=engine,
                            if_exists='append',
@@ -224,7 +211,7 @@ def load_postgres_tables(airtable_table, multi_select_tables_dict, bridge_tables
 
 def drop_old_entries():
     all_tables = [AirtableSource, City, State, Age, PopulationGroup,
-                  TestManufacturer, ApprovingRegulator, TestType, SpecimenType,
+                  TestManufacturer, ApprovingRegulator, TestType, SpecimenType, Country,
                   CityBridge, StateBridge, AgeBridge, PopulationGroupBridge,
                   TestManufacturerBridge, ApprovingRegulatorBridge, TestTypeBridge, SpecimenTypeBridge]
     with db_session() as session:
@@ -256,6 +243,28 @@ def validate_records(airtable_source):
 
     exit("EXITING – No acceptable records found.")
 
+def get_coords(place_name, place_type):
+    url = f"https://api.mapbox.com/geocoding/v5/mapbox.places/{place_name}.json?" \
+          f"access_token={os.getenv('MAPBOX_API_KEY')}"
+    r = requests.get(url)
+    data = r.json()
+    coords = None
+    if data and "features" in data and len(data['features']) > 0:
+        coords = data['features'][0]['center']
+        # Check if we have any results of the right place type
+        # Otherwise fallback to the first result we get
+        for feature in data['features']:
+            if place_type in feature['place_type']:
+                coords = feature['center']
+                break
+    return coords
+
+def add_latlng_to_df(place_type, place_type_name, df):
+    df['coords'] = df[place_type_name].map(lambda a: get_coords(a, place_type))
+    df['longitude'] = df['coords'].map(lambda a: a[0] if isinstance(a, list) else None)
+    df['latitude'] = df['coords'].map(lambda a: a[1] if isinstance(a, list) else None)
+    df = df.drop(columns=['coords'])
+    return df
 
 def main():
     # Create engine to connect to whiteclaw database
@@ -284,11 +293,30 @@ def main():
     # Create airtable source df
     airtable_source = create_airtable_source_df(data)
 
+    # Create country table df
+    country_df = pd.DataFrame(columns=['country_name', 'country_id'])
+    country_df['country_name'] = airtable_source['country'].unique()
+    country_df['country_id'] = [uuid4() for name in country_df['country_name']]
+    country_df['created_at'] = CURR_TIME
+    country_df = add_latlng_to_df("country", "country_name", country_df)
+
+    # Add country_id's to airtable_source df
+    # country_dict maps country_name to country_id
+    country_dict = {}
+    for index, row in country_df.iterrows():
+        country_dict[row['country_name']] = row['country_id']
+    airtable_source['country_id'] = airtable_source['country'].map(lambda a: country_dict[a])
+
     # Validate the airtable source df
     airtable_source = validate_records(airtable_source)
 
     # Create dictionary to store multi select tables
     multi_select_tables_dict = create_multi_select_tables(data, multi_select_cols)
+    # Add lat/lng to cities and states
+    state_df = add_latlng_to_df("region", "state_name", multi_select_tables_dict["state"])
+    city_df = add_latlng_to_df("place", "city_name", multi_select_tables_dict["city"])
+    multi_select_tables_dict["state"] = state_df
+    multi_select_tables_dict["city"] = city_df
 
     # Create dictionary to store bridge tables
     bridge_tables_dict = create_bridge_tables(airtable_source, multi_select_tables_dict)
@@ -296,10 +324,15 @@ def main():
     # Drop columns that are not needed not needed
     airtable_source = airtable_source.drop(columns=['city', 'state', 'age', 'population_group',
                                                     'test_manufacturer', 'approving_regulator', 'test_type',
-                                                    'specimen_type'])
+                                                    'specimen_type', 'country'])
+
+    # key = table name, value = table df
+    tables_dict = {**multi_select_tables_dict, **bridge_tables_dict}
+    tables_dict['airtable_source'] = airtable_source
+    tables_dict['country'] = country_df
 
     # Load dataframes into postgres tables
-    load_postgres_tables(airtable_source, multi_select_tables_dict, bridge_tables_dict, engine)
+    load_postgres_tables(tables_dict, engine)
 
     # Delete old entries
     drop_old_entries()
