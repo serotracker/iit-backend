@@ -7,20 +7,6 @@ from itertools import groupby
 from functools import reduce
 
 def get_all_filter_options():
-    '''
-    country,
-    estimate grade,
-    source type,
-    study status,
-    risk of bias,
-    pop group,
-    age,
-    sex,
-    test type,
-    isotypes,
-    specimen type,
-    start and end date
-    '''
     with db_session() as session:
         # List of fields in AirtableSource to query
         airtable_field_strings = ['source_type', 'study_status', 'overall_risk_of_bias', 'sex', 'estimate_grade']
