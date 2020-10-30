@@ -18,7 +18,7 @@ class AirtableSource(db.Model):
     summary = Column(String())
     study_type = Column(String(128))
     study_status = Column(String(32))
-    country = Column(String(64))
+    country_id = Column(UUID(as_uuid=True))
     lead_organization = Column(String(128))
     sampling_start_date = Column(DateTime)
     sampling_end_date = Column(DateTime)
@@ -37,6 +37,14 @@ class AirtableSource(db.Model):
     estimate_grade = Column(String(32))
     created_at = Column(DateTime)
 
+class Country(db.Model):
+    __tablename__ = 'country'
+
+    country_id = Column(UUID(as_uuid=True), primary_key=True)
+    country_name = Column(String(128))
+    latitude = Column(Float)
+    longitude = Column(Float)
+    created_at = Column(DateTime)
 
 # Create base multi select tables
 class City(db.Model):
@@ -44,6 +52,8 @@ class City(db.Model):
 
     city_id = Column(UUID(as_uuid=True), primary_key=True)
     city_name = Column(String(128))
+    latitude = Column(Float)
+    longitude = Column(Float)
     created_at = Column(DateTime)
 
 
@@ -52,6 +62,8 @@ class State(db.Model):
 
     state_id = Column(UUID(as_uuid=True), primary_key=True)
     state_name = Column(String(128))
+    latitude = Column(Float)
+    longitude = Column(Float)
     created_at = Column(DateTime)
 
 
