@@ -12,5 +12,5 @@ class MetaSchema(Schema):
     aggregation_variable = fields.String()
     meta_analysis_transformation = fields.String()
     meta_analysis_technique = fields.String()
-    start_date = fields.Integer()
-    end_date = fields.Integer()
+    start_date = fields.String()
+    end_date = fields.String()

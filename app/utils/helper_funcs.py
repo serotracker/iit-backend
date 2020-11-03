@@ -14,8 +14,8 @@ def validate_request_input_against_schema(input_payload, schema):
 def convert_start_end_dates(data):
     start_date = data.get('start_date')
     if start_date:
-        start_date = datetime.utcfromtimestamp(start_date)
+        start_date = datetime.fromisoformat(start_date).replace(tzinfo=None)
     end_date = data.get('end_date')
     if end_date:
-        end_date = datetime.utcfromtimestamp(end_date)
+        end_date = datetime.fromisoformat(end_date).replace(tzinfo=None)
     return start_date, end_date

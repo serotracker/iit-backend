@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy
+import math
 
 from app.serotracker_sqlalchemy import db_session, AirtableSource, db_model_config
 from sqlalchemy import case, and_
@@ -160,10 +161,11 @@ def get_country_seroprev_summaries(records):
             else:
                 # Add number of estimates for that grade
                 estimate_grade_dict['n_estimates'] = n_estimates
-
+                minimum = records_for_grade.serum_pos_prevalence.min()
+                maximum = records_for_grade.serum_pos_prevalence.max()
                 # Add min and max seroprev estimates
-                estimate_grade_dict['min_estimate'] = records_for_grade.serum_pos_prevalence.min()
-                estimate_grade_dict['max_estimate'] = records_for_grade.serum_pos_prevalence.max()
+                estimate_grade_dict['min_estimate'] = minimum if not math.isnan(minimum) else None
+                estimate_grade_dict['max_estimate'] = maximum if not math.isnan(maximum) else None
             grades_seroprev_summaries_dict[grade] = estimate_grade_dict
         country_seroprev_summary_dict['seroprevalence_estimate_summary'] = grades_seroprev_summaries_dict
         study_counts_list.append(country_seroprev_summary_dict)
