@@ -14,7 +14,7 @@ password = os.getenv('GMAIL_PASS')
 def send_api_error_email(body, data, error=None, request_info=None):
     # Set recipients
     recipients = ['abeljohnjoseph@gmail.com', 'ewanmay3@gmail.com', 'simonarocco09@gmail.com',
-                  'austin.atmaja@gmail.com']  # Add additional email addresses here
+                  'austin.atmaja@gmail.com', 'rahularoradfs@gmail.com']  # Add additional email addresses here
 
     # Configure the full email body
     body = "Hello Data Team,\n\n" + body
