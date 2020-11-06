@@ -21,6 +21,9 @@ jobs:
         docker pull postgres
         docker run -d --name db_image -p 5432:5432 -v /var/run/postgresql:/var/run/postgresql -e POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} postgres
         docker exec db_image bash -c 'psql -U postgres -c "CREATE DATABASE whiteclaw_test"'
+        
+        ps -ef | grep postgres
+        exit
 
         python manage.py test
       env:
