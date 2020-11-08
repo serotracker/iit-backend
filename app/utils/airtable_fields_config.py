@@ -28,7 +28,7 @@ research_fields = ['Source Name', 'Publication Date', 'First Author Full Name', 
                    'Cumulative Covid Mortality Count on +4 Days from End Date', 
                    'Cumulative Covid Mortality Count on +11 Days from End Date',
                    'Age Minimum', 'Age Maximum', 'Subgroup category for analysis', 'Antibody target', 
-                   'Reason for no test link']
+                   'Reason for no test link', 'Test Link Unique ID']
 
 full_airtable_fields = {'Source Name': 'SOURCE_NAME',
                         'Publication Date': 'PUB_DATE',
@@ -116,7 +116,8 @@ full_airtable_fields = {'Source Name': 'SOURCE_NAME',
                         'Age Minimum': 'AGE_MIN', 
                         'Age Maximum': 'AGE_MAX',
                         'Antibody target': 'ANTIBODY_TARGET',
-                        'Reason for no test link': 'TEST_NOT_LINKED_REASON'
+                        'Reason for no test link': 'TEST_NOT_LINKED_REASON',
+                        'Test Link Unique ID': 'TEST_LINKED_UID'
                         }
 
 airtable_fields_config = {'dashboard': {k: full_airtable_fields[k] for k in dashboard_fields},
