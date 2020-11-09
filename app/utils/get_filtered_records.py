@@ -1,19 +1,6 @@
-import os
-
-from app.serotracker_sqlalchemy import db_session, AirtableSource, Country, State, City, db_model_config
-from sqlalchemy import create_engine
 from itertools import groupby
 from functools import reduce
-
-
-from app.serotracker_sqlalchemy import db_session, AirtableSource, db_model_config
-
-# Create engine to connect to whiteclaw database
-# engine = create_engine('postgresql://{username}:{password}@{host}/whiteclaw'.format(
-#     username=os.getenv('DATABASE_USERNAME'),
-#     password=os.getenv('DATABASE_PASSWORD'),
-#     host=os.getenv('DATABASE_HOST_ADDRESS')))
-
+from app.serotracker_sqlalchemy import db_session, AirtableSource, db_model_config, Country, State, City
 
 def get_all_records():
     with db_session() as session:

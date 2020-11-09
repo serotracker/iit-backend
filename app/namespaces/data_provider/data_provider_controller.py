@@ -4,7 +4,7 @@ from flask import jsonify, make_response, request
 from .data_provider_service import get_record_details, get_country_seroprev_summaries
 from .data_provider_schema import RecordDetailsSchema, RecordsSchema, StudyCountSchema
 from app.utils import validate_request_input_against_schema, get_filtered_records,\
-    get_paginated_records, convert_start_end_dates
+    get_paginated_records, convert_start_end_dates, get_all_filter_options
 
 data_provider_ns = Namespace('data_provider', description='Endpoints for getting database records.')
 
@@ -104,3 +104,10 @@ class GeogStudyCount(Resource):
         # Compute seroprevalence summaries per country per estimate grade level
         country_seroprev_summaries = get_country_seroprev_summaries(records)
         return jsonify(country_seroprev_summaries)
+
+@data_provider_ns.route('/filter_options', methods=['GET'])
+class Records(Resource):
+    @data_provider_ns.doc('An endpoint for getting all filter options from the database.')
+    def get(self):
+        result = get_all_filter_options()
+        return jsonify(result)
