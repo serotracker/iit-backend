@@ -15,7 +15,7 @@ jobs:
           POSTGRES_PASSWORD: postgres
         ports:
           # Maps tcp port 5432 on service container to the host
-          - 5432:5432
+          - 5432:${{ job.services.postgres.ports[5432] }}
 
     steps:
     - name: Checkout
@@ -37,4 +37,4 @@ jobs:
         AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
         FLASK_ENV: 'test'
         POSTGRES_HOST: localhost
-        POSTGRES_PORT: 5432
+        POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
