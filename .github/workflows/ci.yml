@@ -6,6 +6,17 @@ jobs:
   test:
 
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
     steps:
     - name: Checkout
       uses: actions/checkout@v1
@@ -18,12 +29,12 @@ jobs:
         pip install -r requirements.txt
     - name: Test
       run: |
-        docker pull postgres
-        docker run -d --name db_image -p 5432:5432 -v /var/run/postgresql:/var/run/postgresql -e POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} postgres
-        docker exec db_image bash -c 'psql -U postgres -c "CREATE DATABASE whiteclaw_test"'
+        docker exec postgres bash -c 'psql -U postgres -c "CREATE DATABASE whiteclaw_test"'
 
         python manage.py test
       env:
         AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
         AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
         FLASK_ENV: 'test'
+        POSTGRES_HOST: localhost
+        POSTGRES_PORT: 5432
