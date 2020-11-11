@@ -63,7 +63,7 @@ class ApiProductionConfig(ApiConfig):
     DATABASE_HOST_ADDRESS = os.getenv('DATABASE_HOST_ADDRESS')
     DATABASE_NAME = 'whiteclaw'
     SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI',
-                                        'postgresql://{username}:{password}@{host_address}/{database_name}'.format(
+                                        'postgresql://{username}:{password}@{host_address}:5432/{database_name}'.format(
                                             username=DATABASE_USERNAME,
                                             password=DATABASE_PASSWORD,
                                             host_address=DATABASE_HOST_ADDRESS,
