@@ -131,7 +131,7 @@ def get_country_seroprev_summaries(records):
     records_df = pd.DataFrame(records)
 
     # Get unique list of countries
-    countries = records_df.country.unique()
+    countries = records_df.country.dropna().unique()
     study_counts_list = []
 
     # For each country, create a payload with all the seroprev summary info
