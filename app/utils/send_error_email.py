@@ -8,7 +8,7 @@ from email.mime.text import MIMEText
 port = 465
 context = ssl.create_default_context()
 sender = 'iitbackendalerts@gmail.com'
-recipients = ['abeljohnjoseph@gmail.com', 'ewanmay3@gmail.com', 'simonarocco09@gmail.com', 'austin.atmaja@gmail.com']  # Add additional email addresses here
+recipients = ['abeljohnjoseph@gmail.com', 'ewanmay3@gmail.com', 'simonarocco09@gmail.com', 'austin.atmaja@gmail.com', 'rahularoradfs@gmail.com']  # Add additional email addresses here
 password = os.getenv('GMAIL_PASS')
 
 
