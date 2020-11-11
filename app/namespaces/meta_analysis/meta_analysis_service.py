@@ -209,7 +209,9 @@ def calc_pooled_prevalence_for_subgroup(records, meta_transformation='double_arc
 
 
 def group_by_agg_var(data, agg_var):
-    options = list(data[agg_var].dropna().unique())
+    # use explode here to deal with pandas series containing lists
+    # e.g. data['age'] or any other field that may have mult values per record
+    options = list(data[agg_var].explode().dropna().unique())
     data.dropna(subset=[agg_var], inplace=True)
     return {name: data[data[agg_var].apply(lambda x: name in x)] for name in options}
 
