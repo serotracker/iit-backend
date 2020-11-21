@@ -78,6 +78,21 @@ def get_all_records():
             else:
                 processed_record = reduce(reduce_entities, record_list)
 
+            # get the latitude and longitude to use for estimate pin
+            # use the most specific one that's available in the database
+            # this seems to be more robust for now than relying on estimate grades
+            # e.g. not always sure if Local = city or Local = state (since sometimes Local = 3/4 cities)
+            region_types = ['city', 'state', 'country']
+            for region_type in region_types:
+                processed_record['pin_latitude'] = processed_record[f'{region_type}_latitude']
+                processed_record['pin_longitude'] = processed_record[f'{region_type}_longitude']
+                if processed_record['pin_latitude'] is not None and processed_record['pin_longitude'] is not None:
+                    break
+            # delete lng/lat columns that are now unnecessary
+            for region_type in region_types:
+                processed_record.pop(f'{region_type}_latitude')
+                processed_record.pop(f'{region_type}_longitude')
+
             # Format isotypes reported column
             processed_record['isotypes_reported'] = []
             isotype_mapping = {'isotype_igm': 'IgM', 'isotype_iga': 'IgA', 'isotype_igg': 'IgG'}
