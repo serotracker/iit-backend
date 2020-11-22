@@ -35,6 +35,9 @@ class AirtableSource(db.Model):
     isotype_igm = Column(Boolean)
     isotype_iga = Column(Boolean)
     estimate_grade = Column(String(32))
+    academic_primary_estimate = Column(Boolean)
+    dashboard_primary_estimate = Column(Boolean)
+    isotype_comb = Column(String(32))
     created_at = Column(DateTime)
 
 class Country(db.Model):
