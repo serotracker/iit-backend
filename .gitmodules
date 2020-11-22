@@ -1,0 +1,4 @@
+[submodule "shared_scripts"]
+	path = shared_scripts
+	url = git@github.com:serotracker/shared_scripts.git
+	branch = main
