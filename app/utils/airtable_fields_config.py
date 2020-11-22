@@ -5,7 +5,7 @@ dashboard_fields = ['Source Name', 'Publication Date', 'First Author Full Name',
                     'Test Manufacturer', 'Approving Regulator', 'Test Type', 'Specimen Type', 'Isotype(s) Reported',
                     'Sensitivity', 'Specificity', 'Include in N?', 'Denominator Value', 'Numerator Definition',
                     'Serum positive prevalence', 'Overall Risk of Bias (JBI)', 'Grade of Estimate Scope',
-                    'Academic Primary Estimate', 'Dashboard Primary Estimate', 'Isotype combination']
+                    'Academic Primary Estimate', 'Dashboard Primary Estimate', 'Isotype combination', 'Rapid Review Study Name (Text)']
 
 research_fields = ['Source Name', 'Publication Date', 'First Author Full Name', 'URL', 'Source Type',
                    'Source Publisher', 'One-Line Summary', 'Study Type', 'Study Status', 'Country',

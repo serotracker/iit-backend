@@ -23,6 +23,7 @@ def airtable_source_factory(_session, **kwargs):
         source_type = factory.Sequence(lambda n: 'source_type_%d' % n)
         source_publisher = factory.Sequence(lambda n: 'source_publisher_%d' % n)
         summary = factory.Sequence(lambda n: 'summary_%d' % n)
+        study_name = factory.Sequence(lambda n: 'study_name_%d' % n)
         study_type = factory.Sequence(lambda n: 'study_type_%d' % n)
         study_status = factory.Sequence(lambda n: 'study_status_%d' % n)
         country_id = uuid.uuid4()
