@@ -99,7 +99,8 @@ def get_all_records():
             isotype_mapping = {'isotype_igm': 'IgM', 'isotype_iga': 'IgA', 'isotype_igg': 'IgG'}
 
             for k, v in isotype_mapping.items():
-                if processed_record.get(k, None) is not None:
+                # Need to check if true here, not "not None"
+                if processed_record.get(k, None):
                     processed_record['isotypes_reported'].append(v)
                 processed_record.pop(k, None)
             return processed_record
