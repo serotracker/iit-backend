@@ -140,12 +140,14 @@ def get_filtered_records(filters=None, columns=None, start_date=None, end_date=N
                 return True
             return False
 
+        applied_filter = False
         for k, v in filters.items():
             # Add records passing the first filter
-            if not result:
+            if not applied_filter:
                 for d in query_dicts:
                     if should_include(d, k, v):
                         result.append(d)
+                applied_filter = True
                 continue
 
             result = list(filter(lambda x: should_include(x, k, v), result))
