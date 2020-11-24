@@ -101,6 +101,10 @@ class GeogStudyCount(Resource):
         columns = ['country', 'denominator_value', 'serum_pos_prevalence', 'estimate_grade']
         records = get_filtered_records(filters, columns, start_date=start_date, end_date=end_date)
 
+        # Check if no records are returned
+        if not records:
+            return jsonify(records)
+
         # Compute seroprevalence summaries per country per estimate grade level
         country_seroprev_summaries = get_country_seroprev_summaries(records)
         return jsonify(country_seroprev_summaries)
