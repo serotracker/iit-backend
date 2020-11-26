@@ -42,5 +42,7 @@ class AirtableSourceSchema(Schema):
     specimen_type = fields.List(fields.Str(validate=validate.Length(max=64)), allow_none=True)
     academic_primary_estimate = fields.Boolean(allow_none=True)
     dashboard_primary_estimate = fields.Boolean(allow_none=True)
+    test_adj = fields.Boolean(allow_none=True)
+    pop_adj = fields.Boolean(allow_none=True)
     isotype_comb = fields.Str(validate=validate.Length(max=32), allow_none=True)
 

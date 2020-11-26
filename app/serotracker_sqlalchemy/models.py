@@ -39,6 +39,8 @@ class AirtableSource(db.Model):
     academic_primary_estimate = Column(Boolean)
     dashboard_primary_estimate = Column(Boolean)
     isotype_comb = Column(String(32))
+    test_adj = Column(Boolean)
+    pop_adj = Column(Boolean)
     created_at = Column(DateTime)
 
 class Country(db.Model):

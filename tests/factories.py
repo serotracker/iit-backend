@@ -46,6 +46,8 @@ def airtable_source_factory(_session, **kwargs):
         academic_primary_estimate = bool(randint(0, 1))
         dashboard_primary_estimate = bool(randint(0, 1))
         isotype_comb = factory.Sequence(lambda n: 'isotype_comb_%d' % n)
+        test_adj = bool(randint(0, 1))
+        pop_adj = bool(randint(0, 1))
         created_at = factory.LazyFunction(datetime.now)
     return AirtableSourceFactory(**kwargs)
 
