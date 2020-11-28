@@ -79,7 +79,6 @@ def get_record_details(source_id):
             airtable_source_cols = ['source_id',
                                     'source_name',
                                     'summary',
-                                    'study_status',
                                     'sex',
                                     'serum_pos_prevalence',
                                     'denominator_value',
