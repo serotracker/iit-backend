@@ -10,7 +10,6 @@ class ApiConfig:
     AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
     AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
     AIRTABLE_REQUEST_URL = "https://api.airtable.com/v0/{}/Rapid%20Review%3A%20Estimates?".format(AIRTABLE_BASE_ID)
-    AIRTABLE_REQUEST_PARAMS = {'filterByFormula': '{Visualize on SeroTracker?}=1'}
     AIRTABLE_TIME_DIFF = os.getenv('AIRTABLE_TIME_DIFF', 24)
     AIRTABLE_CACHED_RESULTS_PATH = 'app/namespaces/data_provider/cached_results.json'
 

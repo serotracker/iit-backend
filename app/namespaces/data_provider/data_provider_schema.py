@@ -10,7 +10,7 @@ class RecordsSchema(Schema):
     reverse = fields.Boolean(allow_none=True)
     filters = fields.Dict(
         keys=fields.String(validate=validate.OneOf(["country", "source_type", "overall_risk_of_bias",
-                                                    "study_status", "source_name", "population_group",
+                                                    "source_name", "population_group",
                                                     "sex", "age", "isotypes_reported", "test_type",
                                                     "specimen_type", "estimate_grade"])),
         values=fields.List(fields.String())
@@ -20,10 +20,10 @@ class RecordsSchema(Schema):
                                                                  "test_type", "specimen_type", "source_id",
                                                                  "source_name", "publication_date", "first_author",
                                                                  "url", "source_type", "source_publisher",
-                                                                 "summary", "study_type", "study_status", "country",
+                                                                 "summary", "study_type", "country",
                                                                  "lead_organization", "sampling_start_date",
                                                                  "sampling_end_date", "sex", "sampling_method",
-                                                                 "sensitivity", "specificity", "include_in_n",
+                                                                 "sensitivity", "specificity", "included",
                                                                  "denominator_value", "numerator_definition",
                                                                  "serum_pos_prevalence", "overall_risk_of_bias",
                                                                  "estimate_grade", "isotypes_reported", "created_at"])))
@@ -41,7 +41,7 @@ class RecordDetailsSchema(Schema):
 class StudyCountSchema(Schema):
     filters = fields.Dict(
         keys=fields.String(validate=validate.OneOf(["country", "source_type", "overall_risk_of_bias",
-                                                    "study_status", "source_name", "population_group",
+                                                    "source_name", "population_group",
                                                     "sex", "age", "isotypes_reported", "test_type",
                                                     "specimen_type", "estimate_grade"])),
         values=fields.List(fields.String())
