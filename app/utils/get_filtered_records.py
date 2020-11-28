@@ -3,7 +3,7 @@ from functools import reduce
 from app.serotracker_sqlalchemy import db_session, AirtableSource, db_model_config, Country, State, City
 import pandas as pd
 import numpy as np
-from shared_scripts.estimate_prioritization_dashboard import get_prioritized_estimates
+from .estimate_prioritization import get_prioritized_estimates
 
 def get_all_records():
     with db_session() as session:
