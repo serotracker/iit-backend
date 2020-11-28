@@ -23,7 +23,6 @@ logger = logging.getLogger(__name__)
 AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
 AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
 AIRTABLE_REQUEST_URL = "https://api.airtable.com/v0/{}/Rapid%20Review%3A%20Estimates?".format(AIRTABLE_BASE_ID)
-AIRTABLE_REQUEST_PARAMS = {'filterByFormula': '{Visualize on SeroTracker?}=1'}
 
 CURR_TIME = datetime.now()
 
@@ -59,15 +58,13 @@ def _get_paginated_records(data, api_request_info):
     # Extract API request parameters
     url = api_request_info[0]
     headers = api_request_info[1]
-    parameters = api_request_info[2]
 
     # Extract records from initial request response
     records = data['records']
 
     # Continue adding paginated records so long as there is an offset in the api response
     while 'offset' in list(data.keys()):
-        parameters['offset'] = data['offset']
-        r = requests.get(url, headers=headers, params=parameters)
+        r = requests.get(url, headers=headers, params={'offset': data['offset']})
         data = r.json()
         records += data['records']
     return records
@@ -78,18 +75,16 @@ def get_all_records():
     url = AIRTABLE_REQUEST_URL.format(AIRTABLE_BASE_ID)
     url = _add_fields_to_url(url)
     headers = {'Authorization': 'Bearer {}'.format(AIRTABLE_API_KEY)}
-    params = AIRTABLE_REQUEST_PARAMS
 
     # Make request and retrieve records in json format
-    r = requests.get(url, headers=headers, params=params)
+    r = requests.get(url, headers=headers)
     data = r.json()
 
     # Try to get records from data if the request was successful
     try:
         # If offset was included in data, retrieve additional paginated records
         if 'offset' in list(data.keys()):
-            parameters = params.copy()
-            request_info = [url, headers, parameters]
+            request_info = [url, headers]
             records = _get_paginated_records(data, request_info)
         else:
             records = data['records']
