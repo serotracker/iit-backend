@@ -1,6 +1,9 @@
 from itertools import groupby
 from functools import reduce
 from app.serotracker_sqlalchemy import db_session, AirtableSource, db_model_config, Country, State, City
+import pandas as pd
+import numpy as np
+from .estimate_prioritization import get_prioritized_estimates
 
 def get_all_records():
     with db_session() as session:
@@ -11,9 +14,10 @@ def get_all_records():
         entity_names = [f"{t['entity']}" for t in table_infos]
 
         # Create list of fields in AirtableSource to query unless the specific columns are specified
-        field_strings = ['source_name', 'source_type', 'study_status', 'denominator_value',
+        field_strings = ['source_name', 'source_type', 'study_status', 'study_name', 'denominator_value',
                          'overall_risk_of_bias', 'serum_pos_prevalence', 'isotype_igm', 'isotype_iga',
-                         'isotype_igg', 'sex', 'sampling_end_date', 'estimate_grade']
+                         'isotype_igg', 'sex', 'sampling_start_date', 'sampling_end_date', 'estimate_grade', 'isotype_comb',
+                         'academic_primary_estimate', 'dashboard_primary_estimate', 'pop_adj', 'test_adj']
 
         fields_list = [AirtableSource.source_id]
         for field_string in field_strings:
@@ -122,7 +126,7 @@ Output: set of records represented by dicts
 '''
 
 
-def get_filtered_records(filters=None, columns=None, start_date=None, end_date=None):
+def get_filtered_records(filters=None, columns=None, start_date=None, end_date=None, prioritize_estimates=True):
     query_dicts = get_all_records()
     if query_dicts is None or len(query_dicts) == 0:
         return []
@@ -165,6 +169,15 @@ def get_filtered_records(filters=None, columns=None, start_date=None, end_date=N
         return status
 
     result = list(filter(lambda x: date_filter(x, start_date=start_date, end_date=end_date), result))
+
+    # TODO: Determine whether to update get_prioritized_estimates to work on dictionaries
+    # or keep everything in dataframes (don't want to have this conversion here long term)
+    if prioritize_estimates:
+        result_df = pd.DataFrame(result)
+        prioritized_records = get_prioritized_estimates(result_df, mode="dashboard")
+        # Filling all NaN values with None: https://stackoverflow.com/questions/46283312/how-to-proceed-with-none-value-in-pandas-fillna
+        prioritized_records = prioritized_records.fillna(np.nan).replace({np.nan: None})
+        result = prioritized_records.to_dict('records')
 
     # Finally, if columns have been supplied, only return those columns
     if columns is not None and len(columns) > 0:

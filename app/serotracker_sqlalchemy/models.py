@@ -16,6 +16,7 @@ class AirtableSource(db.Model):
     source_type = Column(String(64))
     source_publisher = Column(String(256))
     summary = Column(String())
+    study_name = Column(String())
     study_type = Column(String(128))
     study_status = Column(String(32))
     country_id = Column(UUID(as_uuid=True))
@@ -35,6 +36,11 @@ class AirtableSource(db.Model):
     isotype_igm = Column(Boolean)
     isotype_iga = Column(Boolean)
     estimate_grade = Column(String(32))
+    academic_primary_estimate = Column(Boolean)
+    dashboard_primary_estimate = Column(Boolean)
+    isotype_comb = Column(String(32))
+    test_adj = Column(Boolean)
+    pop_adj = Column(Boolean)
     created_at = Column(DateTime)
 
 class Country(db.Model):

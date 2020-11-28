@@ -9,6 +9,7 @@ class AirtableSourceSchema(Schema):
     source_type = fields.Str(validate=validate.Length(max=64), allow_none=True)
     source_publisher = fields.Str(validate=validate.Length(max=256), allow_none=True)
     summary = fields.Str(allow_none=True)
+    study_name = fields.Str(allow_none=True)
     study_type = fields.Str(validate=validate.Length(max=128), allow_none=True)
     study_status = fields.Str(validate=validate.Length(max=32), allow_none=True)
     country = fields.Str(validate=validate.Length(max=64), allow_none=True)
@@ -39,4 +40,9 @@ class AirtableSourceSchema(Schema):
     approving_regulator = fields.List(fields.Str(validate=validate.Length(max=256)), allow_none=True)
     test_type = fields.List(fields.Str(validate=validate.Length(max=256)), allow_none=True)
     specimen_type = fields.List(fields.Str(validate=validate.Length(max=64)), allow_none=True)
+    academic_primary_estimate = fields.Boolean(allow_none=True)
+    dashboard_primary_estimate = fields.Boolean(allow_none=True)
+    test_adj = fields.Boolean(allow_none=True)
+    pop_adj = fields.Boolean(allow_none=True)
+    isotype_comb = fields.Str(validate=validate.Length(max=32), allow_none=True)
 
