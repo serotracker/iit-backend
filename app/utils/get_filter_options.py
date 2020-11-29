@@ -1,10 +1,7 @@
-import os
-
 from app.serotracker_sqlalchemy import db_session, AirtableSource, \
-    Country, PopulationGroup, SpecimenType, TestType, Age, db_model_config
+    Country, PopulationGroup
 from sqlalchemy import distinct, func
-from itertools import groupby
-from functools import reduce
+
 
 def get_all_filter_options():
     with db_session() as session:
@@ -24,18 +21,6 @@ def get_all_filter_options():
             "population_group_name": {
                 "table": PopulationGroup,
                 "label": "population_group"
-            },
-            "specimen_type_name": {
-                "table": SpecimenType,
-                "label": "specimen_type"
-            },
-            "test_type_name": {
-                "table": TestType,
-                "label": "test_type"
-            },
-            "age_name": {
-                "table": Age,
-                "label": "age"
             }
         }
 

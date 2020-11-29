@@ -22,6 +22,7 @@ class AirtableSource(db.Model):
     lead_organization = Column(String(128))
     sampling_start_date = Column(DateTime)
     sampling_end_date = Column(DateTime)
+    age = Column(String(64))
     sex = Column(String(16))
     sampling_method = Column(String(128))
     sensitivity = Column(Float)
@@ -34,13 +35,17 @@ class AirtableSource(db.Model):
     isotype_igg = Column(Boolean)
     isotype_igm = Column(Boolean)
     isotype_iga = Column(Boolean)
+    specimen_type = Column(String(64))
+    approved_by_regulator = Column(Boolean)
     estimate_grade = Column(String(32))
     academic_primary_estimate = Column(Boolean)
     dashboard_primary_estimate = Column(Boolean)
     isotype_comb = Column(String(32))
+    test_type = Column(String(256))
     test_adj = Column(Boolean)
     pop_adj = Column(Boolean)
     created_at = Column(DateTime)
+
 
 class Country(db.Model):
     __tablename__ = 'country'
@@ -50,6 +55,7 @@ class Country(db.Model):
     latitude = Column(Float)
     longitude = Column(Float)
     created_at = Column(DateTime)
+
 
 # Create base multi select tables
 class City(db.Model):
@@ -72,14 +78,6 @@ class State(db.Model):
     created_at = Column(DateTime)
 
 
-class Age(db.Model):
-    __tablename__ = 'age'
-
-    age_id = Column(UUID(as_uuid=True), primary_key=True)
-    age_name = Column(String(64))
-    created_at = Column(DateTime)
-
-
 class PopulationGroup(db.Model):
     __tablename__ = 'population_group'
 
@@ -93,30 +91,6 @@ class TestManufacturer(db.Model):
 
     test_manufacturer_id = Column(UUID(as_uuid=True), primary_key=True)
     test_manufacturer_name = Column(String(128))
-    created_at = Column(DateTime)
-
-
-class ApprovingRegulator(db.Model):
-    __tablename__ = 'approving_regulator'
-
-    approving_regulator_id = Column(UUID(as_uuid=True), primary_key=True)
-    approving_regulator_name = Column(String(256))
-    created_at = Column(DateTime)
-
-
-class TestType(db.Model):
-    __tablename__ = 'test_type'
-
-    test_type_id = Column(UUID(as_uuid=True), primary_key=True)
-    test_type_name = Column(String(256))
-    created_at = Column(DateTime)
-
-
-class SpecimenType(db.Model):
-    __tablename__ = 'specimen_type'
-
-    specimen_type_id = Column(UUID(as_uuid=True), primary_key=True)
-    specimen_type_name = Column(String(64))
     created_at = Column(DateTime)
 
 
@@ -139,15 +113,6 @@ class StateBridge(db.Model):
     created_at = Column(DateTime)
 
 
-class AgeBridge(db.Model):
-    __tablename__ = 'age_bridge'
-
-    id = Column(UUID(as_uuid=True), primary_key=True)
-    source_id = Column(UUID(as_uuid=True))
-    age_id = Column(UUID(as_uuid=True))
-    created_at = Column(DateTime)
-
-
 class PopulationGroupBridge(db.Model):
     __tablename__ = 'population_group_bridge'
 
@@ -163,31 +128,4 @@ class TestManufacturerBridge(db.Model):
     id = Column(UUID(as_uuid=True), primary_key=True)
     source_id = Column(UUID(as_uuid=True))
     test_manufacturer_id = Column(UUID(as_uuid=True))
-    created_at = Column(DateTime)
-
-
-class ApprovingRegulatorBridge(db.Model):
-    __tablename__ = 'approving_regulator_bridge'
-
-    id = Column(UUID(as_uuid=True), primary_key=True)
-    source_id = Column(UUID(as_uuid=True))
-    approving_regulator_id = Column(UUID(as_uuid=True))
-    created_at = Column(DateTime)
-
-
-class TestTypeBridge(db.Model):
-    __tablename__ = 'test_type_bridge'
-
-    id = Column(UUID(as_uuid=True), primary_key=True)
-    source_id = Column(UUID(as_uuid=True))
-    test_type_id = Column(UUID(as_uuid=True))
-    created_at = Column(DateTime)
-
-
-class SpecimenTypeBridge(db.Model):
-    __tablename__ = 'specimen_type_bridge'
-
-    id = Column(UUID(as_uuid=True), primary_key=True)
-    source_id = Column(UUID(as_uuid=True))
-    specimen_type_id = Column(UUID(as_uuid=True))
     created_at = Column(DateTime)

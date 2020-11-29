@@ -10,10 +10,9 @@ from dotenv import load_dotenv
 
 import pandas as pd
 from sqlalchemy import create_engine
-from app.serotracker_sqlalchemy import db_session, AirtableSource, Country, City, State, \
-    Age, PopulationGroup, TestManufacturer, ApprovingRegulator, TestType, \
-    SpecimenType, CityBridge, StateBridge, AgeBridge, PopulationGroupBridge, \
-    TestManufacturerBridge, ApprovingRegulatorBridge, TestTypeBridge, SpecimenTypeBridge, AirtableSourceSchema
+from app.serotracker_sqlalchemy import db_session, AirtableSource, Country, City, State, PopulationGroup, \
+    TestManufacturer, CityBridge, StateBridge, PopulationGroupBridge, TestManufacturerBridge, \
+    AirtableSourceSchema
 from app.utils import airtable_fields_config, send_api_error_email
 from app.utils.send_error_email import send_schema_validation_error_email
 
@@ -205,10 +204,8 @@ def load_postgres_tables(tables_dict, engine):
 
 
 def drop_old_entries():
-    all_tables = [AirtableSource, City, State, Age, PopulationGroup,
-                  TestManufacturer, ApprovingRegulator, TestType, SpecimenType, Country,
-                  CityBridge, StateBridge, AgeBridge, PopulationGroupBridge,
-                  TestManufacturerBridge, ApprovingRegulatorBridge, TestTypeBridge, SpecimenTypeBridge]
+    all_tables = [AirtableSource, City, State, PopulationGroup, TestManufacturer, Country,
+                  CityBridge, StateBridge, PopulationGroupBridge, TestManufacturerBridge]
     with db_session() as session:
         for table in all_tables:
             # Drop record if it was not added during the current run
@@ -238,6 +235,7 @@ def validate_records(airtable_source):
 
     exit("EXITING – No acceptable records found.")
 
+
 def get_coords(place_name, place_type):
     url = f"https://api.mapbox.com/geocoding/v5/mapbox.places/{place_name}.json?" \
           f"access_token={os.getenv('MAPBOX_API_KEY')}"
@@ -254,12 +252,40 @@ def get_coords(place_name, place_type):
                 break
     return coords
 
+
 def add_latlng_to_df(place_type, place_type_name, df):
     df['coords'] = df[place_type_name].map(lambda a: get_coords(a, place_type))
     df['longitude'] = df['coords'].map(lambda a: a[0] if isinstance(a, list) else None)
     df['latitude'] = df['coords'].map(lambda a: a[1] if isinstance(a, list) else None)
     df = df.drop(columns=['coords'])
     return df
+
+
+def get_most_recent_pub_date_info(row):
+    # Get index of most recent pub date if the pub date is not None
+    try:
+        pub_dates = row['publication_date']
+        max_index = pub_dates.index(max(pub_dates))
+        row['publication_date'] = row['publication_date'][max_index]
+
+    # If pub date is None set to index to 0
+    except AttributeError:
+        max_index = 0
+
+    # If source type exists, get element at that index
+    if row['source_type']:
+        row['source_type'] = row['source_type'][max_index]
+
+    # Index whether org author exists and corresponding first author
+    is_org_author = row['organizational_author'][max_index]
+    row['organizational_author'] = is_org_author
+    row['first_author'] = row['first_author'][max_index]
+
+    # If it is not an organizational author, then get last name
+    if not is_org_author:
+        row['first_author'] = row['first_author'].strip().split()[-1]
+    return row
+
 
 def main():
     # Create engine to connect to whiteclaw database
@@ -271,19 +297,28 @@ def main():
     # Get all records with airtable API request and load into dataframe
     json = get_all_records()
     data = pd.DataFrame(json)
+    print(data.iloc[0])
 
     # List of columns that are lookup fields and therefore only have one element in the list
-    single_element_list_cols = ['source_name', 'publication_date', 'first_author', 'url', 'source_type',
-                                'source_publisher', 'summary', 'study_type', 'study_status', 'country',
-                                'lead_organization', 'overall_risk_of_bias']
-
-    # List of columns that are multi select (can have multiple values)
-    multi_select_cols = ['city', 'state', 'age', 'population_group', 'test_manufacturer', 'approving_regulator',
-                         'test_type', 'specimen_type']
+    single_element_list_cols = ['included', 'age', 'source_name', 'url', 'source_publisher', 'summary',
+                                'study_type', 'country', 'lead_organization', 'overall_risk_of_bias', 'test_type',
+                                'specimen_type']
 
     # Remove lists from single select columns
     for col in single_element_list_cols:
         data[col] = data[col].apply(lambda x: x[0] if x is not None else x)
+
+    # Drop rows if columns are null: included?, serum pos prevalence, denominator, sampling end
+    data.dropna(subset=['included', 'serum_pos_prevalence', 'denominator_value', 'sampling_end_date'],
+                inplace=True)
+
+    # Get index of most recent publication date
+    data = data.apply(lambda row: get_most_recent_pub_date_info(row), axis=1)
+    print(data.iloc[0])
+    exit()
+
+    # List of columns that are multi select (can have multiple values)
+    multi_select_cols = ['city', 'state', 'population_group', 'test_manufacturer']
 
     # Create airtable source df
     airtable_source = create_airtable_source_df(data)
@@ -317,9 +352,8 @@ def main():
     bridge_tables_dict = create_bridge_tables(airtable_source, multi_select_tables_dict)
 
     # Drop columns that are not needed not needed
-    airtable_source = airtable_source.drop(columns=['city', 'state', 'age', 'population_group',
-                                                    'test_manufacturer', 'approving_regulator', 'test_type',
-                                                    'specimen_type', 'country'])
+    airtable_source = airtable_source.drop(columns=['organizational_author', 'city', 'state', 'population_group',
+                                                    'test_manufacturer', 'country'])
 
     # key = table name, value = table df
     tables_dict = {**multi_select_tables_dict, **bridge_tables_dict}
