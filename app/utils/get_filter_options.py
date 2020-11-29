@@ -1,5 +1,5 @@
 from app.serotracker_sqlalchemy import db_session, AirtableSource, \
-    Country, PopulationGroup
+    Country
 from sqlalchemy import distinct, func
 
 
@@ -17,10 +17,6 @@ def get_all_filter_options():
             "country_name": {
                 "table": Country,
                 "label": "country"
-            },
-            "population_group_name": {
-                "table": PopulationGroup,
-                "label": "population_group"
             }
         }
 

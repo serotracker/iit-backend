@@ -10,8 +10,7 @@ from dotenv import load_dotenv
 
 import pandas as pd
 from sqlalchemy import create_engine
-from app.serotracker_sqlalchemy import db_session, AirtableSource, Country, City, State, PopulationGroup, \
-    TestManufacturer, CityBridge, StateBridge, PopulationGroupBridge, TestManufacturerBridge, \
+from app.serotracker_sqlalchemy import db_session, AirtableSource, Country, City, State, TestManufacturer, CityBridge, StateBridge, TestManufacturerBridge, \
     AirtableSourceSchema
 from app.utils import airtable_fields_config, send_api_error_email
 from app.utils.send_error_email import send_schema_validation_error_email
@@ -204,8 +203,8 @@ def load_postgres_tables(tables_dict, engine):
 
 
 def drop_old_entries():
-    all_tables = [AirtableSource, City, State, PopulationGroup, TestManufacturer, Country,
-                  CityBridge, StateBridge, PopulationGroupBridge, TestManufacturerBridge]
+    all_tables = [AirtableSource, City, State, TestManufacturer, Country,
+                  CityBridge, StateBridge, TestManufacturerBridge]
     with db_session() as session:
         for table in all_tables:
             # Drop record if it was not added during the current run
@@ -287,6 +286,28 @@ def get_most_recent_pub_date_info(row):
     return row
 
 
+def apply_min_risk_of_bias(df):
+    bias_hierarchy = ['Low', 'Moderate', 'High', 'Unclear']
+    for name, subset in df.groupby('study_name'):
+        if (subset['overall_risk_of_bias']).isnull().all():
+            subset['overall_risk_of_bias'] = 'Unclear'
+            continue
+        for level in bias_hierarchy:
+            if (subset['overall_risk_of_bias'] == level).any() or level == 'Unclear':
+                subset['overall_risk_of_bias'] = level
+                continue
+    return df
+
+
+def get_city(row):
+    if row['city']:
+        return row['city'].split(',')
+    elif row['county']:
+        return row['county'].split(',')
+    else:
+        return row['city']
+
+
 def main():
     # Create engine to connect to whiteclaw database
     engine = create_engine('postgresql://{username}:{password}@{host_address}/whiteclaw'.format(
@@ -297,16 +318,17 @@ def main():
     # Get all records with airtable API request and load into dataframe
     json = get_all_records()
     data = pd.DataFrame(json)
-    print(data.iloc[0])
 
     # List of columns that are lookup fields and therefore only have one element in the list
-    single_element_list_cols = ['included', 'age', 'source_name', 'url', 'source_publisher', 'summary',
-                                'study_type', 'country', 'lead_organization', 'overall_risk_of_bias', 'test_type',
-                                'specimen_type']
+    single_element_list_cols = ['included', 'source_name', 'url', 'source_publisher', 'summary',
+                                'study_type', 'country', 'lead_organization', 'overall_risk_of_bias']
 
     # Remove lists from single select columns
     for col in single_element_list_cols:
         data[col] = data[col].apply(lambda x: x[0] if x is not None else x)
+
+    # Convert elements that are "Not reported" or "Not Reported" or "NR" to None
+    data.replace({'NR': None, 'Not Reported': None, 'Not reported': None}, inplace=True)
 
     # Drop rows if columns are null: included?, serum pos prevalence, denominator, sampling end
     data.dropna(subset=['included', 'serum_pos_prevalence', 'denominator_value', 'sampling_end_date'],
@@ -314,11 +336,17 @@ def main():
 
     # Get index of most recent publication date
     data = data.apply(lambda row: get_most_recent_pub_date_info(row), axis=1)
-    print(data.iloc[0])
-    exit()
+
+    # Convert state, city and test_manufacturer fields to lists
+    data['state'] = data['state'].apply(lambda x: x.split(',') if x else x)
+    data['test_manufacturer'] = data['test_manufacturer'].apply(lambda x: x.split(',') if x else x)
+    data['city'] = data.apply(lambda row: get_city(row), axis=1)
+
+    # Apply min risk of bias to all study estimates
+    data = apply_min_risk_of_bias(data)
 
     # List of columns that are multi select (can have multiple values)
-    multi_select_cols = ['city', 'state', 'population_group', 'test_manufacturer']
+    multi_select_cols = ['city', 'state', 'test_manufacturer']
 
     # Create airtable source df
     airtable_source = create_airtable_source_df(data)
@@ -326,7 +354,7 @@ def main():
     # Create country table df
     country_df = pd.DataFrame(columns=['country_name', 'country_id'])
     country_df['country_name'] = airtable_source['country'].unique()
-    country_df['country_id'] = [uuid4() for name in country_df['country_name']]
+    country_df['country_id'] = [uuid4() for _ in country_df['country_name']]
     country_df['created_at'] = CURR_TIME
     country_df = add_latlng_to_df("country", "country_name", country_df)
 
@@ -337,11 +365,9 @@ def main():
         country_dict[row['country_name']] = row['country_id']
     airtable_source['country_id'] = airtable_source['country'].map(lambda a: country_dict[a])
 
-    # Validate the airtable source df
-    airtable_source = validate_records(airtable_source)
-
     # Create dictionary to store multi select tables
     multi_select_tables_dict = create_multi_select_tables(data, multi_select_cols)
+
     # Add lat/lng to cities and states
     state_df = add_latlng_to_df("region", "state_name", multi_select_tables_dict["state"])
     city_df = add_latlng_to_df("place", "city_name", multi_select_tables_dict["city"])
@@ -352,8 +378,11 @@ def main():
     bridge_tables_dict = create_bridge_tables(airtable_source, multi_select_tables_dict)
 
     # Drop columns that are not needed not needed
-    airtable_source = airtable_source.drop(columns=['organizational_author', 'city', 'state', 'population_group',
+    airtable_source = airtable_source.drop(columns=['organizational_author', 'city', 'county', 'state',
                                                     'test_manufacturer', 'country'])
+
+    # Validate the airtable source df
+    airtable_source = validate_records(airtable_source)
 
     # key = table name, value = table df
     tables_dict = {**multi_select_tables_dict, **bridge_tables_dict}
@@ -372,3 +401,4 @@ if __name__ == '__main__':
     beginning = time()
     main()
     diff = time() - beginning
+    print(diff)

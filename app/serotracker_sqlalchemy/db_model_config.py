@@ -1,8 +1,8 @@
 from app.serotracker_sqlalchemy import CityBridge, City, StateBridge, State,\
-    PopulationGroupBridge, PopulationGroup, TestManufacturerBridge, TestManufacturer
+    TestManufacturerBridge, TestManufacturer
 
 db_model_config = {
-    'multi_select_columns': ['population_group', 'test_manufacturer', 'test_type'],
+    'multi_select_columns': ['test_manufacturer', 'city', 'state'],
     'supplementary_table_info': [
         {
             "bridge_table": CityBridge,
@@ -15,11 +15,6 @@ db_model_config = {
             "entity": "state"
         },
         {
-            "bridge_table": PopulationGroupBridge,
-            "main_table": PopulationGroup,
-            "entity": "population_group"
-        },
-        {
             "bridge_table": TestManufacturerBridge,
             "main_table": TestManufacturer,
             "entity": "test_manufacturer"
@@ -30,8 +25,6 @@ db_model_config = {
 db_tables = ['airtable_source',
              'city',
              'city_bridge',
-             'population_group',
-             'population_group_bridge',
              'state',
              'state_bridge',
              'test_manufacturer',

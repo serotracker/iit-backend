@@ -24,6 +24,7 @@ class AirtableSource(db.Model):
     sampling_end_date = Column(DateTime)
     age = Column(String(64))
     sex = Column(String(16))
+    population_group = Column(String(128))
     sampling_method = Column(String(128))
     sensitivity = Column(Float)
     specificity = Column(Float)
@@ -78,14 +79,6 @@ class State(db.Model):
     created_at = Column(DateTime)
 
 
-class PopulationGroup(db.Model):
-    __tablename__ = 'population_group'
-
-    population_group_id = Column(UUID(as_uuid=True), primary_key=True)
-    population_group_name = Column(String(128))
-    created_at = Column(DateTime)
-
-
 class TestManufacturer(db.Model):
     __tablename__ = 'test_manufacturer'
 
@@ -110,15 +103,6 @@ class StateBridge(db.Model):
     id = Column(UUID(as_uuid=True), primary_key=True)
     source_id = Column(UUID(as_uuid=True))
     state_id = Column(UUID(as_uuid=True))
-    created_at = Column(DateTime)
-
-
-class PopulationGroupBridge(db.Model):
-    __tablename__ = 'population_group_bridge'
-
-    id = Column(UUID(as_uuid=True), primary_key=True)
-    source_id = Column(UUID(as_uuid=True))
-    population_group_id = Column(UUID(as_uuid=True))
     created_at = Column(DateTime)
 
 
