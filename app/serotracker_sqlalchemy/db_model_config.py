@@ -32,11 +32,7 @@ db_tables = ['airtable_source',
              'city_bridge',
              'population_group',
              'population_group_bridge',
-             'specimen_type',
-             'specimen_type_bridge',
              'state',
              'state_bridge',
              'test_manufacturer',
-             'test_manufacturer_bridge',
-             'test_type',
-             'test_type_bridge']
+             'test_manufacturer_bridge']
