@@ -260,7 +260,7 @@ def add_latlng_to_df(place_type, place_type_name, df):
     return df
 
 
-def get_most_recent_pub_date_info(row):
+def get_most_recent_publication_info(row):
     # Get index of most recent pub date if the pub date is not None
     try:
         pub_dates = row['publication_date']
@@ -335,7 +335,7 @@ def main():
                 inplace=True)
 
     # Get index of most recent publication date
-    data = data.apply(lambda row: get_most_recent_pub_date_info(row), axis=1)
+    data = data.apply(lambda row: get_most_recent_publication_info(row), axis=1)
 
     # Convert state, city and test_manufacturer fields to lists
     data['state'] = data['state'].apply(lambda x: x.split(',') if x else x)
