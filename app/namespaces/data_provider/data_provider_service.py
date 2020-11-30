@@ -2,7 +2,7 @@ import pandas as pd
 import numpy
 import math
 
-from app.serotracker_sqlalchemy import db_session, AirtableSource, db_model_config
+from app.serotracker_sqlalchemy import db_session, AirtableSource, Country, db_model_config
 from sqlalchemy import case, and_
 
 
@@ -80,13 +80,16 @@ def get_record_details(source_id):
                                     'source_name',
                                     'summary',
                                     'sex',
+                                    'age',
                                     'serum_pos_prevalence',
+                                    'specimen_type',
+                                    'test_type',
+                                    'population_group',
                                     'denominator_value',
                                     'overall_risk_of_bias',
                                     'sampling_method',
                                     'sampling_start_date',
                                     'sampling_end_date',
-                                    'country',
                                     'sensitivity',
                                     'specificity']
 
@@ -101,6 +104,7 @@ def get_record_details(source_id):
             # Add columns from supplementary tables and add isotype col expression
             for sup_table in table_infos:
                 fields_list.append(getattr(sup_table['main_table'], f"{sup_table['entity']}_name").label(sup_table['entity']))
+            fields_list.append(getattr(Country, 'country_name').label('country'))
 
             query = session.query(*fields_list, isotype_case_expression)
 
@@ -111,6 +115,9 @@ def get_record_details(source_id):
                 entity_id = f"{sup_table['entity']}_id"
                 query = query.outerjoin(bridge_table, bridge_table.source_id == AirtableSource.source_id)\
                     .outerjoin(main_table, getattr(bridge_table, entity_id) == getattr(main_table, entity_id))
+
+            # Join on country table
+            query = query.outerjoin(Country, Country.country_id == AirtableSource.country_id)
 
             # Filter by input source id and convert results to dicts
             query = query.filter(AirtableSource.source_id == source_id)

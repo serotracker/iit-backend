@@ -142,4 +142,3 @@ def get_country_seroprev_summaries(records):
         country_seroprev_summary_dict['seroprevalence_estimate_summary'] = grades_seroprev_summaries_dict
         study_counts_list.append(country_seroprev_summary_dict)
     return study_counts_list
-

@@ -45,7 +45,7 @@ prioritization_criteria_full = {
     #     lambda estimate: 'ELISA' in estimate['test_types_grouped']
     # ],
     'specimen': [
-        lambda estimate: 'Dried Blood' not in estimate['specimen_type']
+        lambda estimate: 'Dried Blood' is not estimate['specimen_type']
     ],
 
 }
@@ -98,6 +98,7 @@ def get_pooled_estimate(estimates):
         pooled.at['sampling_end_date'] = estimates['sampling_end_date'].max()
 
         return pooled  
+
 
 def get_prioritized_estimates(estimates, 
                               filters = None, 
@@ -249,7 +250,7 @@ if __name__ == '__main__':
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
             'test_type': ['ELISA'], 
-            'specimen_type': ['Dried Blood'],
+            'specimen_type': 'Dried Blood',
             'age': ['All'],
             'sex': 'ALL'
         },
@@ -266,7 +267,7 @@ if __name__ == '__main__':
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
             'test_type': ['ELISA'], 
-            'specimen_type': ['Dried Blood'],
+            'specimen_type': 'Dried Blood',
             'age': ['All'],
             'sex': 'ALL'
         },
@@ -283,7 +284,7 @@ if __name__ == '__main__':
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
             'test_type': ['ELISA'], 
-            'specimen_type': ['Dried Blood'],
+            'specimen_type': 'Dried Blood',
             'age': ['All'],
             'sex': 'ALL'
         },
@@ -300,7 +301,7 @@ if __name__ == '__main__':
             'isotypes_reported': ['IgG'],
             'isotype_comb': 'OR',
             'test_type': ['ELISA'], 
-            'specimen_type': ['Dried Blood'],
+            'specimen_type': 'Dried Blood',
             'age': ['All'],
             'sex': 'ALL'
         },
@@ -317,7 +318,7 @@ if __name__ == '__main__':
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
             'test_type': ['ELISA'], 
-            'specimen_type': ['Dried Blood'],
+            'specimen_type': 'Dried Blood',
             'age': ['All'],
             'sex': 'ALL'
         },
@@ -334,7 +335,7 @@ if __name__ == '__main__':
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'AND',
             'test_type': ['ELISA'], 
-            'specimen_type': ['Dried Blood'],
+            'specimen_type': 'Dried Blood',
             'age': ['All'],
             'sex': 'ALL'
         },
@@ -351,7 +352,7 @@ if __name__ == '__main__':
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
             'test_type': ['ELISA'], 
-            'specimen_type': ['Dried Blood'],
+            'specimen_type': 'Dried Blood',
             'age': ['All'],
             'sex': 'ALL'
         },
@@ -368,7 +369,7 @@ if __name__ == '__main__':
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
             'test_type': ['LFIA'], 
-            'specimen_type': ['Dried Blood'],
+            'specimen_type': 'Dried Blood',
             'age': ['All'],
             'sex': 'ALL'
         },
@@ -385,7 +386,7 @@ if __name__ == '__main__':
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
             'test_type': ['ELISA'], 
-            'specimen_type': ['Dried Blood'],
+            'specimen_type': 'Dried Blood',
             'age': ['All'],
             'sex': 'ALL',
             'TEST_INFO_AVAIL': False
@@ -403,7 +404,7 @@ if __name__ == '__main__':
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
             'test_type': ['ELISA'], 
-            'specimen_type': ['Not Dried Blood'],
+            'specimen_type': 'Dried Blood',
             'age': ['All'],
             'sex': 'ALL',
             'TEST_INFO_AVAIL': False
@@ -421,7 +422,7 @@ if __name__ == '__main__':
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
             'test_type': ['ELISA'], 
-            'specimen_type': ['Dried Blood'],
+            'specimen_type': 'Dried Blood',
             'age': ['All'],
             'sex': 'ALL',
             'TEST_INFO_AVAIL': False
@@ -439,7 +440,7 @@ if __name__ == '__main__':
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
             'test_type': ['ELISA'], 
-            'specimen_type': ['Not Dried Blood'],
+            'specimen_type': 'Dried Blood',
             'age': ['All'],
             'sex': 'ALL',
             'TEST_INFO_AVAIL': False

@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 from .estimate_prioritization import get_prioritized_estimates
 
+
 def get_all_records():
     with db_session() as session:
         # Get all records for now, join on all tables
@@ -16,9 +17,9 @@ def get_all_records():
         # Create list of fields in AirtableSource to query unless the specific columns are specified
         field_strings = ['source_name', 'source_type', 'study_name', 'denominator_value',
                          'overall_risk_of_bias', 'serum_pos_prevalence', 'isotype_igm', 'isotype_iga',
-                         'isotype_igg', 'sex', 'sampling_start_date', 'sampling_end_date', 'estimate_grade',
+                         'isotype_igg', 'sex', 'age', 'sampling_start_date', 'sampling_end_date', 'estimate_grade',
                          'isotype_comb', 'academic_primary_estimate', 'dashboard_primary_estimate', 'pop_adj',
-                         'test_adj']
+                         'test_adj', 'specimen_type', 'test_type']
 
         fields_list = [AirtableSource.source_id]
         for field_string in field_strings:

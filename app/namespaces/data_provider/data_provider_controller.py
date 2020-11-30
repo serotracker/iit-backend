@@ -109,6 +109,7 @@ class GeogStudyCount(Resource):
         country_seroprev_summaries = get_country_seroprev_summaries(records)
         return jsonify(country_seroprev_summaries)
 
+
 @data_provider_ns.route('/filter_options', methods=['GET'])
 class Records(Resource):
     @data_provider_ns.doc('An endpoint for getting all filter options from the database.')
