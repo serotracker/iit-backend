@@ -6,7 +6,8 @@ from sqlalchemy import distinct, func
 def get_all_filter_options():
     with db_session() as session:
         # List of fields in AirtableSource to query
-        airtable_field_strings = ['source_type', 'overall_risk_of_bias', 'sex', 'estimate_grade']
+        airtable_field_strings = ['source_type', 'overall_risk_of_bias', 'sex', 'estimate_grade',
+                                  'population_group', 'age', 'specimen_type', 'test_type']
         options = {}
         for field_string in airtable_field_strings:
             query = session.query(distinct(getattr(AirtableSource, field_string)))
