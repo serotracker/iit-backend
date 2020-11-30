@@ -19,7 +19,7 @@ def get_all_records():
                          'overall_risk_of_bias', 'serum_pos_prevalence', 'isotype_igm', 'isotype_iga',
                          'isotype_igg', 'sex', 'age', 'sampling_start_date', 'sampling_end_date', 'estimate_grade',
                          'isotype_comb', 'academic_primary_estimate', 'dashboard_primary_estimate', 'pop_adj',
-                         'test_adj', 'specimen_type', 'test_type']
+                         'test_adj', 'specimen_type', 'test_type', 'population_group']
 
         fields_list = [AirtableSource.source_id]
         for field_string in field_strings:
