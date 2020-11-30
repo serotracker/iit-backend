@@ -107,7 +107,8 @@ def get_prioritized_estimates(estimates,
     if filters is not None:
         estimates = estimates[filters]
     if estimates.shape[0] == 0:
-        return None 
+        # Return empty dataframe
+        return pd.DataFrame()
     
     if mode == 'analysis_dynamic':
         prioritization_criteria = None

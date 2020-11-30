@@ -177,8 +177,9 @@ def get_filtered_records(filters=None, columns=None, start_date=None, end_date=N
     if prioritize_estimates:
         result_df = pd.DataFrame(result)
         prioritized_records = get_prioritized_estimates(result_df, mode="dashboard")
-        # Filling all NaN values with None: https://stackoverflow.com/questions/46283312/how-to-proceed-with-none-value-in-pandas-fillna
-        prioritized_records = prioritized_records.fillna(np.nan).replace({np.nan: None})
+        if not prioritized_records.empty:
+            # Filling all NaN values with None: https://stackoverflow.com/questions/46283312/how-to-proceed-with-none-value-in-pandas-fillna
+            prioritized_records = prioritized_records.fillna(np.nan).replace({np.nan: None})
         result = prioritized_records.to_dict('records')
 
     # Finally, if columns have been supplied, only return those columns
