@@ -2,37 +2,23 @@ import pandas as pd
 import datetime
 
 # define a full set of prioritization criteria 
-prioritization_criteria_full = {
-    'adjustment_testadj': [
-        lambda estimate: (estimate['pop_adj'] == True) and (estimate['test_adj'] == True),
-        lambda estimate: (pd.isna(estimate['pop_adj'])) and (estimate['test_adj'] == True),
-        lambda estimate: (estimate['pop_adj'] == True) and (pd.isna(estimate['test_adj'])),
-        lambda estimate: (pd.isna(estimate['pop_adj'])) and (pd.isna(estimate['test_adj'])),
+prioritization_criteria_base = [
+    [
+        lambda estimate: estimate['age'] == "Multiple groups"
     ],
-    'adjustment_testunadj': [
-        lambda estimate: (estimate['pop_adj'] == True) and (pd.isna(estimate['test_adj'])),
-        lambda estimate: (pd.isna(estimate['pop_adj'])) and (pd.isna(estimate['test_adj'])),
-        lambda estimate: (estimate['pop_adj'] == True) and (estimate['test_adj'] == True),
-        lambda estimate: (pd.isna(estimate['ƒpop_adj'])) and (estimate['test_adj'] == True),
-    ],
-    'age': [
-        lambda estimate: 'All' in estimate['age']
-    ],
-    'sex': [
+    [
         lambda estimate: estimate['sex'] == 'All'
     ],
-    'isotype': [
+    [
         lambda estimate: 'Total Antibody' in estimate['isotypes_reported'], # total Ab
         lambda estimate: ((len(estimate['isotypes_reported']) > 1) and \
                          ('IgG' in estimate['isotypes_reported']) and \
-                         ((estimate['isotype_comb'] == 'OR') or \
-                         estimate['isotype_comb'] == 'AND/OR')),   # IgG OR other Ab
+                         (estimate['isotype_comb'] == 'AND/OR')),   # IgG OR other Ab
         lambda estimate: ((len(estimate['isotypes_reported']) == 1) and \
                          ('IgG' in estimate['isotypes_reported'])),         # IgG alone
         lambda estimate: ((len(estimate['isotypes_reported']) > 1) and \
                          ('IgM' in estimate['isotypes_reported']) and \
-                         ((estimate['isotype_comb'] == 'OR') or \
-                         estimate['isotype_comb'] == 'AND/OR')),   # IgM OR other Ab
+                          (estimate['isotype_comb'] == 'AND/OR')),   # IgM OR other Ab
         lambda estimate: ((len(estimate['isotypes_reported']) > 1) and \
                          ('IgG' in estimate['isotypes_reported'])),         # IgG AND other Ab
         lambda estimate: ((len(estimate['isotypes_reported']) == 1) and \
@@ -40,23 +26,33 @@ prioritization_criteria_full = {
         lambda estimate: ((len(estimate['isotypes_reported']) > 1) and \
                          ('IgG' in estimate['isotypes_reported']))          # IgM AND other Ab
     ],
-    # TODO: reconsider once data clean is in
-    # 'assay': [
-    #     lambda estimate: 'ELISA' in estimate['test_types_grouped']
-    # ],
-    'specimen': [
-        lambda estimate: 'Dried Blood' is not estimate['specimen_type']
+    [
+        lambda estimate: estimate['test_type'] == 'ELISA'
     ],
+    [
+        lambda estimate: estimate['specimen_type'] != 'Dried Blood'
+    ]
+]
 
-}
+test_adj_criteria = [
+    lambda estimate: (estimate['pop_adj'] == True) and (estimate['test_adj'] == True),
+    lambda estimate: (pd.isna(estimate['pop_adj'])) and (estimate['test_adj'] == True),
+    lambda estimate: (estimate['pop_adj'] == True) and (pd.isna(estimate['test_adj'])),
+    lambda estimate: (pd.isna(estimate['pop_adj'])) and (pd.isna(estimate['test_adj'])),
+]
 
-prioritization_criteria_testadj = {name: criterion for name, criterion \
-                                  in prioritization_criteria_full.items() \
-                                  if name.find('testunadj') == -1}
+test_unadj_criteria = [
+    lambda estimate: (estimate['pop_adj'] == True) and (pd.isna(estimate['test_adj'])),
+    lambda estimate: (pd.isna(estimate['pop_adj'])) and (pd.isna(estimate['test_adj'])),
+    lambda estimate: (estimate['pop_adj'] == True) and (estimate['test_adj'] == True),
+    lambda estimate: (pd.isna(estimate['pop_adj'])) and (estimate['test_adj'] == True),
+]
 
-prioritization_criteria_testunadj = {name: criterion for name, criterion \
-                                    in prioritization_criteria_full.items() \
-                                    if name.find('testadj') == -1}
+prioritization_criteria_testadj = prioritization_criteria_base[:]
+prioritization_criteria_testadj.insert(0, test_adj_criteria)
+
+prioritization_criteria_testunadj = prioritization_criteria_base[:]
+prioritization_criteria_testunadj.insert(0, test_unadj_criteria)
 
 # pass in a filtered set of estimates - or estimates and filters
 # and get out a subset, which have an estimate prioritized from among them 
@@ -73,9 +69,10 @@ def get_pooled_estimate(estimates):
         
         pooled.at['denominator_value'] = sum(estimates['denominator_value'])
         pooled.at['numerator_value'] = sum(estimates['denominator_value'] * estimates['serum_pos_prevalence'])
-        
+        pooled.at['serum_pos_prevalence'] =  pooled.at['numerator_value']/pooled.at['denominator_value']
+
         # have population group, state, and city to be the union of the inputs
-        pooled.at['population_group'] = list(estimates['population_group'].explode().dropna().unique())
+        pooled.at['population_group'] = list(estimates['population_group'].dropna().unique())
         pooled.at['state'] = list(estimates['state'].explode().dropna().unique())
         pooled.at['city'] = list(estimates['city'].explode().dropna().unique())
         
@@ -159,7 +156,7 @@ def get_prioritized_estimates(estimates,
             # if a prioritization criterion yields multiple estimates, continue applying criteria 
 
         # select a criterion
-        for criterion_name, criterion in prioritization_criteria.items():
+        for criterion in prioritization_criteria:
             # go through the levels of that criterion, from highest to lowest
             for level in criterion:
                 study_estimates_at_level = study_estimates[study_estimates.apply(level, axis = 1)]
@@ -250,9 +247,9 @@ if __name__ == '__main__':
             'test_adj': True,
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
-            'test_type': ['ELISA'], 
+            'test_type': 'ELISA',
             'specimen_type': 'Dried Blood',
-            'age': ['All'],
+            'age': 'All',
             'sex': 'ALL'
         },
         {
@@ -267,9 +264,9 @@ if __name__ == '__main__':
             'test_adj': True,
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
-            'test_type': ['ELISA'], 
+            'test_type': 'ELISA',
             'specimen_type': 'Dried Blood',
-            'age': ['All'],
+            'age': 'All',
             'sex': 'ALL'
         },
         {
@@ -284,9 +281,9 @@ if __name__ == '__main__':
             'test_adj': True,
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
-            'test_type': ['ELISA'], 
+            'test_type': 'ELISA',
             'specimen_type': 'Dried Blood',
-            'age': ['All'],
+            'age': 'All',
             'sex': 'ALL'
         },
         {
@@ -301,9 +298,9 @@ if __name__ == '__main__':
             'test_adj': True,
             'isotypes_reported': ['IgG'],
             'isotype_comb': 'OR',
-            'test_type': ['ELISA'], 
+            'test_type': 'ELISA',
             'specimen_type': 'Dried Blood',
-            'age': ['All'],
+            'age': 'All',
             'sex': 'ALL'
         },
         {
@@ -318,9 +315,9 @@ if __name__ == '__main__':
             'test_adj': True,
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
-            'test_type': ['ELISA'], 
+            'test_type': 'ELISA',
             'specimen_type': 'Dried Blood',
-            'age': ['All'],
+            'age': 'All',
             'sex': 'ALL'
         },
         {
@@ -335,9 +332,9 @@ if __name__ == '__main__':
             'test_adj': True,
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'AND',
-            'test_type': ['ELISA'], 
+            'test_type': 'ELISA',
             'specimen_type': 'Dried Blood',
-            'age': ['All'],
+            'age': 'All',
             'sex': 'ALL'
         },
         {
@@ -352,9 +349,9 @@ if __name__ == '__main__':
             'test_adj': True,
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
-            'test_type': ['ELISA'], 
+            'test_type': 'ELISA',
             'specimen_type': 'Dried Blood',
-            'age': ['All'],
+            'age': 'All',
             'sex': 'ALL'
         },
         {
@@ -369,9 +366,9 @@ if __name__ == '__main__':
             'test_adj': True,
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
-            'test_type': ['LFIA'], 
+            'test_type': 'LFIA',
             'specimen_type': 'Dried Blood',
-            'age': ['All'],
+            'age': 'All',
             'sex': 'ALL'
         },
         {
@@ -386,9 +383,9 @@ if __name__ == '__main__':
             'test_adj': True,
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
-            'test_type': ['ELISA'], 
+            'test_type': 'ELISA',
             'specimen_type': 'Dried Blood',
-            'age': ['All'],
+            'age': 'All',
             'sex': 'ALL',
             'TEST_INFO_AVAIL': False
         },
@@ -404,9 +401,9 @@ if __name__ == '__main__':
             'test_adj': True,
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
-            'test_type': ['ELISA'], 
+            'test_type': 'ELISA',
             'specimen_type': 'Dried Blood',
-            'age': ['All'],
+            'age': 'All',
             'sex': 'ALL',
             'TEST_INFO_AVAIL': False
         },
@@ -422,9 +419,9 @@ if __name__ == '__main__':
             'test_adj': True,
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
-            'test_type': ['ELISA'], 
+            'test_type': 'ELISA',
             'specimen_type': 'Dried Blood',
-            'age': ['All'],
+            'age': 'All',
             'sex': 'ALL',
             'TEST_INFO_AVAIL': False
         },
@@ -440,9 +437,9 @@ if __name__ == '__main__':
             'test_adj': False,
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
-            'test_type': ['ELISA'], 
+            'test_type': 'ELISA',
             'specimen_type': 'Dried Blood',
-            'age': ['All'],
+            'age': 'All',
             'sex': 'ALL',
             'TEST_INFO_AVAIL': False
         },
@@ -450,7 +447,7 @@ if __name__ == '__main__':
 
     # Adding these hardcoded values for now to make tests pass
     for estimate in sample_estimates:
-        estimate['population_group'] = ["General Population"]
+        estimate['population_group'] = "General Population"
         estimate['state'] = ["Texas"]
         estimate['city'] = ["Dallas"]
 
