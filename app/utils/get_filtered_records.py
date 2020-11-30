@@ -19,7 +19,7 @@ def get_all_records():
                          'overall_risk_of_bias', 'serum_pos_prevalence', 'isotype_igm', 'isotype_iga',
                          'isotype_igg', 'sex', 'age', 'sampling_start_date', 'sampling_end_date', 'estimate_grade',
                          'isotype_comb', 'academic_primary_estimate', 'dashboard_primary_estimate', 'pop_adj',
-                         'test_adj', 'specimen_type', 'test_type']
+                         'test_adj', 'specimen_type', 'test_type', 'population_group']
 
         fields_list = [AirtableSource.source_id]
         for field_string in field_strings:
@@ -177,8 +177,9 @@ def get_filtered_records(filters=None, columns=None, start_date=None, end_date=N
     if prioritize_estimates:
         result_df = pd.DataFrame(result)
         prioritized_records = get_prioritized_estimates(result_df, mode="dashboard")
-        # Filling all NaN values with None: https://stackoverflow.com/questions/46283312/how-to-proceed-with-none-value-in-pandas-fillna
-        prioritized_records = prioritized_records.fillna(np.nan).replace({np.nan: None})
+        if not prioritized_records.empty:
+            # Filling all NaN values with None: https://stackoverflow.com/questions/46283312/how-to-proceed-with-none-value-in-pandas-fillna
+            prioritized_records = prioritized_records.fillna(np.nan).replace({np.nan: None})
         result = prioritized_records.to_dict('records')
 
     # Finally, if columns have been supplied, only return those columns
