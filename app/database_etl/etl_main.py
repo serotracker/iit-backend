@@ -281,7 +281,7 @@ def get_most_recent_publication_info(row):
     row['first_author'] = row['first_author'][max_index]
 
     # If it is not an organizational author, then get last name
-    if not is_org_author:
+    if not is_org_author and len(row['first_author']) > 0:
         row['first_author'] = row['first_author'].strip().split()[-1]
     return row
 
