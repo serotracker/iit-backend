@@ -39,7 +39,6 @@ class AirtableSourceSchema(Schema):
     city = fields.List(fields.Str(validate=validate.Length(max=128)), allow_none=True)
     state = fields.List(fields.Str(validate=validate.Length(max=128)), allow_none=True)
     test_manufacturer = fields.List(fields.Str(validate=validate.Length(max=128)), allow_none=True)
-    approving_regulator = fields.Boolean(allow_none=True)
     academic_primary_estimate = fields.Boolean(allow_none=True)
     dashboard_primary_estimate = fields.Boolean(allow_none=True)
     test_adj = fields.Boolean(allow_none=True)
