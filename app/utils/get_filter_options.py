@@ -26,7 +26,8 @@ def get_all_filter_options():
             results = [q[0] for q in query if q[0] is not None]
             options[other_fields[field]["label"]] = results
 
-        options["max_date"] = session.query(func.max(AirtableSource.sampling_end_date))[0]
-        options["min_date"] = session.query(func.min(AirtableSource.sampling_end_date))[0]
+        options["max_date"] = session.query(func.max(AirtableSource.sampling_end_date))[0][0].isoformat()
+        options["min_date"] = session.query(func.min(AirtableSource.sampling_end_date))[0][0].isoformat()
+        options["updated_at"] = session.query(func.max(AirtableSource.publication_date))[0][0].isoformat()
 
         return options
