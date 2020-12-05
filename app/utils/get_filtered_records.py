@@ -110,12 +110,6 @@ def get_all_records():
                     processed_record['isotypes_reported'].append(v)
                 processed_record.pop(k, None)
 
-            # Format dates
-            if processed_record['sampling_end_date'] is not None:
-                processed_record['sampling_end_date'] = processed_record['sampling_end_date'].isoformat()
-            if processed_record['sampling_start_date'] is not None:
-                processed_record['sampling_start_date'] = processed_record['sampling_start_date'].isoformat()
-
             return processed_record
 
         # `query_dicts` is a list of rows (represented as dicts) with unique source_id and lists of 
@@ -178,6 +172,13 @@ def get_filtered_records(filters=None, columns=None, start_date=None, end_date=N
         return status
 
     result = list(filter(lambda x: date_filter(x, start_date=start_date, end_date=end_date), result))
+
+    # Format dates after date filter has been applied
+    for record in result:
+        if record['sampling_end_date'] is not None:
+            record['sampling_end_date'] = record['sampling_end_date'].isoformat()
+        if record['sampling_start_date'] is not None:
+            record['sampling_start_date'] = record['sampling_start_date'].isoformat()
 
     # TODO: Determine whether to update get_prioritized_estimates to work on dictionaries
     # or keep everything in dataframes (don't want to have this conversion here long term)
