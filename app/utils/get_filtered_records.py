@@ -19,7 +19,7 @@ def get_all_records():
                          'overall_risk_of_bias', 'serum_pos_prevalence', 'isotype_igm', 'isotype_iga',
                          'isotype_igg', 'sex', 'age', 'sampling_start_date', 'sampling_end_date', 'estimate_grade',
                          'isotype_comb', 'academic_primary_estimate', 'dashboard_primary_estimate', 'pop_adj',
-                         'test_adj', 'specimen_type', 'test_type', 'population_group']
+                         'test_adj', 'specimen_type', 'test_type', 'population_group', 'url']
 
         fields_list = [AirtableSource.source_id]
         for field_string in field_strings:
@@ -109,6 +109,13 @@ def get_all_records():
                 if processed_record.get(k, None):
                     processed_record['isotypes_reported'].append(v)
                 processed_record.pop(k, None)
+
+            # Format dates
+            if processed_record['sampling_end_date'] is not None:
+                processed_record['sampling_end_date'] = processed_record['sampling_end_date'].isoformat()
+            if processed_record['sampling_start_date'] is not None:
+                processed_record['sampling_start_date'] = processed_record['sampling_start_date'].isoformat()
+
             return processed_record
 
         # `query_dicts` is a list of rows (represented as dicts) with unique source_id and lists of 
