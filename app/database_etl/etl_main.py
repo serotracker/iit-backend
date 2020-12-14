@@ -91,8 +91,6 @@ def get_all_records():
     # If request was not successful, there will be no records field in response
     # Just return what is in cached layer and log an error
     except KeyError as e:
-        print(e)
-        exit()
         body = "Results were not successfully retrieved from Airtable API." \
                "Please check connection parameters in config.py and fields in airtable_fields_config.json."
         logger.error(body)
@@ -227,7 +225,6 @@ def validate_records(source, schema):
                 # Pull source name as record title if record is from dashboard_source
                 unacceptable_records_map[record['source_name']] = err.messages
             except KeyError:
-                print(record)
                 # Pull estimate name as record title if record is from research_source
                 unacceptable_records_map[record['estimate_name']] = err.messages
 
