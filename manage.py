@@ -22,8 +22,8 @@ def run():
 @manager.shell
 def make_shell_context():
     from flask_sqlalchemy import get_debug_queries
-    from app.serotracker_sqlalchemy.models import DashboardSource
-    return dict(app=app, db=db, gq=get_debug_queries(), DashboardSource=DashboardSource)
+    from app.serotracker_sqlalchemy.models import AirtableSource
+    return dict(app=app, db=db, gq=get_debug_queries(), AirtableSource=AirtableSource)
 
 
 @manager.command
