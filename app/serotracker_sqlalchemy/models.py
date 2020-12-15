@@ -4,9 +4,9 @@ from sqlalchemy.dialects.postgresql import UUID
 from app import db
 
 
-# Dashboard table for all dashboard fields
-class DashboardSource(db.Model):
-    __tablename__ = 'dashboard_source'
+# Create airtable source table
+class AirtableSource(db.Model):
+    __tablename__ = 'airtable_source'
 
     source_id = Column(UUID(as_uuid=True), primary_key=True)
     source_name = Column(String())
@@ -47,59 +47,6 @@ class DashboardSource(db.Model):
     created_at = Column(DateTime)
 
 
-# Research table for all additional research fields
-class ResearchSource(db.Model):
-    __tablename__ = 'research_source'
-
-    source_id = Column(UUID(as_uuid=True), primary_key=True)
-    case_population = Column(Integer)
-    deaths_population = Column(Integer)
-    age_max = Column(Float)
-    age_min = Column(Float)
-    age_variation = Column(String(128))
-    age_variation_measure = Column(String(64))
-    average_age = Column(String(256))
-    case_count_neg14 = Column(Integer)
-    case_count_neg9 = Column(Integer)
-    case_count_0 = Column(Integer)
-    death_count_plus11 = Column(Integer)
-    death_count_plus4 = Column(Integer)
-    ind_eval_lab = Column(String(128))
-    ind_eval_link = Column(String())
-    ind_se = Column(Float)
-    ind_se_n = Column(Float)
-    ind_sp = Column(Float)
-    ind_sp_n = Column(Float)
-    jbi_1 = Column(String(16))
-    jbi_2 = Column(String(16))
-    jbi_3 = Column(String(16))
-    jbi_4 = Column(String(16))
-    jbi_5 = Column(String(16))
-    jbi_6 = Column(String(16))
-    jbi_7 = Column(String(16))
-    jbi_8 = Column(String(16))
-    jbi_9 = Column(String(16))
-    measure_of_age = Column(String(64))
-    sample_frame_info = Column(String())
-    number_of_females = Column(Integer)
-    number_of_males = Column(Integer)
-    numerator_value = Column(Float)
-    estimate_name = Column(String())
-    test_not_linked_reason = Column(String())
-    se_n = Column(Float)
-    seroprev_95_ci_lower = Column(Float)
-    seroprev_95_ci_upper = Column(Float)
-    sp_n = Column(Float)
-    subgroup_var = Column(String(128))
-    subgroup_cat = Column(String(128))
-    superceded = Column(Boolean)
-    test_linked_uid = Column(String())
-    test_name = Column(String())
-    test_validation = Column(String(128))
-    created_at = Column(DateTime)
-
-
-# Create base multi select tables
 class Country(db.Model):
     __tablename__ = 'country'
 
@@ -110,6 +57,7 @@ class Country(db.Model):
     created_at = Column(DateTime)
 
 
+# Create base multi select tables
 class City(db.Model):
     __tablename__ = 'city'
 
@@ -138,14 +86,6 @@ class TestManufacturer(db.Model):
     created_at = Column(DateTime)
 
 
-class AntibodyTarget(db.Model):
-    __tablename__ = 'antibody_target'
-
-    antibody_target_id = Column(UUID(as_uuid=True), primary_key=True)
-    antibody_target_name = Column(String(128))
-    created_at = Column(DateTime)
-
-
 # Create bridge tables
 class CityBridge(db.Model):
     __tablename__ = 'city_bridge'
@@ -171,13 +111,4 @@ class TestManufacturerBridge(db.Model):
     id = Column(UUID(as_uuid=True), primary_key=True)
     source_id = Column(UUID(as_uuid=True))
     test_manufacturer_id = Column(UUID(as_uuid=True))
-    created_at = Column(DateTime)
-
-
-class AntibodyTargetBridge(db.Model):
-    __tablename__ = 'antibody_target_bridge'
-
-    id = Column(UUID(as_uuid=True), primary_key=True)
-    source_id = Column(UUID(as_uuid=True))
-    antibody_target_id = Column(UUID(as_uuid=True))
     created_at = Column(DateTime)

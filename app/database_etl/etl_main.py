@@ -9,12 +9,10 @@ from marshmallow import ValidationError, INCLUDE
 from dotenv import load_dotenv
 
 import pandas as pd
-import numpy as np
 from sqlalchemy import create_engine
-from app.serotracker_sqlalchemy import db_session, DashboardSource, ResearchSource, Country, City, State,\
-    TestManufacturer, AntibodyTarget, CityBridge, StateBridge, TestManufacturerBridge, AntibodyTargetBridge,\
-    DashboardSourceSchema, ResearchSourceSchema
-from app.utils import airtable_fields_config, full_airtable_fields, send_api_error_email
+from app.serotracker_sqlalchemy import db_session, AirtableSource, Country, City, State, TestManufacturer, CityBridge, StateBridge, TestManufacturerBridge, \
+    AirtableSourceSchema
+from app.utils import airtable_fields_config, send_api_error_email
 from app.utils.send_error_email import send_schema_validation_error_email
 
 load_dotenv()
@@ -29,7 +27,7 @@ CURR_TIME = datetime.now()
 
 def _add_fields_to_url(url):
     # Add fields in config to api URL
-    fields = full_airtable_fields
+    fields = airtable_fields_config['dashboard']
     for key in fields:
         url += 'fields%5B%5D={}&'.format(key)
     url = url[:-1]
@@ -44,8 +42,11 @@ def _get_formatted_json_records(records):
     total_records_df = pd.DataFrame(new_records)
 
     # Rename and reorder df columns according to formatted column names in config
-    renamed_cols = full_airtable_fields
+    fields = airtable_fields_config['dashboard']
+    renamed_cols = {key: fields[key] for key in fields}
+    reordered_cols = [fields[key] for key in fields]
     total_records_df = total_records_df.rename(columns=renamed_cols)
+    total_records_df = total_records_df[reordered_cols]
     total_records_df = total_records_df.where(total_records_df.notna(), None)
     total_records_json = total_records_df.to_dict('records')
     return total_records_json
@@ -113,7 +114,7 @@ def isotype_col(isotype_string, x):
     return False
 
 
-def create_dashboard_source_df(original_data):
+def create_airtable_source_df(original_data):
     # Length of records
     num_records = original_data.shape[0]
 
@@ -202,8 +203,8 @@ def load_postgres_tables(tables_dict, engine):
 
 
 def drop_old_entries():
-    all_tables = [DashboardSource, ResearchSource, City, State, TestManufacturer, AntibodyTarget, Country,
-                  CityBridge, StateBridge, TestManufacturerBridge, AntibodyTargetBridge]
+    all_tables = [AirtableSource, City, State, TestManufacturer, Country,
+                  CityBridge, StateBridge, TestManufacturerBridge]
     with db_session() as session:
         for table in all_tables:
             # Drop record if it was not added during the current run
@@ -212,21 +213,17 @@ def drop_old_entries():
     return
 
 
-def validate_records(source, schema):
-    source_dicts = source.to_dict(orient='records')
+def validate_records(airtable_source):
+    airtable_source_dicts = airtable_source.to_dict(orient='records')
     acceptable_records = []
     unacceptable_records_map = {}  # Map each record to its error messages
-    for record in source_dicts:
+    schema = AirtableSourceSchema()
+    for record in airtable_source_dicts:
         try:
             schema.load(record, unknown=INCLUDE)
             acceptable_records.append(record)
         except ValidationError as err:
-            try:
-                # Pull source name as record title if record is from dashboard_source
-                unacceptable_records_map[record['source_name']] = err.messages
-            except KeyError:
-                # Pull estimate name as record title if record is from research_source
-                unacceptable_records_map[record['estimate_name']] = err.messages
+            unacceptable_records_map[record['source_name']] = err.messages
 
     # Email unacceptable records and log to file here
     if unacceptable_records_map:
@@ -324,29 +321,18 @@ def main():
 
     # List of columns that are lookup fields and therefore only have one element in the list
     single_element_list_cols = ['included', 'source_name', 'url', 'source_publisher', 'summary',
-                                'study_type', 'country', 'lead_organization', 'overall_risk_of_bias',
-                                'age_variation', 'age_variation_measure', 'ind_eval_lab', 'ind_eval_link',
-                                'ind_se', 'ind_se_n', 'ind_sp', 'ind_sp_n', 'jbi_1', 'jbi_2', 'jbi_3', 'jbi_4',
-                                'jbi_5', 'jbi_6', 'jbi_7', 'jbi_8', 'jbi_9', 'measure_of_age', 'number_of_females',
-                                'number_of_males', 'superceded', 'test_linked_uid', 'average_age',
-                                'test_not_linked_reason']
+                                'study_type', 'country', 'lead_organization', 'overall_risk_of_bias']
 
     # Remove lists from single select columns
     for col in single_element_list_cols:
         data[col] = data[col].apply(lambda x: x[0] if x is not None else x)
 
     # Convert elements that are "Not reported" or "Not Reported" or "NR" to None
-    data.replace({'NR': None, 'Not Reported': None, 'Not reported': None, 'Not available': None}, inplace=True)
-
-    # Replace columns that should be floats with NaN from None
-    data[['ind_sp_n', 'ind_se_n']] = data[['ind_sp_n', 'ind_se_n']].replace({None: np.nan})
+    data.replace({'NR': None, 'Not Reported': None, 'Not reported': None}, inplace=True)
 
     # Drop rows if columns are null: included?, serum pos prevalence, denominator, sampling end
     data.dropna(subset=['included', 'serum_pos_prevalence', 'denominator_value', 'sampling_end_date'],
                 inplace=True)
-
-    # Convert superceded to True/False values
-    data['superceded'] = data['superceded'].apply(lambda x: True if x else False)
 
     # Get index of most recent publication date
     data = data.apply(lambda row: get_most_recent_publication_info(row), axis=1)
@@ -360,24 +346,24 @@ def main():
     data = apply_min_risk_of_bias(data)
 
     # List of columns that are multi select (can have multiple values)
-    multi_select_cols = ['city', 'state', 'test_manufacturer', 'antibody_target']
+    multi_select_cols = ['city', 'state', 'test_manufacturer']
 
-    # Create dashboard source df
-    dashboard_source = create_dashboard_source_df(data)
+    # Create airtable source df
+    airtable_source = create_airtable_source_df(data)
 
     # Create country table df
     country_df = pd.DataFrame(columns=['country_name', 'country_id'])
-    country_df['country_name'] = dashboard_source['country'].unique()
+    country_df['country_name'] = airtable_source['country'].unique()
     country_df['country_id'] = [uuid4() for _ in country_df['country_name']]
     country_df['created_at'] = CURR_TIME
     country_df = add_latlng_to_df("country", "country_name", country_df)
 
-    # Add country_id's to dashboard_source df
+    # Add country_id's to airtable_source df
     # country_dict maps country_name to country_id
     country_dict = {}
     for index, row in country_df.iterrows():
         country_dict[row['country_name']] = row['country_id']
-    dashboard_source['country_id'] = dashboard_source['country'].map(lambda a: country_dict[a])
+    airtable_source['country_id'] = airtable_source['country'].map(lambda a: country_dict[a])
 
     # Create dictionary to store multi select tables
     multi_select_tables_dict = create_multi_select_tables(data, multi_select_cols)
@@ -389,29 +375,18 @@ def main():
     multi_select_tables_dict["city"] = city_df
 
     # Create dictionary to store bridge tables
-    bridge_tables_dict = create_bridge_tables(dashboard_source, multi_select_tables_dict)
+    bridge_tables_dict = create_bridge_tables(airtable_source, multi_select_tables_dict)
 
-    # Create research source table based on a subset of dashboard source df columns
-    research_source_cols = list(airtable_fields_config['research'].values())
-    research_source_cols.insert(0, 'source_id')
-    research_source = dashboard_source[research_source_cols]
+    # Drop columns that are not needed not needed
+    airtable_source = airtable_source.drop(columns=['organizational_author', 'city', 'county', 'state',
+                                                    'test_manufacturer', 'country'])
 
-    # Drop antibody target col
-    research_source = research_source.drop(columns=['antibody_target'])
-
-    # Drop columns that are not needed not needed (don't drop source_id column though which is first element)
-    dashboard_source_unused_cols = research_source_cols[1:] + ['organizational_author', 'city', 'county', 'state',
-                                                               'test_manufacturer', 'country', 'antibody_target']
-    dashboard_source = dashboard_source.drop(columns=dashboard_source_unused_cols)
-
-    # Validate the dashboard source df
-    dashboard_source = validate_records(dashboard_source, DashboardSourceSchema())
-    research_source = validate_records(research_source, ResearchSourceSchema())
+    # Validate the airtable source df
+    airtable_source = validate_records(airtable_source)
 
     # key = table name, value = table df
     tables_dict = {**multi_select_tables_dict, **bridge_tables_dict}
-    tables_dict['dashboard_source'] = dashboard_source
-    tables_dict['research_source'] = research_source
+    tables_dict['airtable_source'] = airtable_source
     tables_dict['country'] = country_df
 
     # Load dataframes into postgres tables
