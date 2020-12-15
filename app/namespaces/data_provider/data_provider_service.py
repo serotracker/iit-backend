@@ -2,34 +2,34 @@ import pandas as pd
 import numpy
 import math
 
-from app.serotracker_sqlalchemy import db_session, DashboardSource, Country, db_model_config
+from app.serotracker_sqlalchemy import db_session, AirtableSource, Country, db_model_config
 from sqlalchemy import case, and_
 
 
 def _get_isotype_col_expression():
     expression = case(
                 [
-                    (and_(DashboardSource.isotype_igg == 'true',
-                          DashboardSource.isotype_igm == 'true',
-                          DashboardSource.isotype_iga == 'true'), 'IgG, IgM, IgA'),
-                    (and_(DashboardSource.isotype_igg == 'true',
-                          DashboardSource.isotype_igm == 'false',
-                          DashboardSource.isotype_iga == 'true'), 'IgG, IgA'),
-                    (and_(DashboardSource.isotype_igg == 'true',
-                          DashboardSource.isotype_igm == 'true',
-                          DashboardSource.isotype_iga == 'false'), 'IgG, IgM'),
-                    (and_(DashboardSource.isotype_igg == 'false',
-                          DashboardSource.isotype_igm == 'true',
-                          DashboardSource.isotype_iga == 'true'), 'IgM, IgA'),
-                    (and_(DashboardSource.isotype_igg == 'true',
-                          DashboardSource.isotype_igm == 'false',
-                          DashboardSource.isotype_iga == 'false'), 'IgG'),
-                    (and_(DashboardSource.isotype_igg == 'false',
-                          DashboardSource.isotype_igm == 'false',
-                          DashboardSource.isotype_iga == 'true'), 'IgA'),
-                    (and_(DashboardSource.isotype_igg == 'false',
-                          DashboardSource.isotype_igm == 'true',
-                          DashboardSource.isotype_iga == 'false'), 'IgM')
+                    (and_(AirtableSource.isotype_igg == 'true',
+                     AirtableSource.isotype_igm == 'true',
+                     AirtableSource.isotype_iga == 'true'), 'IgG, IgM, IgA'),
+                    (and_(AirtableSource.isotype_igg == 'true',
+                     AirtableSource.isotype_igm == 'false',
+                     AirtableSource.isotype_iga == 'true'), 'IgG, IgA'),
+                    (and_(AirtableSource.isotype_igg == 'true',
+                     AirtableSource.isotype_igm == 'true',
+                     AirtableSource.isotype_iga == 'false'), 'IgG, IgM'),
+                    (and_(AirtableSource.isotype_igg == 'false',
+                     AirtableSource.isotype_igm == 'true',
+                     AirtableSource.isotype_iga == 'true'), 'IgM, IgA'),
+                    (and_(AirtableSource.isotype_igg == 'true',
+                     AirtableSource.isotype_igm == 'false',
+                     AirtableSource.isotype_iga == 'false'), 'IgG'),
+                    (and_(AirtableSource.isotype_igg == 'false',
+                     AirtableSource.isotype_igm == 'false',
+                     AirtableSource.isotype_iga == 'true'), 'IgA'),
+                    (and_(AirtableSource.isotype_igg == 'false',
+                     AirtableSource.isotype_igm == 'true',
+                     AirtableSource.isotype_iga == 'false'), 'IgM')
                 ],
                 else_='').label("isotypes")
     return expression
@@ -96,7 +96,7 @@ def get_record_details(source_id):
             # Build list of columns to use in query starting with airtable source columns
             fields_list = []
             for col in airtable_source_cols:
-                fields_list.append(getattr(DashboardSource, col))
+                fields_list.append(getattr(AirtableSource, col))
 
             # Store info about supplementary tables to join to airtable source
             table_infos = db_model_config['supplementary_table_info']
@@ -113,14 +113,14 @@ def get_record_details(source_id):
                 main_table = sup_table['main_table']
                 bridge_table = sup_table['bridge_table']
                 entity_id = f"{sup_table['entity']}_id"
-                query = query.outerjoin(bridge_table, bridge_table.source_id == DashboardSource.source_id)\
+                query = query.outerjoin(bridge_table, bridge_table.source_id == AirtableSource.source_id)\
                     .outerjoin(main_table, getattr(bridge_table, entity_id) == getattr(main_table, entity_id))
 
             # Join on country table
-            query = query.outerjoin(Country, Country.country_id == DashboardSource.country_id)
+            query = query.outerjoin(Country, Country.country_id == AirtableSource.country_id)
 
             # Filter by input source id and convert results to dicts
-            query = query.filter(DashboardSource.source_id == source_id)
+            query = query.filter(AirtableSource.source_id == source_id)
             result = query.all()
             result = [x._asdict() for x in result]
 

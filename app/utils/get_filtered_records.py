@@ -1,6 +1,6 @@
 from itertools import groupby
 from functools import reduce
-from app.serotracker_sqlalchemy import db_session, DashboardSource, db_model_config, Country, State, City
+from app.serotracker_sqlalchemy import db_session, AirtableSource, db_model_config, Country, State, City
 import pandas as pd
 import numpy as np
 from .estimate_prioritization import get_prioritized_estimates
@@ -14,16 +14,16 @@ def get_all_records():
         # Create list of entity_name keys such as "age_name" which would be "Youth (13-17)"
         entity_names = [f"{t['entity']}" for t in table_infos]
 
-        # Create list of fields in DashboardSource to query unless the specific columns are specified
+        # Create list of fields in AirtableSource to query unless the specific columns are specified
         field_strings = ['source_name', 'source_type', 'study_name', 'denominator_value',
                          'overall_risk_of_bias', 'serum_pos_prevalence', 'isotype_igm', 'isotype_iga',
                          'isotype_igg', 'sex', 'age', 'sampling_start_date', 'sampling_end_date', 'estimate_grade',
                          'isotype_comb', 'academic_primary_estimate', 'dashboard_primary_estimate', 'pop_adj',
                          'test_adj', 'specimen_type', 'test_type', 'population_group', 'url']
 
-        fields_list = [DashboardSource.source_id]
+        fields_list = [AirtableSource.source_id]
         for field_string in field_strings:
-            fields_list.append(getattr(DashboardSource, field_string))
+            fields_list.append(getattr(AirtableSource, field_string))
 
         for table_info in table_infos:
             # The label method returns an alias for the column being queried
@@ -52,12 +52,12 @@ def get_all_records():
             entity = f"{table_info['entity']}_id"
             try:
                 query = query.join(bridge_table, getattr(bridge_table, "source_id") ==
-                                   DashboardSource.source_id, isouter=True) \
+                                   AirtableSource.source_id, isouter=True) \
                     .join(main_table, getattr(main_table, entity) == getattr(bridge_table, entity), isouter=True)
             except Exception as e:
                 print(e)
         # Join on country table
-        query = query.join(Country, Country.country_id == DashboardSource.country_id, isouter=True)
+        query = query.join(Country, Country.country_id == AirtableSource.country_id, isouter=True)
         query = query.all()
         query_dict = [q._asdict() for q in query]
 
