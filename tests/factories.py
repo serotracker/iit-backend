@@ -1,17 +1,18 @@
 import uuid
 from datetime import datetime
-from random import random, randint
+from random import random, randint, getrandbits
 
 import factory
 
-from app.serotracker_sqlalchemy.models import DashboardSource, ResearchSource, AntibodyTarget, AntibodyTargetBridge,\
-    City, CityBridge, Country, State, StateBridge, TestManufacturer, TestManufacturerBridge
+from app.serotracker_sqlalchemy.models import AirtableSource, Age, AgeBridge, ApprovingRegulator, \
+    ApprovingRegulatorBridge, City, CityBridge, Country, PopulationGroup, PopulationGroupBridge, State, StateBridge, \
+    SpecimenType, SpecimenTypeBridge, TestType, TestTypeBridge, TestManufacturer, TestManufacturerBridge
 
 
-def dashboard_source_factory(_session, **kwargs):
-    class DashboardSourceFactory(factory.alchemy.SQLAlchemyModelFactory):
+def airtable_source_factory(_session, **kwargs):
+    class AirtableSourceFactory(factory.alchemy.SQLAlchemyModelFactory):
         class Meta:
-            model = DashboardSource
+            model = AirtableSource
             sqlalchemy_session = _session
             sqlalchemy_session_persistence = 'commit'
         source_id = uuid.uuid4()
@@ -48,45 +49,57 @@ def dashboard_source_factory(_session, **kwargs):
         test_adj = bool(randint(0, 1))
         pop_adj = bool(randint(0, 1))
         created_at = factory.LazyFunction(datetime.now)
-    return DashboardSourceFactory(**kwargs)
+    return AirtableSourceFactory(**kwargs)
 
-# TODO: finish setting up this factory class
-def research_source_factory(_session, **kwargs):
-    class ResearchSourceFactory(factory.alchemy.SQLAlchemyModelFactory):
+
+def age_factory(_session, **kwargs):
+    class AgeFactory(factory.alchemy.SQLAlchemyModelFactory):
         class Meta:
-            model = ResearchSource
+            model = Age
             sqlalchemy_session = _session
             sqlalchemy_session_persistence = 'commit'
-        source_id = uuid.uuid4()
-        case_population = randint(1000, 10000000000000)
-        deaths_population = randint(1000, 10000000000000)
+        age_id = uuid.uuid4()
+        age_name = factory.Sequence(lambda n: 'age_name_%d' % n)
         created_at = factory.LazyFunction(datetime.now)
-    return ResearchSourceFactory(**kwargs)
+    return AgeFactory(**kwargs)
 
 
-def antibody_target_factory(_session, **kwargs):
-    class AntibodyTargetFactory(factory.alchemy.SQLAlchemyModelFactory):
+def age_bridge_factory(_session, **kwargs):
+    class AgeBridgeFactory(factory.alchemy.SQLAlchemyModelFactory):
         class Meta:
-            model = AntibodyTarget
-            sqlalchemy_session = _session
-            sqlalchemy_session_persistence = 'commit'
-        antibody_target_id = uuid.uuid4()
-        antibody_target_name = factory.Sequence(lambda n: 'city_name_%d' % n)
-        created_at = factory.LazyFunction(datetime.now)
-    return AntibodyTargetFactory(**kwargs)
-
-
-def antibody_target_bridge_factory(_session, **kwargs):
-    class AntibodyTargetBridgeFactory(factory.alchemy.SQLAlchemyModelFactory):
-        class Meta:
-            model = AntibodyTargetBridge
+            model = AgeBridge
             sqlalchemy_session = _session
             sqlalchemy_session_persistence = 'commit'
         id = uuid.uuid4()
         source_id = uuid.uuid4()
-        antibody_target_id = uuid.uuid4()
+        age_id = uuid.uuid4()
         created_at = factory.LazyFunction(datetime.now)
-    return AntibodyTargetBridgeFactory(**kwargs)
+    return AgeBridgeFactory(**kwargs)
+
+
+def approving_regulator_factory(_session, **kwargs):
+    class ApprovingRegulatorFactory(factory.alchemy.SQLAlchemyModelFactory):
+        class Meta:
+            model = ApprovingRegulator
+            sqlalchemy_session = _session
+            sqlalchemy_session_persistence = 'commit'
+        approving_regulator_id = uuid.uuid4()
+        approving_regulator_name = factory.Sequence(lambda n: 'approving_regulator_name_%d' % n)
+        created_at = factory.LazyFunction(datetime.now)
+    return ApprovingRegulatorFactory(**kwargs)
+
+
+def approving_regulator_bridge_factory(_session, **kwargs):
+    class ApprovingRegulatorBridgeFactory(factory.alchemy.SQLAlchemyModelFactory):
+        class Meta:
+            model = ApprovingRegulatorBridge
+            sqlalchemy_session = _session
+            sqlalchemy_session_persistence = 'commit'
+        id = uuid.uuid4()
+        source_id = uuid.uuid4()
+        approving_regulator_id = uuid.uuid4()
+        created_at = factory.LazyFunction(datetime.now)
+    return ApprovingRegulatorBridgeFactory(**kwargs)
 
 
 def city_factory(_session, **kwargs):
@@ -113,7 +126,6 @@ def city_bridge_factory(_session, **kwargs):
         created_at = factory.LazyFunction(datetime.now)
     return CityBridgeFactory(**kwargs)
 
-
 def country_factory(_session, **kwargs):
     class CountryFactory(factory.alchemy.SQLAlchemyModelFactory):
         class Meta:
@@ -126,6 +138,31 @@ def country_factory(_session, **kwargs):
         longitude = random()
         created_at = factory.LazyFunction(datetime.now)
     return CountryFactory(**kwargs)
+
+
+def population_group_factory(_session, **kwargs):
+    class PopulationGroupFactory(factory.alchemy.SQLAlchemyModelFactory):
+        class Meta:
+            model = PopulationGroup
+            sqlalchemy_session = _session
+            sqlalchemy_session_persistence = 'commit'
+        population_group_id = uuid.uuid4()
+        population_group_name = factory.Sequence(lambda n: 'population_group_name_%d' % n)
+        created_at = factory.LazyFunction(datetime.now)
+    return PopulationGroupFactory(**kwargs)
+
+
+def population_group_bridge_factory(_session, **kwargs):
+    class PopulationGroupBridgeFactory(factory.alchemy.SQLAlchemyModelFactory):
+        class Meta:
+            model = PopulationGroupBridge
+            sqlalchemy_session = _session
+            sqlalchemy_session_persistence = 'commit'
+        id = uuid.uuid4()
+        source_id = uuid.uuid4()
+        population_group_id = uuid.uuid4()
+        created_at = factory.LazyFunction(datetime.now)
+    return PopulationGroupBridgeFactory(**kwargs)
 
 
 def state_factory(_session, **kwargs):
@@ -151,6 +188,56 @@ def state_bridge_factory(_session, **kwargs):
         state_id = uuid.uuid4()
         created_at = factory.LazyFunction(datetime.now)
     return StateBridgeFactory(**kwargs)
+
+
+def specimen_type_factory(_session, **kwargs):
+    class SpecimenTypeFactory(factory.alchemy.SQLAlchemyModelFactory):
+        class Meta:
+            model = SpecimenType
+            sqlalchemy_session = _session
+            sqlalchemy_session_persistence = 'commit'
+        specimen_type_id = uuid.uuid4()
+        specimen_type_name = factory.Sequence(lambda n: 'specimen_type_name_%d' % n)
+        created_at = factory.LazyFunction(datetime.now)
+    return SpecimenTypeFactory(**kwargs)
+
+
+def specimen_type_bridge_factory(_session, **kwargs):
+    class SpecimenTypeBridgeFactory(factory.alchemy.SQLAlchemyModelFactory):
+        class Meta:
+            model = SpecimenTypeBridge
+            sqlalchemy_session = _session
+            sqlalchemy_session_persistence = 'commit'
+        id = uuid.uuid4()
+        source_id = uuid.uuid4()
+        specimen_type_id = uuid.uuid4()
+        created_at = factory.LazyFunction(datetime.now)
+    return SpecimenTypeBridgeFactory(**kwargs)
+
+
+def test_type_factory(_session, **kwargs):
+    class TestTypeFactory(factory.alchemy.SQLAlchemyModelFactory):
+        class Meta:
+            model = TestType
+            sqlalchemy_session = _session
+            sqlalchemy_session_persistence = 'commit'
+        test_type_id = uuid.uuid4()
+        test_type_name = factory.Sequence(lambda n: 'test_type_name_%d' % n)
+        created_at = factory.LazyFunction(datetime.now)
+    return TestTypeFactory(**kwargs)
+
+
+def test_type_bridge_factory(_session, **kwargs):
+    class TestTypeBridgeFactory(factory.alchemy.SQLAlchemyModelFactory):
+        class Meta:
+            model = TestTypeBridge
+            sqlalchemy_session = _session
+            sqlalchemy_session_persistence = 'commit'
+        id = uuid.uuid4()
+        source_id = uuid.uuid4()
+        test_type_id = uuid.uuid4()
+        created_at = factory.LazyFunction(datetime.now)
+    return TestTypeBridgeFactory(**kwargs)
 
 
 def test_manufacturer_factory(_session, **kwargs):
