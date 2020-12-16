@@ -15,7 +15,7 @@ from sqlalchemy import create_engine
 from app.serotracker_sqlalchemy import db_session, DashboardSource, ResearchSource, Country, City, State,\
     TestManufacturer, AntibodyTarget, CityBridge, StateBridge, TestManufacturerBridge, AntibodyTargetBridge,\
     DashboardSourceSchema, ResearchSourceSchema
-from app.utils import airtable_fields_config, full_airtable_fields, send_api_error_email
+from app.utils import airtable_fields_config, full_airtable_fields, send_api_error_email, send_email
 from app.utils.send_error_email import send_schema_validation_error_email
 
 load_dotenv()
@@ -402,6 +402,15 @@ def main():
     country_df['created_at'] = CURR_TIME
     country_df = add_latlng_to_df("country", "country_name", country_df)
     country_df['country_iso3'] = country_df["country_name"].map(lambda a: get_iso3(a))
+
+    # Send alert email if ISO3 codes not found
+    null_iso3 = country_df[country_df['country_iso3'].isnull()]
+    null_iso3_countries = list(null_iso3['country_name'])
+    if len(null_iso3_countries) > 0:
+        body = f"ISO3 codes were not found for the following countries: {null_iso3_countries}."
+        logger.error(body)
+        send_email(body, ["austin.atmaja@gmail.com", 'rahularoradfs@gmail.com',
+                          'brettdziedzic@gmail.com'], "ALERT: ISO3 Codes Not Found")
 
     # Add country_id's to dashboard_source df
     # country_dict maps country_name to country_id
