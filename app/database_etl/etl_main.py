@@ -398,7 +398,7 @@ def main():
     for index, row in country_df.iterrows():
         d[row['country_name']] = row['country_iso3']
     import json
-    with open("country_iso3.txt", 'w') as fout:
+    with open("country_iso3.json", 'w') as fout:
         json_dumps_str = json.dumps(d, indent=4)
         print(json_dumps_str, file=fout)
 
