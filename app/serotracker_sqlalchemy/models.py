@@ -105,6 +105,7 @@ class Country(db.Model):
 
     country_id = Column(UUID(as_uuid=True), primary_key=True)
     country_name = Column(String(128))
+    country_iso3 = Column(String(4))
     latitude = Column(Float)
     longitude = Column(Float)
     created_at = Column(DateTime)
