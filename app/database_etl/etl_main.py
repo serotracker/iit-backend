@@ -1,6 +1,7 @@
 import requests
 import json
 import os
+import json
 import logging
 from datetime import datetime
 from uuid import uuid4
@@ -26,6 +27,12 @@ AIRTABLE_REQUEST_URL = "https://api.airtable.com/v0/{}/Rapid%20Review%3A%20Estim
 
 CURR_TIME = datetime.now()
 
+def read_from_json(path_to_json):
+    with open(path_to_json, 'r') as file:
+        records = json.load(file)
+    return records
+
+ISO3_CODES = read_from_json("country_iso3.json")
 
 def _add_fields_to_url(url):
     # Add fields in config to api URL
@@ -264,21 +271,24 @@ def add_latlng_to_df(place_type, place_type_name, df):
 
 
 def get_iso3(country_name):
-    url = f"https://restcountries.eu/rest/v2/name/{country_name}"
-    r = requests.get(url)
-    data = r.json()
     iso3 = None
-    try:
-        idx = 0
-        # try to find result with an exact name match
-        # if one can't be found, default to index 0
-        for i in range(len(data)):
-            if data[i]["name"] == country_name:
-                idx = i
-                break
-        iso3 = data[idx]["alpha3Code"]
-    except:
-        pass
+    if country_name in ISO3_CODES:
+        iso3 = ISO3_CODES[country_name]
+    else:
+        url = f"https://restcountries.eu/rest/v2/name/{country_name}"
+        r = requests.get(url)
+        data = r.json()
+        try:
+            idx = 0
+            # try to find result with an exact name match
+            # if one can't be found, default to index 0
+            for i in range(len(data)):
+                if data[i]["name"] == country_name:
+                    idx = i
+                    break
+            iso3 = data[idx]["alpha3Code"]
+        except:
+            pass
     return iso3
 
 
@@ -392,15 +402,6 @@ def main():
     country_df['created_at'] = CURR_TIME
     country_df = add_latlng_to_df("country", "country_name", country_df)
     country_df['country_iso3'] = country_df["country_name"].map(lambda a: get_iso3(a))
-
-    # temp code
-    d = {}
-    for index, row in country_df.iterrows():
-        d[row['country_name']] = row['country_iso3']
-    import json
-    with open("country_iso3.json", 'w') as fout:
-        json_dumps_str = json.dumps(d, indent=4)
-        print(json_dumps_str, file=fout)
 
     # Add country_id's to dashboard_source df
     # country_dict maps country_name to country_id
