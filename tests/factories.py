@@ -122,6 +122,7 @@ def country_factory(_session, **kwargs):
             sqlalchemy_session_persistence = 'commit'
         country_id = uuid.uuid4()
         country_name = factory.Sequence(lambda n: 'country_name_%d' % n)
+        country_iso3 = factory.Sequence(lambda n: '%d' % n)
         latitude = random()
         longitude = random()
         created_at = factory.LazyFunction(datetime.now)

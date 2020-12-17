@@ -31,8 +31,9 @@ def get_all_records():
             fields_list.append(getattr(table_info["main_table"], f"{table_info['entity']}_name").label(
                 table_info['entity']))
 
-        # Alias for country name
+        # Alias for country name and iso3 code
         fields_list.append(Country.country_name.label("country"))
+        fields_list.append(Country.country_iso3.label("country_iso3"))
         # Aliases for lat lngs
         fields_list.append(Country.latitude.label("country_latitude"))
         fields_list.append(Country.longitude.label("country_longitude"))
