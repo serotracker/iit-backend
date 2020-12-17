@@ -98,7 +98,7 @@ class GeogStudyCount(Resource):
         # Query all the records with the desired filters. Pull only country, denom, and seroprev cols
         filters = json_input['filters']
         start_date, end_date = convert_start_end_dates(json_input)
-        columns = ['country', 'denominator_value', 'serum_pos_prevalence', 'estimate_grade']
+        columns = ['country', 'country_iso3', 'denominator_value', 'serum_pos_prevalence', 'estimate_grade']
         records = get_filtered_records(filters, columns, start_date=start_date, end_date=end_date)
 
         # Check if no records are returned

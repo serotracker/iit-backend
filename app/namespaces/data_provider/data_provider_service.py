@@ -146,6 +146,9 @@ def get_country_seroprev_summaries(records):
         country_seroprev_summary_dict['country'] = country
         records_for_country = records_df[records_df['country'] == country]
 
+        # Get country ISO3 code
+        country_seroprev_summary_dict['country_iso3'] = records_for_country['country_iso3'].iloc[0]
+
         # Get total number of seroprev estimates in country
         country_seroprev_summary_dict['n_estimates'] = records_for_country.shape[0]
 
