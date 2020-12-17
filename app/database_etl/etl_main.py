@@ -32,7 +32,10 @@ def read_from_json(path_to_json):
         records = json.load(file)
     return records
 
-ISO3_CODES = read_from_json("country_iso3.json")
+dirname = os.path.dirname(__file__)
+filename = os.path.join(dirname, 'country_iso3.json')
+print(filename)
+ISO3_CODES = read_from_json(filename)
 
 def _add_fields_to_url(url):
     # Add fields in config to api URL
