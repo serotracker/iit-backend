@@ -97,6 +97,7 @@ def city_factory(_session, **kwargs):
             sqlalchemy_session_persistence = 'commit'
         city_id = uuid.uuid4()
         city_name = factory.Sequence(lambda n: 'city_name_%d' % n)
+        state_name = factory.Sequence(lambda n: 'state_name_%d' % n)
         created_at = factory.LazyFunction(datetime.now)
     return CityFactory(**kwargs)
 

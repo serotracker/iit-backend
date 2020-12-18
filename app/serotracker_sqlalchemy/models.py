@@ -116,6 +116,7 @@ class City(db.Model):
 
     city_id = Column(UUID(as_uuid=True), primary_key=True)
     city_name = Column(String(128))
+    state_name = Column(String(128))
     latitude = Column(Float)
     longitude = Column(Float)
     created_at = Column(DateTime)
