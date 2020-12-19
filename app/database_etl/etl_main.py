@@ -258,9 +258,7 @@ def get_coords(place_name, place_type):
     data = r.json()
     coords = None
     if data and "features" in data and len(data['features']) > 0:
-        coords = data['features'][0]['center']
-        # Check if we have any results of the right place type
-        # Otherwise fallback to the first result we get
+        # Get the first result of the right place type
         for feature in data['features']:
             if place_type in feature['place_type']:
                 coords = feature['center']
@@ -364,6 +362,16 @@ def get_city(row):
         return row['city']
 
 
+# Returns a list of 'state,country'
+# This is necessary to properly geosearch states
+# e.g. Apulia by itself gives coords to a restaurant in London
+# but Apulia,Italy gives coords to the region of Apulia in Italy
+def add_country_to_state(row):
+    if row['state']:
+        return [f"{state},{row['country']}" for state in row['state']]
+    return None
+
+
 def main():
     # Create engine to connect to whiteclaw database
     engine = create_engine('postgresql://{username}:{password}@{host_address}/whiteclaw'.format(
@@ -405,9 +413,10 @@ def main():
     data = data.apply(lambda row: get_most_recent_publication_info(row), axis=1)
 
     # Convert state, city and test_manufacturer fields to lists
-    data['state'] = data['state'].apply(lambda x: x.split(',') if x else x)
     data['test_manufacturer'] = data['test_manufacturer'].apply(lambda x: x.split(',') if x else x)
+    data['state'] = data['state'].apply(lambda x: x.split(',') if x else x)
     data['city'] = data.apply(lambda row: get_city(row), axis=1)
+    data['state'] = data.apply(lambda row: add_country_to_state(row), axis=1)
 
     # Apply min risk of bias to all study estimates
     data = apply_min_risk_of_bias(data)
@@ -470,7 +479,7 @@ def main():
                                                                'test_manufacturer', 'country', 'antibody_target']
     dashboard_source = dashboard_source.drop(columns=dashboard_source_unused_cols)
 
-    # Adjust city table schema
+    # Adjust city and state table schema
     # Note this state_name field in the city table will never actually be used
     # but is nice to have for observability
     multi_select_tables_dict["city"]["state_name"] = multi_select_tables_dict["city"]["city_name"]\
@@ -478,6 +487,7 @@ def main():
     # remove state names from city_name field
     multi_select_tables_dict["city"]["city_name"] = multi_select_tables_dict["city"]["city_name"]\
         .map(lambda a: a.split(",")[0] if "," in a else a)
+    multi_select_tables_dict["state"]["state_name"] = multi_select_tables_dict["state"]["state_name"].map(lambda a: a.split(",")[0])
 
     # Validate the dashboard source df
     dashboard_source = validate_records(dashboard_source, DashboardSourceSchema())
