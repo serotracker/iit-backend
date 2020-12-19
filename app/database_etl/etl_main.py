@@ -1,5 +1,4 @@
 import requests
-import json
 import os
 import json
 import logging
@@ -334,6 +333,17 @@ def apply_min_risk_of_bias(df):
     return df
 
 
+def apply_study_max_estimate_grade(df):
+    grade_hierarchy = ['National', 'Regional', 'Local', 'Sublocal']
+    for name, subset in df.groupby('study_name'):
+        if subset.shape[0] > 3:
+            for level in grade_hierarchy:
+                if (subset['estimate_grade'] == level).any():
+                    subset['estimate_grade'] = level
+                    continue
+    return df
+
+
 def get_city(row):
     if row['city']:
         return row['city'].split(',')
@@ -370,8 +380,8 @@ def main():
     # Convert elements that are "Not reported" or "Not Reported" or "NR" to None
     data.replace({'NR': None, 'Not Reported': None, 'Not reported': None, 'Not available': None}, inplace=True)
 
-    # Replace columns that should be floats with NaN from None
-    data[['ind_sp_n', 'ind_se_n']] = data[['ind_sp_n', 'ind_se_n']].replace({None: np.nan})
+    # Replace columns that should be floats with NaN from None and rescale to percentage
+    data[['ind_sp_n', 'ind_se_n']] = data[['ind_sp_n', 'ind_se_n']].replace({None: np.nan}) / 100
 
     # Drop rows if columns are null: included?, serum pos prevalence, denominator, sampling end
     data.dropna(subset=['included', 'serum_pos_prevalence', 'denominator_value', 'sampling_end_date'],
@@ -390,6 +400,9 @@ def main():
 
     # Apply min risk of bias to all study estimates
     data = apply_min_risk_of_bias(data)
+
+    # Apply study max estimate grade to all estimates in study
+    data = apply_study_max_estimate_grade(data)
 
     # List of columns that are multi select (can have multiple values)
     multi_select_cols = ['city', 'state', 'test_manufacturer', 'antibody_target']
