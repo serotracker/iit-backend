@@ -247,6 +247,11 @@ def validate_records(source, schema):
 
 
 def get_coords(place_name, place_type):
+    # If a city doesn't have a state
+    # associated with it, we cannot
+    # accurately find it's location
+    if place_type == 'place' and "," not in place_name:
+        return None
     url = f"https://api.mapbox.com/geocoding/v5/mapbox.places/{place_name}.json?" \
           f"access_token={os.getenv('MAPBOX_API_KEY')}"
     r = requests.get(url)
@@ -343,11 +348,18 @@ def apply_study_max_estimate_grade(df):
     return df
 
 
+# Returns a list of 'city,state' if we
+# can associate a city with a state, else
+# returns a list of cities
 def get_city(row):
     if row['city']:
-        return row['city'].split(',')
-    elif row['county']:
-        return row['county'].split(',')
+        cities = row['city'].split(',')
+        # if only 1 state associated with the record
+        # associate the city with the state
+        # so that we can get a pin for it
+        if row['state'] and len(row['state']) == 1:
+            cities = [f"{city},{row['state'][0]}" for city in cities]
+        return cities
     else:
         return row['city']
 
@@ -453,10 +465,19 @@ def main():
     # Drop antibody target col
     research_source = research_source.drop(columns=['antibody_target'])
 
-    # Drop columns that are not needed not needed (don't drop source_id column though which is first element)
+    # Drop columns that are not needed (don't drop source_id column though which is first element)
     dashboard_source_unused_cols = research_source_cols[1:] + ['organizational_author', 'city', 'county', 'state',
                                                                'test_manufacturer', 'country', 'antibody_target']
     dashboard_source = dashboard_source.drop(columns=dashboard_source_unused_cols)
+
+    # Adjust city table schema
+    # Note this state_name field in the city table will never actually be used
+    # but is nice to have for observability
+    multi_select_tables_dict["city"]["state_name"] = multi_select_tables_dict["city"]["city_name"]\
+        .map(lambda a: a.split(",")[1] if "," in a else None)
+    # remove state names from city_name field
+    multi_select_tables_dict["city"]["city_name"] = multi_select_tables_dict["city"]["city_name"]\
+        .map(lambda a: a.split(",")[0] if "," in a else a)
 
     # Validate the dashboard source df
     dashboard_source = validate_records(dashboard_source, DashboardSourceSchema())
