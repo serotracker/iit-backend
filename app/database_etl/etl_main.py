@@ -253,16 +253,12 @@ def get_coords(place_name, place_type):
     if place_type == 'place' and "," not in place_name:
         return None
     url = f"https://api.mapbox.com/geocoding/v5/mapbox.places/{place_name}.json?" \
-          f"access_token={os.getenv('MAPBOX_API_KEY')}"
+          f"access_token={os.getenv('MAPBOX_API_KEY')}&types={place_type}"
     r = requests.get(url)
     data = r.json()
     coords = None
     if data and "features" in data and len(data['features']) > 0:
-        # Get the first result of the right place type
-        for feature in data['features']:
-            if place_type in feature['place_type']:
-                coords = feature['center']
-                break
+        coords = data['features'][0]['center']
     return coords
 
 
