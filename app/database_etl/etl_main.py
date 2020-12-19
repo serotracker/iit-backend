@@ -336,11 +336,10 @@ def apply_min_risk_of_bias(df):
 def apply_study_max_estimate_grade(df):
     grade_hierarchy = ['National', 'Regional', 'Local', 'Sublocal']
     for name, subset in df.groupby('study_name'):
-        if subset.shape[0] > 3:
-            for level in grade_hierarchy:
-                if (subset['estimate_grade'] == level).any():
-                    subset['estimate_grade'] = level
-                    continue
+        for level in grade_hierarchy:
+            if (subset['estimate_grade'] == level).any():
+                subset['estimate_grade'] = level
+                continue
     return df
 
 
