@@ -186,14 +186,15 @@ def get_country_seroprev_summaries(records):
 def jitter_pins(records):
     locations_seen = set()
     for record in records:
-        loc = f"{record['pin_latitude']}_{record['pin_longitude']}"
-        if loc in locations_seen:
-            # For reference: 0.1 degrees is approx 11km at the equator
-            lat_diff = uniform(-0.1, 0.1)
-            lng_diff = uniform(-0.1, 0.1)
-            record['pin_latitude'] += lat_diff
-            record['pin_longitude'] += lng_diff
-            locations_seen.add(f"{record['pin_latitude']}_{record['pin_longitude']}")
-        else:
-            locations_seen.add(loc)
+        if record["pin_latitude"] and record["pin_longitude"]:
+            loc = f"{record['pin_latitude']}_{record['pin_longitude']}"
+            if loc in locations_seen:
+                # For reference: 0.1 degrees is approx 11km at the equator
+                lat_diff = uniform(-0.1, 0.1)
+                lng_diff = uniform(-0.1, 0.1)
+                record['pin_latitude'] += lat_diff
+                record['pin_longitude'] += lng_diff
+                locations_seen.add(f"{record['pin_latitude']}_{record['pin_longitude']}")
+            else:
+                locations_seen.add(loc)
     return records
