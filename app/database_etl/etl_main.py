@@ -26,14 +26,16 @@ AIRTABLE_REQUEST_URL = "https://api.airtable.com/v0/{}/Rapid%20Review%3A%20Estim
 
 CURR_TIME = datetime.now()
 
+# Note: this function takes in a relative path
 def read_from_json(path_to_json):
-    with open(path_to_json, 'r') as file:
+    dirname = os.path.dirname(__file__)
+    full_path = os.path.join(dirname, path_to_json)
+    with open(full_path, 'r') as file:
         records = json.load(file)
     return records
 
-dirname = os.path.dirname(__file__)
-filename = os.path.join(dirname, 'country_iso3.json')
-ISO3_CODES = read_from_json(filename)
+ISO3_CODES = read_from_json('country_iso3.json')
+ISO2_CODES = read_from_json('country_iso2.json')
 
 def _add_fields_to_url(url):
     # Add fields in config to api URL
@@ -245,26 +247,33 @@ def validate_records(source, schema):
 
     exit("EXITING – No acceptable records found.")
 
-
-def get_coords(place_name, place_type):
+# Format of place: "{place_name}_{country_code}"
+# Note country code is used as an optional argument to the mapbox api
+# to improve search results, it might not exist
+# If place_type is a "place" (meaning a city or town)
+# place_name is only valid if it's in the format "city,state"
+def get_coords(place, place_type):
     # If a city doesn't have a state
     # associated with it, we cannot
     # accurately find it's location
-    if place_type == 'place' and "," not in place_name:
+    if place_type == 'place' and "," not in place:
         return None
-    url = f"https://api.mapbox.com/geocoding/v5/mapbox.places/{place_name}.json?" \
-          f"access_token={os.getenv('MAPBOX_API_KEY')}"
+
+    # If place_name contains "_", then the string
+    # after it should be an iso2 country code
+    place_arr = place.split("_")
+
+    url = f"https://api.mapbox.com/geocoding/v5/mapbox.places/{place_arr[0]}.json?" \
+          f"access_token={os.getenv('MAPBOX_API_KEY')}&types={place_type}"
+
+    if len(place_arr) > 1:
+        url += f"&country={place_arr[1]}"
+
     r = requests.get(url)
     data = r.json()
     coords = None
     if data and "features" in data and len(data['features']) > 0:
         coords = data['features'][0]['center']
-        # Check if we have any results of the right place type
-        # Otherwise fallback to the first result we get
-        for feature in data['features']:
-            if place_type in feature['place_type']:
-                coords = feature['center']
-                break
     return coords
 
 
@@ -276,10 +285,12 @@ def add_latlng_to_df(place_type, place_type_name, df):
     return df
 
 
-def get_iso3(country_name):
-    iso3 = None
-    if country_name in ISO3_CODES:
-        iso3 = ISO3_CODES[country_name]
+# Get iso3 or iso2 code for a given country name
+def get_country_code(country_name, iso3=True):
+    code = None
+    code_dict = ISO3_CODES if iso3 else ISO2_CODES
+    if country_name in code_dict:
+        code = code_dict[country_name]
     else:
         url = f"https://restcountries.eu/rest/v2/name/{country_name}"
         r = requests.get(url)
@@ -292,10 +303,10 @@ def get_iso3(country_name):
                 if data[i]["name"] == country_name:
                     idx = i
                     break
-            iso3 = data[idx]["alpha3Code"]
+            code = data[idx]["alpha3Code"] if iso3 else data[idx]["alpha2Code"]
         except:
             pass
-    return iso3
+    return code
 
 
 def get_most_recent_publication_info(row):
@@ -348,9 +359,11 @@ def apply_study_max_estimate_grade(df):
     return df
 
 
-# Returns a list of 'city,state' if we
+# Returns a list of 'city,state_countryCode' if we
 # can associate a city with a state, else
 # returns a list of cities
+# This is necessary to properly geosearch cities
+# as there can be multiple cities of the same name in a country
 def get_city(row):
     if row['city']:
         cities = row['city'].split(',')
@@ -358,10 +371,33 @@ def get_city(row):
         # associate the city with the state
         # so that we can get a pin for it
         if row['state'] and len(row['state']) == 1:
-            cities = [f"{city},{row['state'][0]}" for city in cities]
+            cities_return = []
+            for city in cities:
+                country_code = get_country_code(row['country'], iso3=False)
+                if country_code:
+                    cities_return.append(f"{city},{row['state'][0]}_{country_code}")
+                else:
+                    cities_return.append(f"{city},{row['state'][0]}")
+            return cities_return
         return cities
     else:
         return row['city']
+
+
+# Returns "state_countryCode"
+# Needed becuase country code is used to limit mapbox API
+# geosearch queries (improving query accuracy)
+def add_country_code_to_state(row):
+    if row['state']:
+        states = []
+        for state in row['state']:
+            country_code = get_country_code(row['country'], iso3=False)
+            if country_code:
+                states.append(f"{state}_{country_code}")
+            else:
+                states.append(state)
+        return states
+    return None
 
 
 def main():
@@ -405,9 +441,10 @@ def main():
     data = data.apply(lambda row: get_most_recent_publication_info(row), axis=1)
 
     # Convert state, city and test_manufacturer fields to lists
-    data['state'] = data['state'].apply(lambda x: x.split(',') if x else x)
     data['test_manufacturer'] = data['test_manufacturer'].apply(lambda x: x.split(',') if x else x)
+    data['state'] = data['state'].apply(lambda x: x.split(',') if x else x)
     data['city'] = data.apply(lambda row: get_city(row), axis=1)
+    data['state'] = data.apply(lambda row: add_country_code_to_state(row), axis=1)
 
     # Apply min risk of bias to all study estimates
     data = apply_min_risk_of_bias(data)
@@ -427,7 +464,7 @@ def main():
     country_df['country_id'] = [uuid4() for _ in country_df['country_name']]
     country_df['created_at'] = CURR_TIME
     country_df = add_latlng_to_df("country", "country_name", country_df)
-    country_df['country_iso3'] = country_df["country_name"].map(lambda a: get_iso3(a))
+    country_df['country_iso3'] = country_df["country_name"].map(lambda a: get_country_code(a))
 
     # Send alert email if ISO3 codes not found
     null_iso3 = country_df[country_df['country_iso3'].isnull()]
@@ -449,6 +486,7 @@ def main():
     multi_select_tables_dict = create_multi_select_tables(data, multi_select_cols)
 
     # Add lat/lng to cities and states
+    # Get countries for each state
     state_df = add_latlng_to_df("region", "state_name", multi_select_tables_dict["state"])
     city_df = add_latlng_to_df("place", "city_name", multi_select_tables_dict["city"])
     multi_select_tables_dict["state"] = state_df
@@ -470,14 +508,15 @@ def main():
                                                                'test_manufacturer', 'country', 'antibody_target']
     dashboard_source = dashboard_source.drop(columns=dashboard_source_unused_cols)
 
-    # Adjust city table schema
+    # Adjust city and state table schema
     # Note this state_name field in the city table will never actually be used
     # but is nice to have for observability
     multi_select_tables_dict["city"]["state_name"] = multi_select_tables_dict["city"]["city_name"]\
-        .map(lambda a: a.split(",")[1] if "," in a else None)
+        .map(lambda a: a.split("_")[0].split(",")[1] if "," in a else None)
     # remove state names from city_name field
     multi_select_tables_dict["city"]["city_name"] = multi_select_tables_dict["city"]["city_name"]\
         .map(lambda a: a.split(",")[0] if "," in a else a)
+    multi_select_tables_dict["state"]["state_name"] = multi_select_tables_dict["state"]["state_name"].map(lambda a: a.split("_")[0])
 
     # Validate the dashboard source df
     dashboard_source = validate_records(dashboard_source, DashboardSourceSchema())

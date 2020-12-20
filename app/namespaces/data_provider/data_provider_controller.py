@@ -1,7 +1,7 @@
 from flask_restplus import Resource, Namespace
 from flask import jsonify, make_response, request
 
-from .data_provider_service import get_record_details, get_country_seroprev_summaries
+from .data_provider_service import get_record_details, get_country_seroprev_summaries, jitter_pins
 from .data_provider_schema import RecordDetailsSchema, RecordsSchema, StudyCountSchema
 from app.utils import validate_request_input_against_schema, get_filtered_records,\
     get_paginated_records, convert_start_end_dates, get_all_filter_options
@@ -20,6 +20,7 @@ class Records(Resource):
         per_page = request.args.get('per_page', None, type=int)
 
         result = get_filtered_records(filters=None, columns=None, start_date=None, end_date=None)
+        result = jitter_pins(result)
 
         # Only paginate if all the pagination parameters have been specified
         if page_index is not None and per_page is not None and sorting_key is not None and reverse is not None:
@@ -48,6 +49,7 @@ class Records(Resource):
         start_date, end_date = convert_start_end_dates(data)
 
         result = get_filtered_records(filters, columns, start_date=start_date, end_date=end_date)
+        result = jitter_pins(result)
 
         # Only paginate if all the pagination parameters have been specified
         if page_index is not None and per_page is not None and sorting_key is not None and reverse is not None:

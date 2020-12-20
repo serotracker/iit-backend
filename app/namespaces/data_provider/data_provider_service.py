@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy
 import math
+from random import uniform
 
 from app.serotracker_sqlalchemy import db_session, DashboardSource, Country, db_model_config
 from sqlalchemy import case, and_
@@ -179,3 +180,21 @@ def get_country_seroprev_summaries(records):
         country_seroprev_summary_dict['seroprevalence_estimate_summary'] = grades_seroprev_summaries_dict
         study_counts_list.append(country_seroprev_summary_dict)
     return study_counts_list
+
+# Modify record coordinates
+# to ensure that pins are not directly at the same location
+def jitter_pins(records):
+    locations_seen = set()
+    for record in records:
+        if record["pin_latitude"] and record["pin_longitude"]:
+            loc = f"{record['pin_latitude']}_{record['pin_longitude']}"
+            if loc in locations_seen:
+                # For reference: 0.1 degrees is approx 11km at the equator
+                lat_diff = uniform(-0.1, 0.1)
+                lng_diff = uniform(-0.1, 0.1)
+                record['pin_latitude'] += lat_diff
+                record['pin_longitude'] += lng_diff
+                locations_seen.add(f"{record['pin_latitude']}_{record['pin_longitude']}")
+            else:
+                locations_seen.add(loc)
+    return records
