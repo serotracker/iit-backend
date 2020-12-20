@@ -49,7 +49,8 @@ class Records(Resource):
         start_date, end_date = convert_start_end_dates(data)
 
         result = get_filtered_records(filters, columns, start_date=start_date, end_date=end_date)
-        result = jitter_pins(result)
+        if not columns or ("pin_latitude" in columns and "pin_longitude" in columns):
+            result = jitter_pins(result)
 
         # Only paginate if all the pagination parameters have been specified
         if page_index is not None and per_page is not None and sorting_key is not None and reverse is not None:
