@@ -247,23 +247,27 @@ def validate_records(source, schema):
 
     exit("EXITING – No acceptable records found.")
 
-
-def get_coords(place_name, place_type):
+# Format of place: "{place_name}_{country_code}"
+# Note country code is used as an optional argument to the mapbox api
+# to improve search results, it might not exist
+# If place_type is a "place" (meaning a city or town)
+# place_name is only valid if it's in the format "city,state"
+def get_coords(place, place_type):
     # If a city doesn't have a state
     # associated with it, we cannot
     # accurately find it's location
-    if place_type == 'place' and "," not in place_name:
+    if place_type == 'place' and "," not in place:
         return None
 
     # If place_name contains "_", then the string
     # after it should be an iso2 country code
-    place = place_name.split("_")
+    place_arr = place.split("_")
 
-    url = f"https://api.mapbox.com/geocoding/v5/mapbox.places/{place[0]}.json?" \
+    url = f"https://api.mapbox.com/geocoding/v5/mapbox.places/{place_arr[0]}.json?" \
           f"access_token={os.getenv('MAPBOX_API_KEY')}&types={place_type}"
 
-    if len(place) > 1:
-        url += f"&country={place[1]}"
+    if len(place_arr) > 1:
+        url += f"&country={place_arr[1]}"
 
     r = requests.get(url)
     data = r.json()
@@ -380,9 +384,11 @@ def get_city(row):
 # Needed becuase country code is used to limit mapbox API
 # geosearch queries (improving query accuracy)
 def add_country_code_to_state(row):
-    return [f"{state}_{get_country_code(row['country'], iso3=False)}"
+    if row['state']:
+        return [f"{state}_{get_country_code(row['country'], iso3=False)}"
             if get_country_code(row['country'], iso3=False)
             else state for state in row['state']]
+    return None
 
 
 def main():
@@ -429,6 +435,7 @@ def main():
     data['test_manufacturer'] = data['test_manufacturer'].apply(lambda x: x.split(',') if x else x)
     data['state'] = data['state'].apply(lambda x: x.split(',') if x else x)
     data['city'] = data.apply(lambda row: get_city(row), axis=1)
+    data['state'] = data.apply(lambda row: add_country_code_to_state(row), axis=1)
 
     # Apply min risk of bias to all study estimates
     data = apply_min_risk_of_bias(data)
