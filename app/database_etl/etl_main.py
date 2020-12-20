@@ -26,16 +26,16 @@ AIRTABLE_REQUEST_URL = "https://api.airtable.com/v0/{}/Rapid%20Review%3A%20Estim
 
 CURR_TIME = datetime.now()
 
+# Note: this function takes in a relative path
 def read_from_json(path_to_json):
-    with open(path_to_json, 'r') as file:
+    dirname = os.path.dirname(__file__)
+    full_path = os.path.join(dirname, path_to_json)
+    with open(full_path, 'r') as file:
         records = json.load(file)
     return records
 
-dirname = os.path.dirname(__file__)
-filename = os.path.join(dirname, 'country_iso3.json')
-ISO3_CODES = read_from_json(filename)
-filename = os.path.join(dirname, 'country_iso2.json')
-ISO2_CODES = read_from_json(filename)
+ISO3_CODES = read_from_json('country_iso3.json')
+ISO2_CODES = read_from_json('country_iso2.json')
 
 def _add_fields_to_url(url):
     # Add fields in config to api URL
@@ -290,7 +290,7 @@ def get_country_code(country_name, iso3=True):
     code = None
     code_dict = ISO3_CODES if iso3 else ISO2_CODES
     if country_name in code_dict:
-        code = ISO3_CODES[country_name]
+        code = code_dict[country_name]
     else:
         url = f"https://restcountries.eu/rest/v2/name/{country_name}"
         r = requests.get(url)
@@ -371,10 +371,14 @@ def get_city(row):
         # associate the city with the state
         # so that we can get a pin for it
         if row['state'] and len(row['state']) == 1:
-            cities = [f"{city},{row['state'][0]}_{get_country_code(row['country'], iso3=False)}"
-                      if get_country_code(row['country'], iso3=False)
-                      else f"{city},{row['state'][0]}" for city in cities]
-
+            cities_return = []
+            for city in cities:
+                country_code = get_country_code(row['country'], iso3=False)
+                if country_code:
+                    cities_return.append(f"{city},{row['state'][0]}_{country_code}")
+                else:
+                    cities_return.append(f"{city},{row['state'][0]}")
+            return cities_return
         return cities
     else:
         return row['city']
@@ -385,9 +389,14 @@ def get_city(row):
 # geosearch queries (improving query accuracy)
 def add_country_code_to_state(row):
     if row['state']:
-        return [f"{state}_{get_country_code(row['country'], iso3=False)}"
-            if get_country_code(row['country'], iso3=False)
-            else state for state in row['state']]
+        states = []
+        for state in row['state']:
+            country_code = get_country_code(row['country'], iso3=False)
+            if country_code:
+                states.append(f"{state}_{country_code}")
+            else:
+                states.append(state)
+        return states
     return None
 
 
