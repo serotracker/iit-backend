@@ -4,6 +4,7 @@ from app.serotracker_sqlalchemy import db_session, DashboardSource, db_model_con
 import pandas as pd
 import numpy as np
 from .estimate_prioritization import get_prioritized_estimates
+from statistics import mean
 
 
 def get_all_records():
@@ -13,6 +14,7 @@ def get_all_records():
 
         # Create list of entity_name keys such as "age_name" which would be "Youth (13-17)"
         entity_names = [f"{t['entity']}" for t in table_infos]
+        entity_names += ['country_latitude', 'country_longitude', 'city_longitude', 'city_latitude', 'state_longitude', 'state_latitude']
 
         # Create list of fields in DashboardSource to query unless the specific columns are specified
         field_strings = ['source_name', 'source_type', 'study_name', 'denominator_value',
@@ -68,7 +70,7 @@ def get_all_records():
             for entity in entity_names:
                 if not a[entity]:
                     a[entity] = []
-                elif isinstance(a[entity], str):
+                elif isinstance(a[entity], str) or isinstance(a[entity], float):
                     a[entity] = [a[entity]]
                 if b[entity] is not None and b[entity] not in a[entity]:
                     a[entity].append(b[entity])
@@ -84,22 +86,6 @@ def get_all_records():
                 processed_record = record
             else:
                 processed_record = reduce(reduce_entities, record_list)
-
-            # Get the latitude and longitude to use for estimate pin
-            # Use the most specific one that's available in the database
-            # This seems to be more robust for now than relying on estimate grades
-            # E.g. not always sure if Local = city or Local = state (since sometimes Local = 3/4 cities)
-            region_types = ['city', 'state', 'country']
-            for region_type in region_types:
-                processed_record['pin_latitude'] = processed_record[f'{region_type}_latitude']
-                processed_record['pin_longitude'] = processed_record[f'{region_type}_longitude']
-                processed_record['pin_region_type'] = region_type
-                if processed_record['pin_latitude'] is not None and processed_record['pin_longitude'] is not None:
-                    break
-            # Delete lng/lat columns that are now unnecessary
-            for region_type in region_types:
-                processed_record.pop(f'{region_type}_latitude')
-                processed_record.pop(f'{region_type}_longitude')
 
             # Format isotypes reported column
             processed_record['isotypes_reported'] = []
@@ -190,6 +176,33 @@ def get_filtered_records(filters=None, columns=None, start_date=None, end_date=N
             # Filling all NaN values with None: https://stackoverflow.com/questions/46283312/how-to-proceed-with-none-value-in-pandas-fillna
             prioritized_records = prioritized_records.fillna(np.nan).replace({np.nan: None})
         result = prioritized_records.to_dict('records')
+
+    for record in result:
+        # Get the latitude and longitude to use for estimate pin
+        # Use coordinate at the most specific geographic level that's available in the database
+        # If there are multiple coordinates for a given geographic level, use the average
+        # Note this needs to happen after prioritization of estimates
+        # because the prioritization function may group multiple estimates from the same study into 1
+        region_types = ['country', 'state', 'city']
+        for region_type in region_types:
+            if len(record[f'{region_type}_latitude']) == 0:
+                # Edge case for when there isn't even a country level coordinate
+                if 'pin_latitude' not in record:
+                    record['pin_latitude'] = None
+                    record['pin_longitude'] = None
+                    record['pin_region_type'] = ''
+                break
+            # If we find multiple coordinates for a given geographic level
+            # Average them and use that average to render the pin
+            else:
+                record['pin_latitude'] = mean(record[f'{region_type}_latitude'])
+                record['pin_longitude'] = mean(record[f'{region_type}_longitude'])
+                record['pin_region_type'] = region_type
+
+        # Delete lng/lat columns that are now unnecessary
+        for region_type in region_types:
+            record.pop(f'{region_type}_latitude')
+            record.pop(f'{region_type}_longitude')
 
     # Finally, if columns have been supplied, only return those columns
     if columns is not None and len(columns) > 0:

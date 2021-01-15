@@ -74,7 +74,11 @@ def get_pooled_estimate(estimates):
         # have population group, state, and city to be the union of the inputs
         pooled.at['population_group'] = list(estimates['population_group'].dropna().unique())
         pooled.at['state'] = list(estimates['state'].explode().dropna().unique())
+        pooled.at['state_longitude'] = list(estimates['state_longitude'].explode().dropna().unique())
+        pooled.at['state_latitude'] = list(estimates['state_latitude'].explode().dropna().unique())
         pooled.at['city'] = list(estimates['city'].explode().dropna().unique())
+        pooled.at['city_longitude'] = list(estimates['city_longitude'].explode().dropna().unique())
+        pooled.at['city_latitude'] = list(estimates['city_latitude'].explode().dropna().unique())
         
         # TODO: include after data clean
         # fix population: general population only if all are genpop, specpop otherwise

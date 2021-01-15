@@ -26,7 +26,8 @@ class RecordsSchema(Schema):
                                                                  "sensitivity", "specificity", "included",
                                                                  "denominator_value", "numerator_definition",
                                                                  "serum_pos_prevalence", "overall_risk_of_bias",
-                                                                 "estimate_grade", "isotypes_reported", "created_at"])))
+                                                                 "estimate_grade", "isotypes_reported", "created_at",
+                                                                 "pin_longitude", "pin_latitude", "pin_region_type"])))
     # Date fields should be supplied as unix timestamp
     start_date = fields.String()
     end_date = fields.String()
