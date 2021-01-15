@@ -507,26 +507,24 @@ def main():
     # Create dictionary to store bridge tables
     bridge_tables_dict = create_bridge_tables(dashboard_source, multi_select_tables_dict)
 
-    # Add mapped variables to research table
+    # Add mapped variables to master dashboard source table
     dashboard_source = add_mapped_variables(dashboard_source)
 
     # Create research source table based on a subset of dashboard source df columns
     research_source_cols = list(airtable_fields_config['research'].values()) + ['gbd_region', 'gbd_subregion',
-                                                                                'lmic_hic', 'genpop', 'sampling_type',
-                                                                                'created_at']
-    research_source_cols.insert(0, 'source_id')
-    print(research_source_cols)
-    print(dashboard_source.columns)
+                                                                                'lmic_hic', 'genpop', 'sampling_type']
     research_source = dashboard_source[research_source_cols]
-    print(research_source['created_at', 'gbd_region', 'gbd_subregion', 'lmic_hic', 'genpop', 'sampling_type'])
-    exit()
+
+    # Add source id and created at columns from dashboard source df
+    research_source.insert(0, 'source_id', dashboard_source['source_id'])
+    research_source['created_at'] = dashboard_source['created_at']
 
     # Drop antibody target col
     research_source = research_source.drop(columns=['antibody_target'])
 
-    # Drop columns that are not needed (don't drop source_id column though which is first element)
-    dashboard_source_unused_cols = research_source_cols[1:] + ['organizational_author', 'city', 'county', 'state',
-                                                               'test_manufacturer', 'country', 'antibody_target']
+    # Drop columns that are not needed in the dashboard source table
+    dashboard_source_unused_cols = research_source_cols + ['organizational_author', 'city', 'county', 'state',
+                                                           'test_manufacturer', 'country', 'antibody_target']
     dashboard_source = dashboard_source.drop(columns=dashboard_source_unused_cols)
 
     # Adjust city table schema
