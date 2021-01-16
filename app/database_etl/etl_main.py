@@ -329,7 +329,7 @@ def add_mapped_variables(df):
         lambda GBD_region: 'HIC' if GBD_region == 'High-income' else None if not GBD_region else 'LMIC')
 
     # Create general population vs special population field
-    genpop_types = ['Household and community samples', 'Blood donors', 'Residual sera']
+    genpop_types = {'Household and community samples', 'Blood donors', 'Residual sera'}
     df['genpop'] = \
         df['population_group'].apply(lambda pop:
                                      'Study examining general population seroprevalence' if pop in genpop_types else
@@ -546,6 +546,7 @@ def main():
     dashboard_source = add_mapped_variables(dashboard_source)
 
     # Create research source table based on a subset of dashboard source df columns
+    # The airtable fields config columns are being pulled from airtable, the other 5 are manually created
     research_source_cols = list(airtable_fields_config['research'].values()) + ['gbd_region', 'gbd_subregion',
                                                                                 'lmic_hic', 'genpop', 'sampling_type']
     research_source = dashboard_source[research_source_cols]
