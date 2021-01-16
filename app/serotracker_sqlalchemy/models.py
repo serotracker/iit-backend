@@ -96,6 +96,11 @@ class ResearchSource(db.Model):
     test_linked_uid = Column(String())
     test_name = Column(String())
     test_validation = Column(String(128))
+    gbd_region = Column(String(128))
+    gbd_subregion = Column(String(128))
+    lmic_hic = Column(String(128))
+    genpop = Column(String(128))
+    sampling_type = Column(String(128))
     created_at = Column(DateTime)
 
 

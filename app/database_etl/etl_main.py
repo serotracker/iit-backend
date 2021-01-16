@@ -11,8 +11,8 @@ from dotenv import load_dotenv
 import pandas as pd
 import numpy as np
 from sqlalchemy import create_engine
-from app.serotracker_sqlalchemy import db_session, DashboardSource, ResearchSource, Country, City, State,\
-    TestManufacturer, AntibodyTarget, CityBridge, StateBridge, TestManufacturerBridge, AntibodyTargetBridge,\
+from app.serotracker_sqlalchemy import db_session, DashboardSource, ResearchSource, Country, City, State, \
+    TestManufacturer, AntibodyTarget, CityBridge, StateBridge, TestManufacturerBridge, AntibodyTargetBridge, \
     DashboardSourceSchema, ResearchSourceSchema
 from app.utils import airtable_fields_config, full_airtable_fields, send_api_error_email, send_email
 from app.utils.send_error_email import send_schema_validation_error_email
@@ -309,6 +309,53 @@ def get_country_code(country_name, iso3=True):
     return code
 
 
+def add_mapped_variables(df):
+    # Create mapped columns for gbd regions, subregion and lmic/hic countries
+    gbd_mapping_country = pd.read_csv('../../shared_scripts/GBD_mapping/GBD_mapping_country.csv')
+    gbd_region_col = []
+    gbd_subregion_col = []
+    for index, row in df.iterrows():
+        country = row['country']
+        gbd_row = gbd_mapping_country[gbd_mapping_country['Country'] == country]
+        if gbd_row.shape[0] > 0:
+            gbd_region_col.append(gbd_row.iloc[0]['GBD Region'])
+            gbd_subregion_col.append(gbd_row.iloc[0]['GBD Subregion'])
+        else:
+            gbd_region_col.append(None)
+            gbd_subregion_col.append(None)
+    df['gbd_region'] = gbd_region_col
+    df['gbd_subregion'] = gbd_subregion_col
+    df['lmic_hic'] = df['gbd_region'].apply(
+        lambda GBD_region: 'HIC' if GBD_region == 'High-income' else None if not GBD_region else 'LMIC')
+
+    # Create general population vs special population field
+    genpop_types = {'Household and community samples', 'Blood donors', 'Residual sera'}
+    df['genpop'] = \
+        df['population_group'].apply(lambda pop:
+                                     'Study examining general population seroprevalence' if pop in genpop_types else
+                                     'Study examining special population seroprevalence')
+
+    # Create field for sampling type
+    sampling_mapping = {
+        'Unclear': 'Non-probability',
+        'Self-referral/voluntary': 'Non-probability',
+        'Convenience': 'Non-probability',
+        'Entire sample': 'Probability',
+        'Stratified random': 'Probability',
+        'Simplified random': 'Probability',
+        'Sequential': 'Non-probability',
+        'Stratified non-random': 'Non-probability',
+        'Simplified probability': 'Probability',
+        'Randomized': 'Probability',
+        'Stratified non-probability': 'Non-probability',
+        'Self-referral': 'Non-probability',
+        'Stratified probability': 'Probability',
+        None: None
+    }
+    df['sampling_type'] = df['sampling_method'].map(sampling_mapping)
+    return df
+
+
 def get_most_recent_publication_info(row):
     # Get index of most recent pub date if the pub date is not None
     try:
@@ -495,17 +542,25 @@ def main():
     # Create dictionary to store bridge tables
     bridge_tables_dict = create_bridge_tables(dashboard_source, multi_select_tables_dict)
 
+    # Add mapped variables to master dashboard source table
+    dashboard_source = add_mapped_variables(dashboard_source)
+
     # Create research source table based on a subset of dashboard source df columns
-    research_source_cols = list(airtable_fields_config['research'].values())
-    research_source_cols.insert(0, 'source_id')
+    # The airtable fields config columns are being pulled from airtable, the other 5 are manually created
+    research_source_cols = list(airtable_fields_config['research'].values()) + ['gbd_region', 'gbd_subregion',
+                                                                                'lmic_hic', 'genpop', 'sampling_type']
     research_source = dashboard_source[research_source_cols]
+
+    # Add source id and created at columns from dashboard source df
+    research_source.insert(0, 'source_id', dashboard_source['source_id'])
+    research_source['created_at'] = dashboard_source['created_at']
 
     # Drop antibody target col
     research_source = research_source.drop(columns=['antibody_target'])
 
-    # Drop columns that are not needed (don't drop source_id column though which is first element)
-    dashboard_source_unused_cols = research_source_cols[1:] + ['organizational_author', 'city', 'county', 'state',
-                                                               'test_manufacturer', 'country', 'antibody_target']
+    # Drop columns that are not needed in the dashboard source table
+    dashboard_source_unused_cols = research_source_cols + ['organizational_author', 'city', 'county', 'state',
+                                                           'test_manufacturer', 'country', 'antibody_target']
     dashboard_source = dashboard_source.drop(columns=dashboard_source_unused_cols)
 
     # Adjust city and state table schema
@@ -516,7 +571,8 @@ def main():
     # remove state names from city_name field
     multi_select_tables_dict["city"]["city_name"] = multi_select_tables_dict["city"]["city_name"]\
         .map(lambda a: a.split(",")[0] if "," in a else a)
-    multi_select_tables_dict["state"]["state_name"] = multi_select_tables_dict["state"]["state_name"].map(lambda a: a.split("_")[0])
+    multi_select_tables_dict["state"]["state_name"] = multi_select_tables_dict["state"]["state_name"]\
+        .map(lambda a: a.split("_")[0])
 
     # Validate the dashboard source df
     dashboard_source = validate_records(dashboard_source, DashboardSourceSchema())
