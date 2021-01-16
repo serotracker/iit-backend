@@ -1,20 +1,22 @@
 from itertools import groupby
 from functools import reduce
-from app.serotracker_sqlalchemy import db_session, DashboardSource, db_model_config, Country, State, City
+from app.serotracker_sqlalchemy import db_session, DashboardSource, ResearchSource, \
+    db_model_config, Country, State, City
 import pandas as pd
 import numpy as np
 from .estimate_prioritization import get_prioritized_estimates
 from statistics import mean
 
 
-def get_all_records():
+def get_all_records(research_fields=False):
     with db_session() as session:
         # Get all records for now, join on all tables
         table_infos = db_model_config['supplementary_table_info']
 
         # Create list of entity_name keys such as "age_name" which would be "Youth (13-17)"
         entity_names = [f"{t['entity']}" for t in table_infos]
-        entity_names += ['country_latitude', 'country_longitude', 'city_longitude', 'city_latitude', 'state_longitude', 'state_latitude']
+        entity_names += ['country_latitude', 'country_longitude', 'city_longitude', 'city_latitude',
+                         'state_longitude', 'state_latitude']
 
         # Create list of fields in DashboardSource to query unless the specific columns are specified
         field_strings = ['source_name', 'source_type', 'study_name', 'denominator_value',
@@ -23,9 +25,25 @@ def get_all_records():
                          'isotype_comb', 'academic_primary_estimate', 'dashboard_primary_estimate', 'pop_adj',
                          'test_adj', 'specimen_type', 'test_type', 'population_group', 'url']
 
+        # Add columns from dashboard source to select statement
         fields_list = [DashboardSource.source_id]
         for field_string in field_strings:
             fields_list.append(getattr(DashboardSource, field_string))
+
+        # If research fields is True, add columns from research source to select statement
+        if research_fields:
+            research_source_cols = ['case_population', 'deaths_population', 'age_max', 'age_min', 'age_variation',
+                                    'age_variation_measure', 'average_age', 'case_count_neg14', 'case_count_neg9',
+                                    'case_count_0', 'death_count_plus11', 'death_count_plus4', 'ind_eval_lab',
+                                    'ind_eval_link', 'ind_se', 'ind_se_n', 'ind_sp', 'ind_sp_n', 'jbi_1', 'jbi_2',
+                                    'jbi_3', 'jbi_4', 'jbi_5', 'jbi_6', 'jbi_7', 'jbi_8', 'jbi_9', 'measure_of_age',
+                                    'sample_frame_info', 'number_of_females', 'number_of_males', 'numerator_value',
+                                    'estimate_name', 'test_not_linked_reason', 'se_n', 'seroprev_95_ci_lower',
+                                    'seroprev_95_ci_upper', 'sp_n', 'subgroup_var', 'subgroup_cat', 'superceded',
+                                    'test_linked_uid', 'test_name', 'test_validation', 'gbd_region', 'gbd_subregion',
+                                    'lmic_hic', 'genpop', 'sampling_type']
+            for col in research_source_cols:
+                fields_list.append(getattr(ResearchSource, col))
 
         for table_info in table_infos:
             # The label method returns an alias for the column being queried
@@ -36,6 +54,7 @@ def get_all_records():
         # Alias for country name and iso3 code
         fields_list.append(Country.country_name.label("country"))
         fields_list.append(Country.country_iso3.label("country_iso3"))
+
         # Aliases for lat lngs
         fields_list.append(Country.latitude.label("country_latitude"))
         fields_list.append(Country.longitude.label("country_longitude"))
@@ -59,8 +78,14 @@ def get_all_records():
                     .join(main_table, getattr(main_table, entity) == getattr(bridge_table, entity), isouter=True)
             except Exception as e:
                 print(e)
+
         # Join on country table
         query = query.join(Country, Country.country_id == DashboardSource.country_id, isouter=True)
+
+        # If research fields is true, join to research source table
+        if research_fields:
+            query = query.join(ResearchSource, ResearchSource.source_id == DashboardSource.source_id)
+
         query = query.all()
         query_dict = [q._asdict() for q in query]
 
@@ -99,7 +124,7 @@ def get_all_records():
 
             return processed_record
 
-        # `query_dicts` is a list of rows (represented as dicts) with unique source_id and lists of 
+        # `query_dicts` is a list of rows (represented as dicts) with unique source_id and lists of
         # their associated entities 
         query_dicts = [process_record(list(group)) for _, group in groupby(query_dict, key=lambda x: x["source_id"])]
         return query_dicts
@@ -116,8 +141,9 @@ Output: set of records represented by dicts
 '''
 
 
-def get_filtered_records(filters=None, columns=None, start_date=None, end_date=None, prioritize_estimates=True):
-    query_dicts = get_all_records()
+def get_filtered_records(research_fields=False, filters=None, columns=None, start_date=None, end_date=None,
+                         prioritize_estimates=True):
+    query_dicts = get_all_records(research_fields)
     if query_dicts is None or len(query_dicts) == 0:
         return []
 
