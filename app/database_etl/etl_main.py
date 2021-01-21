@@ -566,6 +566,10 @@ def main():
         dashboard_source_unused_cols = research_source_cols + ['organizational_author', 'city', 'county', 'state',
                                                                'test_manufacturer', 'country', 'antibody_target']
         dashboard_source = dashboard_source.drop(columns=dashboard_source_unused_cols)
+    else:
+        dashboard_source_unused_cols = list(airtable_fields_config['research'].values()) + ['organizational_author', 'city', 'county', 'state',
+                                                               'test_manufacturer', 'country', 'antibody_target']
+        dashboard_source = dashboard_source.drop(columns=dashboard_source_unused_cols)
 
     # Adjust city and state table schema
     # Note this state_name field in the city table will never actually be used
