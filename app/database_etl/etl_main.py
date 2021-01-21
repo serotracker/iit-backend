@@ -256,7 +256,7 @@ def get_coords(place, place_type):
     # If a city doesn't have a state
     # associated with it, we cannot
     # accurately find it's location
-    if place_type == 'place' and "," not in place:
+    if (not place) or (place_type == 'place' and "," not in place):
         return None
 
     # If place_name contains "_", then the string
