@@ -50,7 +50,7 @@ class Records(Resource):
         reverse = data.get('reverse')
         columns = data.get('columns')
         research_fields = data.get('research_fields')
-        prioritize_estimates = data.get('prioritize_estimates')
+        prioritize_estimates = data.get('prioritize_estimates', True)
         start_date, end_date = convert_start_end_dates(data)
 
         result = get_filtered_records(research_fields, filters, columns, start_date=start_date, end_date=end_date,
