@@ -85,7 +85,7 @@ class GeogStudyCount(Resource):
     @data_provider_ns.doc('An endpoint for summarizing the seroprevalence data of a country.')
     def get(self):
         # Query all the records with no filters but only grab certain columns
-        columns = ['country', 'denominator_value', 'serum_pos_prevalence', 'estimate_grade']
+        columns = ['country', 'country_iso3', 'denominator_value', 'serum_pos_prevalence', 'estimate_grade']
         records = get_filtered_records(filters=None, columns=columns, start_date=None, end_date=None)
 
         # Compute seroprevalence summaries per country per estimate grade level
@@ -105,10 +105,10 @@ class GeogStudyCount(Resource):
             return make_response(payload, status_code)
 
         # Query all the records with the desired filters. Pull only country, denom, and seroprev cols
-        filters = json_input['filters']
+        filters = json_input.get('filters')
         start_date, end_date = convert_start_end_dates(json_input)
         columns = ['country', 'country_iso3', 'denominator_value', 'serum_pos_prevalence', 'estimate_grade']
-        records = get_filtered_records(filters, columns, start_date=start_date, end_date=end_date)
+        records = get_filtered_records(filters=filters, columns=columns, start_date=start_date, end_date=end_date)
 
         # Check if no records are returned
         if not records:
