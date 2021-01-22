@@ -56,7 +56,7 @@ class MetaAnalysis(Resource):
         start_date, end_date = convert_start_end_dates(json_input)
         columns = ['country', 'denominator_value', 'serum_pos_prevalence']
         columns.append(agg_var)
-        records = get_filtered_records(filters, columns, start_date=start_date, end_date=end_date)
+        records = get_filtered_records(filters=filters, columns=columns, start_date=start_date, end_date=end_date)
 
         meta_analysis_results = get_meta_analysis_records(records, agg_var, meta_transformation, meta_technique)
         return meta_analysis_results
