@@ -26,6 +26,9 @@ AIRTABLE_REQUEST_URL = "https://api.airtable.com/v0/{}/Rapid%20Review%3A%20Estim
 
 CURR_TIME = datetime.now()
 
+# TODO: Change to true when we figure out the submodule issue
+UPDATE_RESEARCH_TABLES = False
+
 # Note: this function takes in a relative path
 def read_from_json(path_to_json):
     dirname = os.path.dirname(__file__)
@@ -542,26 +545,31 @@ def main():
     # Create dictionary to store bridge tables
     bridge_tables_dict = create_bridge_tables(dashboard_source, multi_select_tables_dict)
 
-    # Add mapped variables to master dashboard source table
-    dashboard_source = add_mapped_variables(dashboard_source)
+    if UPDATE_RESEARCH_TABLES:
+        # Add mapped variables to master dashboard source table
+        dashboard_source = add_mapped_variables(dashboard_source)
 
-    # Create research source table based on a subset of dashboard source df columns
-    # The airtable fields config columns are being pulled from airtable, the other 5 are manually created
-    research_source_cols = list(airtable_fields_config['research'].values()) + ['gbd_region', 'gbd_subregion',
-                                                                                'lmic_hic', 'genpop', 'sampling_type']
-    research_source = dashboard_source[research_source_cols]
+        # Create research source table based on a subset of dashboard source df columns
+        # The airtable fields config columns are being pulled from airtable, the other 5 are manually created
+        research_source_cols = list(airtable_fields_config['research'].values()) + ['gbd_region', 'gbd_subregion',
+                                                                                    'lmic_hic', 'genpop', 'sampling_type']
+        research_source = dashboard_source[research_source_cols]
 
-    # Add source id and created at columns from dashboard source df
-    research_source.insert(0, 'source_id', dashboard_source['source_id'])
-    research_source['created_at'] = dashboard_source['created_at']
+        # Add source id and created at columns from dashboard source df
+        research_source.insert(0, 'source_id', dashboard_source['source_id'])
+        research_source['created_at'] = dashboard_source['created_at']
 
-    # Drop antibody target col
-    research_source = research_source.drop(columns=['antibody_target'])
+        # Drop antibody target col
+        research_source = research_source.drop(columns=['antibody_target'])
 
-    # Drop columns that are not needed in the dashboard source table
-    dashboard_source_unused_cols = research_source_cols + ['organizational_author', 'city', 'county', 'state',
-                                                           'test_manufacturer', 'country', 'antibody_target']
-    dashboard_source = dashboard_source.drop(columns=dashboard_source_unused_cols)
+        # Drop columns that are not needed in the dashboard source table
+        dashboard_source_unused_cols = research_source_cols + ['organizational_author', 'city', 'county', 'state',
+                                                               'test_manufacturer', 'country', 'antibody_target']
+        dashboard_source = dashboard_source.drop(columns=dashboard_source_unused_cols)
+    else:
+        dashboard_source_unused_cols = list(airtable_fields_config['research'].values()) + ['organizational_author', 'city', 'county', 'state',
+                                                               'test_manufacturer', 'country', 'antibody_target']
+        dashboard_source = dashboard_source.drop(columns=dashboard_source_unused_cols)
 
     # Adjust city and state table schema
     # Note this state_name field in the city table will never actually be used
@@ -576,13 +584,15 @@ def main():
 
     # Validate the dashboard source df
     dashboard_source = validate_records(dashboard_source, DashboardSourceSchema())
-    research_source = validate_records(research_source, ResearchSourceSchema())
 
     # key = table name, value = table df
     tables_dict = {**multi_select_tables_dict, **bridge_tables_dict}
     tables_dict['dashboard_source'] = dashboard_source
-    tables_dict['research_source'] = research_source
     tables_dict['country'] = country_df
+
+    if UPDATE_RESEARCH_TABLES:
+        research_source = validate_records(research_source, ResearchSourceSchema())
+        tables_dict['research_source'] = research_source
 
     # Load dataframes into postgres tables
     load_postgres_tables(tables_dict, engine)
