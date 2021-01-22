@@ -8,6 +8,8 @@ class RecordsSchema(Schema):
     page_index = fields.Integer(allow_none=True)
     per_page = fields.Integer(allow_none=True)
     reverse = fields.Boolean(allow_none=True)
+    research_fields = fields.Boolean(allow_none=True)
+    prioritize_estimates = fields.Boolean(allow_none=True)
     filters = fields.Dict(
         keys=fields.String(validate=validate.OneOf(["country", "source_type", "overall_risk_of_bias",
                                                     "source_name", "population_group",

@@ -18,8 +18,11 @@ class Records(Resource):
         reverse = request.args.get('reverse', None, type=bool)
         page_index = request.args.get('page_index', None, type=int)
         per_page = request.args.get('per_page', None, type=int)
+        research_fields = request.args.get('research_fields', False, type=bool)
+        prioritize_estimates = request.args.get('prioritize_estimates', True, type=bool)
 
-        result = get_filtered_records(filters=None, columns=None, start_date=None, end_date=None)
+        result = get_filtered_records(research_fields, filters=None, columns=None, start_date=None, end_date=None,
+                                      prioritize_estimates=prioritize_estimates)
         result = jitter_pins(result)
 
         # Only paginate if all the pagination parameters have been specified
@@ -46,9 +49,12 @@ class Records(Resource):
         per_page = data.get('per_page')
         reverse = data.get('reverse')
         columns = data.get('columns')
+        research_fields = data.get('research_fields')
+        prioritize_estimates = data.get('prioritize_estimates')
         start_date, end_date = convert_start_end_dates(data)
 
-        result = get_filtered_records(filters, columns, start_date=start_date, end_date=end_date)
+        result = get_filtered_records(research_fields, filters, columns, start_date=start_date, end_date=end_date,
+                                      prioritize_estimates=prioritize_estimates)
         if not columns or ("pin_latitude" in columns and "pin_longitude" in columns):
             result = jitter_pins(result)
 
