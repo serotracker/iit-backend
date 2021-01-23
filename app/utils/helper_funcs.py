@@ -1,6 +1,10 @@
+import os
+
 from datetime import datetime
 
 from marshmallow import ValidationError
+from slack_sdk import WebClient
+from slack_sdk.errors import SlackApiError
 
 
 def validate_request_input_against_schema(input_payload, schema):
@@ -24,3 +28,13 @@ def convert_start_end_dates(data):
         end_date = end_date.replace("Z", "+00:00")
         end_date = datetime.fromisoformat(end_date).replace(tzinfo=None)
     return start_date, end_date
+
+
+def send_slack_message(channel, message):
+    print(channel, message)
+    token = os.getenv("SLACK_BOT_TOKEN")
+    print(token)
+    client = WebClient(token)
+    response = client.chat_postMessage(channel=channel, text='@channel Internal Server Error: {}'.format(message))
+    print(response)
+    return
