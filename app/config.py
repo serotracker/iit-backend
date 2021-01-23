@@ -55,6 +55,7 @@ class ApiTestingConfig(ApiConfig):
 
 class ApiProductionConfig(ApiConfig):
     DEBUG = False
+    PROPAGATE_EXCEPTIONS = False
     DATABASE_USERNAME = os.getenv('DATABASE_USERNAME')
     DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD')
     DATABASE_HOST_ADDRESS = os.getenv('DATABASE_HOST_ADDRESS')

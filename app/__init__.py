@@ -1,11 +1,10 @@
 import os
 import logging.config
 
-from flask import Flask, render_template
+from flask import Flask
 from flask_restplus import Api
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-from werkzeug.exceptions import InternalServerError
 from .config import config_by_name
 
 logging.config.fileConfig('logging.cfg', disable_existing_loggers=False)
@@ -39,27 +38,3 @@ def create_app(db):
 
 db = SQLAlchemy()
 app = create_app(db)
-
-from .utils import send_slack_message
-
-
-# @app.errorhandler(InternalServerError)
-# def handle_500(e):
-#     print('here')
-#     original = getattr(e, "original_exception", None)
-#     message = '@channel Internal Server Error: {}'.format(e)
-#     send_slack_message(message=message, channel="#data-logging")
-#     logging.error(e)
-#
-#     if original is None:
-#         # direct 500 error, such as abort(500)
-#         return render_template("500.html"), 500
-#
-#     # wrapped unhandled error
-#     return render_template("500_unhandled.html", e=original), 500
-
-
-# @app.after_request
-# def test(response):
-#     print('testing')
-#     return response

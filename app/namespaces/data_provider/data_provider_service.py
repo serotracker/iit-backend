@@ -188,7 +188,7 @@ def jitter_pins(records):
     locations_seen = set()
     for record in records:
         if record["pin_latitude"] and record["pin_longitude"]:
-            loc = f"{record['pin_latitude']}_{record['pin_longitude']}"
+            loc = f"{record['pin_laitude']}_{record['pin_longitude']}"
             if loc in locations_seen:
                 # For reference: 0.1 degrees is approx 11km at the equator
                 lat_diff = uniform(-0.1, 0.1)
