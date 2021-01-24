@@ -181,6 +181,7 @@ def get_country_seroprev_summaries(records):
         study_counts_list.append(country_seroprev_summary_dict)
     return study_counts_list
 
+
 # Modify record coordinates
 # to ensure that pins are not directly at the same location
 def jitter_pins(records):

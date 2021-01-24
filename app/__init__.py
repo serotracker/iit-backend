@@ -1,11 +1,14 @@
 import os
+import logging.config
 
 from flask import Flask
 from flask_restplus import Api
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-
 from .config import config_by_name
+
+logging.config.fileConfig('logging.cfg', disable_existing_loggers=False)
+logging.getLogger(__name__)
 
 
 def create_app(db):

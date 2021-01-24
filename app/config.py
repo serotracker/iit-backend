@@ -3,7 +3,6 @@ import os
 
 class ApiConfig:
     DEBUG = True
-    FLASK_DEBUG = True
     APP_NAMESPACES = os.getenv('APP_NAMESPACES', ['airtable_scraper', 'healthcheck', 'data_provider',
                                                   'cases_count_scraper', 'meta_analysis'])
     # Airtable config vars
@@ -56,7 +55,7 @@ class ApiTestingConfig(ApiConfig):
 
 class ApiProductionConfig(ApiConfig):
     DEBUG = False
-    FLASK_DEBUG = False
+    PROPAGATE_EXCEPTIONS = False
     DATABASE_USERNAME = os.getenv('DATABASE_USERNAME')
     DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD')
     DATABASE_HOST_ADDRESS = os.getenv('DATABASE_HOST_ADDRESS')
