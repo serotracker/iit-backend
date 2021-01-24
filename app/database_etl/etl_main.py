@@ -14,7 +14,7 @@ from sqlalchemy import create_engine
 from app.serotracker_sqlalchemy import db_session, DashboardSource, ResearchSource, Country, City, State, \
     TestManufacturer, AntibodyTarget, CityBridge, StateBridge, TestManufacturerBridge, AntibodyTargetBridge, \
     DashboardSourceSchema, ResearchSourceSchema
-from app.utils import airtable_fields_config, full_airtable_fields, send_api_error_email, send_email
+from app.utils import airtable_fields_config, full_airtable_fields, send_api_error_email, send_email, get_filter_static_options
 from app.utils.send_error_email import send_schema_validation_error_email
 
 load_dotenv()
@@ -447,6 +447,26 @@ def add_country_code_to_state(row):
     return None
 
 
+# Send alert email if filter options have changed
+def check_filter_options(dashboard_source):
+    curr_filter_options = get_filter_static_options()
+    to_ignore = ["All", "Multiple groups", "Multiple populations", "Multiple Types", None]
+    changed_filter_options = {}
+
+    for filter_type in curr_filter_options:
+        # Get new options for each filter type
+        new_options = set(dashboard_source[filter_type].unique())
+        # Remove options that are unused (e.g. "All", "Multiple groups", etc)
+        for s in to_ignore:
+            if s in new_options:
+                new_options.remove(s)
+        # Check to see if the new options are equal to the curr hardcoded options
+        if new_options != set(curr_filter_options[filter_type]):
+            changed_filter_options[filter_type] = new_options
+            logger.info(new_options)
+    if len(changed_filter_options.keys()) > 0:
+        send_email(changed_filter_options, ["austin.atmaja@gmail.com"], "IIT BACKEND ALERT: Filter Options Have Changed")
+
 def main():
     # Create engine to connect to whiteclaw database
     engine = create_engine('postgresql://{username}:{password}@{host_address}/whiteclaw'.format(
@@ -581,7 +601,7 @@ def main():
     # key = table name, value = table df
     tables_dict = {**multi_select_tables_dict, **bridge_tables_dict}
     tables_dict['dashboard_source'] = dashboard_source
-    tables_dict['research_source'] = research_source
+    #tables_dict['research_source'] = research_source
     tables_dict['country'] = country_df
 
     # Load dataframes into postgres tables
@@ -589,6 +609,10 @@ def main():
 
     # Delete old entries
     drop_old_entries()
+
+    # Make sure that filter options are still valid
+    check_filter_options(dashboard_source)
+
     return
 
 

@@ -2,29 +2,76 @@ from app.serotracker_sqlalchemy import db_session, DashboardSource, \
     Country
 from sqlalchemy import distinct, func
 
+def get_filter_static_options():
+    return {
+        "age": [
+            "Adults (18-64 years)",
+            "Children and Youth (0-17 years)",
+            "Seniors (65+ years)"
+        ],
+        "estimate_grade": [
+            "National",
+            "Regional",
+            "Local",
+            "Sublocal"
+        ],
+        "overall_risk_of_bias": [
+            "Low",
+            "Moderate",
+            "High",
+            "Unclear"
+        ],
+        "population_group": [
+            "Blood donors",
+            "Household and community samples",
+            "Residual sera",
+            "Assisted living and long-term care facilities",
+            "Students",
+            "Contacts of COVID patients",
+            "Non-essential workers and unemployed persons",
+            "Essential non-healthcare workers",
+            "Hospital visitors",
+            "Persons who are incarcerated",
+            "Persons living in slums",
+            "Pregnant or parturient women",
+            "Patients seeking care for non-COVID-19 reasons",
+            "Household and community samples",
+            "Health care workers and caregivers",
+        ],
+        "sex": [
+            "Female",
+            "Male",
+            "Other"
+        ],
+        "source_type": [
+            "Journal Article (Peer-Reviewed)",
+            "Preprint",
+            "Institutional Report",
+            "News and Media"
+        ],
+        "specimen_type": [
+            "Whole Blood",
+            "Dried Blood",
+            "Plasma",
+            "Serum",
+        ],
+        "test_type": [
+            "Neutralization",
+            "CLIA",
+            "ELISA",
+            "LFIA",
+            "Other"
+        ]
+    }
 
 def get_all_filter_options():
     with db_session() as session:
-        # List of fields in DashboardSource to query
-        airtable_field_strings = ['source_type', 'overall_risk_of_bias', 'sex', 'estimate_grade',
-                                  'population_group', 'age', 'specimen_type', 'test_type']
-        options = {}
-        for field_string in airtable_field_strings:
-            query = session.query(distinct(getattr(DashboardSource, field_string)))
-            results = [q[0] for q in query if q[0] is not None]
-            options[field_string] = results
+        options = get_filter_static_options()
 
-        other_fields = {
-            "country_name": {
-                "table": Country,
-                "label": "country"
-            }
-        }
-
-        for field in other_fields:
-            query = session.query(distinct(getattr(other_fields[field]["table"], field)))
-            results = [q[0] for q in query if q[0] is not None]
-            options[other_fields[field]["label"]] = results
+        # Get countries
+        query = session.query(distinct(getattr(Country, "country_name")))
+        results = [q[0] for q in query if q[0] is not None]
+        options["country"] = results
 
         options["max_date"] = session.query(func.max(DashboardSource.sampling_end_date))[0][0].isoformat()
         options["min_date"] = session.query(func.min(DashboardSource.sampling_end_date))[0][0].isoformat()
