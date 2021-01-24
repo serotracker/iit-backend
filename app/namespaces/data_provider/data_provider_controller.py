@@ -1,3 +1,5 @@
+import logging.config
+
 from flask_restplus import Resource, Namespace
 from flask import jsonify, make_response, request
 
@@ -7,6 +9,7 @@ from app.utils import validate_request_input_against_schema, get_filtered_record
     get_paginated_records, convert_start_end_dates, get_all_filter_options
 
 data_provider_ns = Namespace('data_provider', description='Endpoints for getting database records.')
+logging.getLogger(__name__)
 
 
 @data_provider_ns.route('/records', methods=['GET', 'POST'])
@@ -20,6 +23,12 @@ class Records(Resource):
         per_page = request.args.get('per_page', None, type=int)
         research_fields = request.args.get('research_fields', False, type=bool)
         prioritize_estimates = request.args.get('prioritize_estimates', True, type=bool)
+
+        # Log request info
+        logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}".format(
+            type=request.environ['REQUEST_METHOD'],
+            path=request.environ['PATH_INFO'],
+            args=dict(request.args)))
 
         result = get_filtered_records(research_fields, filters=None, columns=None, start_date=None, end_date=None,
                                       prioritize_estimates=prioritize_estimates)
@@ -35,6 +44,14 @@ class Records(Resource):
         data = request.get_json()
         if not data:
             return {"message": "No input payload provided"}, 400
+
+        # Log request info
+        logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}, Payload: {payload}".format(
+            type=request.environ['REQUEST_METHOD'],
+            path=request.environ['PATH_INFO'],
+            args=dict(request.args),
+            payload=data))
+
         # All of these params can be empty, in which case, our utility functions will just return all records
         filters = data.get('filters')
 
@@ -69,6 +86,12 @@ class Records(Resource):
 class RecordDetails(Resource):
     @data_provider_ns.doc('An endpoint for getting the details of a record based on source id.')
     def get(self, source_id):
+        # Log request info
+        logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}".format(
+            type=request.environ['REQUEST_METHOD'],
+            path=request.environ['PATH_INFO'],
+            args=dict(request.args)))
+
         # Validate input
         payload, status_code = validate_request_input_against_schema({'source_id': source_id}, RecordDetailsSchema())
         if status_code != 200:
@@ -84,6 +107,12 @@ class RecordDetails(Resource):
 class GeogStudyCount(Resource):
     @data_provider_ns.doc('An endpoint for summarizing the seroprevalence data of a country.')
     def get(self):
+        # Log request info
+        logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}".format(
+            type=request.environ['REQUEST_METHOD'],
+            path=request.environ['PATH_INFO'],
+            args=dict(request.args)))
+
         # Query all the records with no filters but only grab certain columns
         columns = ['country', 'country_iso3', 'denominator_value', 'serum_pos_prevalence', 'estimate_grade']
         records = get_filtered_records(filters=None, columns=columns, start_date=None, end_date=None)
@@ -97,6 +126,13 @@ class GeogStudyCount(Resource):
         json_input = request.get_json()
         if not json_input:
             return make_response({"message": "No input payload provided"}, 400)
+
+        # Log request info
+        logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}, Payload: {payload}".format(
+            type=request.environ['REQUEST_METHOD'],
+            path=request.environ['PATH_INFO'],
+            args=dict(request.args),
+            payload=json_input))
 
         # Validate input payload
         payload, status_code = validate_request_input_against_schema(json_input, StudyCountSchema())
@@ -123,5 +159,11 @@ class GeogStudyCount(Resource):
 class Records(Resource):
     @data_provider_ns.doc('An endpoint for getting all filter options from the database.')
     def get(self):
+        # Log request info
+        logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}".format(
+            type=request.environ['REQUEST_METHOD'],
+            path=request.environ['PATH_INFO'],
+            args=dict(request.args)))
+
         result = get_all_filter_options()
         return jsonify(result)
