@@ -17,8 +17,8 @@ from app.serotracker_sqlalchemy import db_session, DashboardSource, ResearchSour
 from app.utils import airtable_fields_config, full_airtable_fields, send_api_error_email, send_email
 from app.utils.send_error_email import send_schema_validation_error_email
 
+
 load_dotenv()
-logger = logging.getLogger(__name__)
 
 AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
 AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
@@ -103,9 +103,9 @@ def get_all_records():
     except KeyError as e:
         body = "Results were not successfully retrieved from Airtable API." \
                "Please check connection parameters in config.py and fields in airtable_fields_config.json."
-        logger.error(body)
-        logger.error(f"Error Info: {e}")
-        logger.error(f"API Response Info: {data}")
+        logging.error(body)
+        logging.error(f"Error Info: {e}")
+        logging.error(f"API Response Info: {data}")
 
         request_info = {
             "url": url,
@@ -518,7 +518,7 @@ def main():
     null_iso3_countries = list(null_iso3['country_name'])
     if len(null_iso3_countries) > 0:
         body = f"ISO3 codes were not found for the following countries: {null_iso3_countries}."
-        logger.error(body)
+        logging.error(body)
         send_email(body, ["austin.atmaja@gmail.com", 'rahularoradfs@gmail.com',
                           'brettdziedzic@gmail.com'], "ALERT: ISO3 Codes Not Found")
 
