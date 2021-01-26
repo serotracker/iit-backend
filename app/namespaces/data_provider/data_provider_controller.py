@@ -21,8 +21,9 @@ class Records(Resource):
         reverse = request.args.get('reverse', None, type=bool)
         page_index = request.args.get('page_index', None, type=int)
         per_page = request.args.get('per_page', None, type=int)
-        research_fields = False if request.args.get('research_fields', 'false', type=str) == 'false' else True
-        prioritize_estimates = True if request.args.get('prioritize_estimates', 'true', type=str) == 'true' else False
+        research_fields = False if str.lower(request.args.get('research_fields', 'false', type=str)) == 'false' else True
+        prioritize_estimates = True if str.lower(request.args.get('prioritize_estimates', 'true', type=str)) == 'true' else False
+        print(research_fields)
 
         # Log request info
         logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}".format(
