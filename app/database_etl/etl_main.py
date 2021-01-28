@@ -208,16 +208,29 @@ def load_postgres_tables(tables_dict, engine):
                            con=engine,
                            if_exists='append',
                            index=False)
+        drop_old_entries(table_name)
     return
 
 
-def drop_old_entries():
-    all_tables = [DashboardSource, ResearchSource, City, State, TestManufacturer, AntibodyTarget, Country,
-                  CityBridge, StateBridge, TestManufacturerBridge, AntibodyTargetBridge]
+def drop_old_entries(table_name):
+    table_names_dict = {
+        "dashboard_source": DashboardSource,
+        "research_source": ResearchSource,
+        "city": City,
+        "state": State,
+        "test_manufacturer": TestManufacturer,
+        "antibody_target": AntibodyTarget,
+        "city_bridge": CityBridge,
+        "state_bridge": StateBridge,
+        "test_manufacturer_bridge": TestManufacturerBridge,
+        "antibody_target_bridge": AntibodyTargetBridge,
+        "country": Country
+    }
+
+    table = table_names_dict[table_name]
     with db_session() as session:
-        for table in all_tables:
-            # Drop record if it was not added during the current run
-            session.query(table).filter(table.created_at != CURR_TIME).delete()
+        # Drop record if it was not added during the current run
+        session.query(table).filter(table.created_at != CURR_TIME).delete()
         session.commit()
     return
 
@@ -461,7 +474,7 @@ def check_filter_options(dashboard_source):
         # Check to see if the new options are equal to the curr hardcoded options
         if new_options != set(curr_filter_options[filter_type]):
             changed_filter_options[filter_type] = new_options
-            logger.info(new_options)
+            logging.info(new_options)
     if len(changed_filter_options.keys()) > 0:
         send_email(changed_filter_options, ["austin.atmaja@gmail.com"], "IIT BACKEND ALERT: Filter Options Have Changed")
 
@@ -599,14 +612,12 @@ def main():
     # key = table name, value = table df
     tables_dict = {**multi_select_tables_dict, **bridge_tables_dict}
     tables_dict['dashboard_source'] = dashboard_source
-    tables_dict['research_source'] = research_source
+    # TODO: Uncomment when we figure out the problem here
+    #tables_dict['research_source'] = research_source
     tables_dict['country'] = country_df
 
     # Load dataframes into postgres tables
     load_postgres_tables(tables_dict, engine)
-
-    # Delete old entries
-    drop_old_entries()
 
     # Make sure that filter options are still valid
     check_filter_options(dashboard_source)
