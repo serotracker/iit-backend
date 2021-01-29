@@ -472,11 +472,24 @@ def check_filter_options(dashboard_source):
         # Remove options that are unused (e.g. "All", "Multiple groups", etc)
         new_options = set([s for s in new_options if s not in to_ignore])
         # Check to see if the new options are equal to the curr hardcoded options
+        # Check to see if the new options are equal to the curr hardcoded options
         if new_options != set(curr_filter_options[filter_type]):
             changed_filter_options[filter_type] = new_options
             logging.info(new_options)
-    if len(changed_filter_options.keys()) > 0:
-        send_email(changed_filter_options, ["austin.atmaja@gmail.com"], "IIT BACKEND ALERT: Filter Options Have Changed")
+    # if len(changed_filter_options.keys()) > 0:
+    #     send_email(changed_filter_options, ["austin.atmaja@gmail.com"], "IIT BACKEND ALERT: Filter Options Have Changed")
+
+
+# Replace None utf-8 encoded characters with blank spaces
+def replace_null_string(x):
+    if type(x) != str:
+        return x
+    encoded_val = x.encode('utf-8')
+    if b'\x00' in encoded_val:
+        encoded_val = encoded_val.replace(b'\x00', b'\x20')
+        return encoded_val.decode('utf-8')
+    return x
+
 
 def main():
     # Create engine to connect to whiteclaw database
@@ -594,6 +607,10 @@ def main():
                                                            'test_manufacturer', 'country', 'antibody_target']
     dashboard_source = dashboard_source.drop(columns=dashboard_source_unused_cols)
 
+    # Remove any null string characters from research source or dashboard source dfs
+    research_source = research_source.apply(lambda col: col.apply(lambda val: replace_null_string(val)))
+    dashboard_source = dashboard_source.apply(lambda col: col.apply(lambda val: replace_null_string(val)))
+
     # Adjust city and state table schema
     # Note this state_name field in the city table will never actually be used
     # but is nice to have for observability
@@ -612,11 +629,11 @@ def main():
     # key = table name, value = table df
     tables_dict = {**multi_select_tables_dict, **bridge_tables_dict}
     tables_dict['dashboard_source'] = dashboard_source
-    # TODO: Uncomment when we figure out the problem here
-    #tables_dict['research_source'] = research_source
+    tables_dict['research_source'] = research_source
     tables_dict['country'] = country_df
 
     # Load dataframes into postgres tables
+    # TODO: change how we are deleting records if ETL fails
     load_postgres_tables(tables_dict, engine)
 
     # Make sure that filter options are still valid
