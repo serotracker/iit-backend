@@ -231,8 +231,8 @@ def load_postgres_tables(tables_dict, engine):
             logging.error(e)
             # TODO: send slack message with error (include the table name that failed)
             # Break out of function and return 'failure'
-            return 'failure'
-    return 'success'
+            return False
+    return True
 
 
 def drop_table_entries(type='old'):
@@ -652,7 +652,7 @@ def main():
     load_status = load_postgres_tables(tables_dict, engine)
 
     # If all tables were successfully loaded, drop old entries
-    if load_status == 'success':
+    if load_status:
         drop_table_entries(type='old')
     # Otherwise drop entries from current ETL run
     else:
