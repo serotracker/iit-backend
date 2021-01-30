@@ -235,11 +235,11 @@ def load_postgres_tables(tables_dict, engine):
     return True
 
 
-def drop_table_entries(type='old'):
+def drop_table_entries(drop_old=True):
     for table_name in table_names_dict:
         table = table_names_dict[table_name]
         with db_session() as session:
-            if type == 'old':
+            if drop_old:
                 # Drop old records if type is old
                 session.query(table).filter(table.created_at != CURR_TIME).delete()
             else:
@@ -653,10 +653,10 @@ def main():
 
     # If all tables were successfully loaded, drop old entries
     if load_status:
-        drop_table_entries(type='old')
+        drop_table_entries(drop_old=True)
     # Otherwise drop entries from current ETL run
     else:
-        drop_table_entries(type='new')
+        drop_table_entries(drop_old=False)
 
     # Make sure that filter options are still valid
     check_filter_options(dashboard_source)
