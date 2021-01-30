@@ -233,7 +233,7 @@ def load_postgres_tables(tables_dict, engine):
         except (SQLAlchemyError, ValueError) as e:
             # Send error email
             logging.error(e)
-            # TODO: send slack message with error
+            # TODO: send slack message with error (include the table name that failed)
 
             # Delete  records in table that failed which contain current datetime (remove records from current ETL run)
             with db_session() as session:
