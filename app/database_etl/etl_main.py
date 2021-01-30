@@ -491,8 +491,8 @@ def check_filter_options(dashboard_source):
         if new_options != set(curr_filter_options[filter_type]):
             changed_filter_options[filter_type] = new_options
             logging.info(new_options)
-    # if len(changed_filter_options.keys()) > 0:
-    #     send_email(changed_filter_options, ["austin.atmaja@gmail.com"], "IIT BACKEND ALERT: Filter Options Have Changed")
+    if len(changed_filter_options.keys()) > 0:
+        send_email(changed_filter_options, ["austin.atmaja@gmail.com"], "IIT BACKEND ALERT: Filter Options Have Changed")
 
 
 # Replace None utf-8 encoded characters with blank spaces
@@ -575,11 +575,11 @@ def main():
     # Send alert email if ISO3 codes not found
     null_iso3 = country_df[country_df['country_iso3'].isnull()]
     null_iso3_countries = list(null_iso3['country_name'])
-    # if len(null_iso3_countries) > 0:
-    #     body = f"ISO3 codes were not found for the following countries: {null_iso3_countries}."
-    #     logging.error(body)
-    #     send_email(body, ["austin.atmaja@gmail.com", 'rahularoradfs@gmail.com',
-    #                       'brettdziedzic@gmail.com'], "ALERT: ISO3 Codes Not Found")
+    if len(null_iso3_countries) > 0:
+        body = f"ISO3 codes were not found for the following countries: {null_iso3_countries}."
+        logging.error(body)
+        send_email(body, ["austin.atmaja@gmail.com", 'rahularoradfs@gmail.com',
+                          'brettdziedzic@gmail.com'], "ALERT: ISO3 Codes Not Found")
 
     # Add country_id's to dashboard_source df
     # country_dict maps country_name to country_id
