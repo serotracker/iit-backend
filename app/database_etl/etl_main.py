@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 import pandas as pd
 import numpy as np
 from sqlalchemy import create_engine
+from sqlalchemy.exc import SQLAlchemyError
 from app.serotracker_sqlalchemy import db_session, DashboardSource, ResearchSource, Country, City, State, \
     TestManufacturer, AntibodyTarget, CityBridge, StateBridge, TestManufacturerBridge, AntibodyTargetBridge, \
     DashboardSourceSchema, ResearchSourceSchema
@@ -26,6 +27,21 @@ AIRTABLE_REQUEST_URL = "https://api.airtable.com/v0/{}/Rapid%20Review%3A%20Estim
 
 CURR_TIME = datetime.now()
 
+table_names_dict = {
+        "dashboard_source": DashboardSource,
+        "research_source": ResearchSource,
+        "city": City,
+        "state": State,
+        "test_manufacturer": TestManufacturer,
+        "antibody_target": AntibodyTarget,
+        "city_bridge": CityBridge,
+        "state_bridge": StateBridge,
+        "test_manufacturer_bridge": TestManufacturerBridge,
+        "antibody_target_bridge": AntibodyTargetBridge,
+        "country": Country
+    }
+
+
 # Note: this function takes in a relative path
 def read_from_json(path_to_json):
     dirname = os.path.dirname(__file__)
@@ -36,6 +52,7 @@ def read_from_json(path_to_json):
 
 ISO3_CODES = read_from_json('country_iso3.json')
 ISO2_CODES = read_from_json('country_iso2.json')
+
 
 def _add_fields_to_url(url):
     # Add fields in config to api URL
@@ -203,12 +220,27 @@ def create_bridge_tables(original_data, multi_select_tables):
 def load_postgres_tables(tables_dict, engine):
     # Load dataframes into postgres tables
     for table_name, table_value in tables_dict.items():
-        table_value.to_sql(table_name,
-                           schema='public',
-                           con=engine,
-                           if_exists='append',
-                           index=False)
-        drop_old_entries(table_name)
+        if table_name == 'research_source':
+            table_value.loc[table_value['estimate_name'] == '0724_DeKalbFulton_CDCCOVID-19ResponseTeam_Female_PopAdj',
+                            'jbi_2'] = 'somesuperlongstringthatwillcauseitalltofailhahahahhahahyessssss'
+        try:
+            table_value.to_sql(table_name,
+                               schema='public',
+                               con=engine,
+                               if_exists='append',
+                               index=False)
+            drop_old_entries(table_name)
+        except (SQLAlchemyError, ValueError) as e:
+            # Send error email
+            logging.error(e)
+            # TODO: send slack message with error
+
+            # Delete  records in table that failed which contain current datetime (remove records from current ETL run)
+            with db_session() as session:
+                # Drop record if it was not added during the current run
+                table = table_names_dict[table_name]
+                session.query(table).filter(table.created_at == CURR_TIME).delete()
+                session.commit()
     return
 
 
@@ -259,6 +291,7 @@ def validate_records(source, schema):
         return pd.DataFrame(acceptable_records)
 
     exit("EXITING – No acceptable records found.")
+
 
 # Format of place: "{place_name}_{country_code}"
 # Note country code is used as an optional argument to the mapbox api
@@ -476,8 +509,8 @@ def check_filter_options(dashboard_source):
         if new_options != set(curr_filter_options[filter_type]):
             changed_filter_options[filter_type] = new_options
             logging.info(new_options)
-    # if len(changed_filter_options.keys()) > 0:
-    #     send_email(changed_filter_options, ["austin.atmaja@gmail.com"], "IIT BACKEND ALERT: Filter Options Have Changed")
+    if len(changed_filter_options.keys()) > 0:
+        send_email(changed_filter_options, ["austin.atmaja@gmail.com"], "IIT BACKEND ALERT: Filter Options Have Changed")
 
 
 # Replace None utf-8 encoded characters with blank spaces
