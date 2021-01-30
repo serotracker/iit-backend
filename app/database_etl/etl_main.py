@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 import pandas as pd
 import numpy as np
 from sqlalchemy import create_engine
+from sqlalchemy.exc import SQLAlchemyError
 from app.serotracker_sqlalchemy import db_session, DashboardSource, ResearchSource, Country, City, State, \
     TestManufacturer, AntibodyTarget, CityBridge, StateBridge, TestManufacturerBridge, AntibodyTargetBridge, \
     DashboardSourceSchema, ResearchSourceSchema
@@ -26,6 +27,21 @@ AIRTABLE_REQUEST_URL = "https://api.airtable.com/v0/{}/Rapid%20Review%3A%20Estim
 
 CURR_TIME = datetime.now()
 
+table_names_dict = {
+        "dashboard_source": DashboardSource,
+        "research_source": ResearchSource,
+        "city": City,
+        "state": State,
+        "test_manufacturer": TestManufacturer,
+        "antibody_target": AntibodyTarget,
+        "city_bridge": CityBridge,
+        "state_bridge": StateBridge,
+        "test_manufacturer_bridge": TestManufacturerBridge,
+        "antibody_target_bridge": AntibodyTargetBridge,
+        "country": Country
+    }
+
+
 # Note: this function takes in a relative path
 def read_from_json(path_to_json):
     dirname = os.path.dirname(__file__)
@@ -36,6 +52,7 @@ def read_from_json(path_to_json):
 
 ISO3_CODES = read_from_json('country_iso3.json')
 ISO2_CODES = read_from_json('country_iso2.json')
+
 
 def _add_fields_to_url(url):
     # Add fields in config to api URL
@@ -203,22 +220,32 @@ def create_bridge_tables(original_data, multi_select_tables):
 def load_postgres_tables(tables_dict, engine):
     # Load dataframes into postgres tables
     for table_name, table_value in tables_dict.items():
-        table_value.to_sql(table_name,
-                           schema='public',
-                           con=engine,
-                           if_exists='append',
-                           index=False)
-    return
+        try:
+            table_value.to_sql(table_name,
+                               schema='public',
+                               con=engine,
+                               if_exists='append',
+                               index=False)
+        except (SQLAlchemyError, ValueError) as e:
+            # Send error email
+            logging.error(e)
+            # TODO: send slack message with error (include the table name that failed)
+            # Break out of function and return 'failure'
+            return False
+    return True
 
 
-def drop_old_entries():
-    all_tables = [DashboardSource, ResearchSource, City, State, TestManufacturer, AntibodyTarget, Country,
-                  CityBridge, StateBridge, TestManufacturerBridge, AntibodyTargetBridge]
-    with db_session() as session:
-        for table in all_tables:
-            # Drop record if it was not added during the current run
-            session.query(table).filter(table.created_at != CURR_TIME).delete()
-        session.commit()
+def drop_table_entries(drop_old=True):
+    for table_name in table_names_dict:
+        table = table_names_dict[table_name]
+        with db_session() as session:
+            if drop_old:
+                # Drop old records if type is old
+                session.query(table).filter(table.created_at != CURR_TIME).delete()
+            else:
+                # Drop new records if type is new
+                session.query(table).filter(table.created_at == CURR_TIME).delete()
+            session.commit()
     return
 
 
@@ -246,6 +273,7 @@ def validate_records(source, schema):
         return pd.DataFrame(acceptable_records)
 
     exit("EXITING – No acceptable records found.")
+
 
 # Format of place: "{place_name}_{country_code}"
 # Note country code is used as an optional argument to the mapbox api
@@ -459,11 +487,24 @@ def check_filter_options(dashboard_source):
         # Remove options that are unused (e.g. "All", "Multiple groups", etc)
         new_options = set([s for s in new_options if s not in to_ignore])
         # Check to see if the new options are equal to the curr hardcoded options
+        # Check to see if the new options are equal to the curr hardcoded options
         if new_options != set(curr_filter_options[filter_type]):
             changed_filter_options[filter_type] = new_options
-            logger.info(new_options)
+            logging.info(new_options)
     if len(changed_filter_options.keys()) > 0:
         send_email(changed_filter_options, ["austin.atmaja@gmail.com"], "IIT BACKEND ALERT: Filter Options Have Changed")
+
+
+# Replace None utf-8 encoded characters with blank spaces
+def replace_null_string(x):
+    if type(x) != str:
+        return x
+    encoded_val = x.encode('utf-8')
+    if b'\x00' in encoded_val:
+        encoded_val = encoded_val.replace(b'\x00', b'\x20')
+        return encoded_val.decode('utf-8')
+    return x
+
 
 def main():
     # Create engine to connect to whiteclaw database
@@ -581,6 +622,10 @@ def main():
                                                            'test_manufacturer', 'country', 'antibody_target']
     dashboard_source = dashboard_source.drop(columns=dashboard_source_unused_cols)
 
+    # Remove any null string characters from research source or dashboard source dfs
+    research_source = research_source.apply(lambda col: col.apply(lambda val: replace_null_string(val)))
+    dashboard_source = dashboard_source.apply(lambda col: col.apply(lambda val: replace_null_string(val)))
+
     # Adjust city and state table schema
     # Note this state_name field in the city table will never actually be used
     # but is nice to have for observability
@@ -603,10 +648,15 @@ def main():
     tables_dict['country'] = country_df
 
     # Load dataframes into postgres tables
-    load_postgres_tables(tables_dict, engine)
+    # TODO: change how we are deleting records if ETL fails
+    load_status = load_postgres_tables(tables_dict, engine)
 
-    # Delete old entries
-    drop_old_entries()
+    # If all tables were successfully loaded, drop old entries
+    if load_status:
+        drop_table_entries(drop_old=True)
+    # Otherwise drop entries from current ETL run
+    else:
+        drop_table_entries(drop_old=False)
 
     # Make sure that filter options are still valid
     check_filter_options(dashboard_source)
