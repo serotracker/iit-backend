@@ -226,41 +226,26 @@ def load_postgres_tables(tables_dict, engine):
                                con=engine,
                                if_exists='append',
                                index=False)
-            drop_old_entries(table_name)
         except (SQLAlchemyError, ValueError) as e:
             # Send error email
             logging.error(e)
             # TODO: send slack message with error (include the table name that failed)
+            # Break out of function and return 'failure'
+            return 'failure'
+    return 'success'
 
-            # Delete  records in table that failed which contain current datetime (remove records from current ETL run)
-            with db_session() as session:
-                # Drop record if it was not added during the current run
-                table = table_names_dict[table_name]
+
+def drop_table_entries(type='old'):
+    for table_name in table_names_dict:
+        table = table_names_dict[table_name]
+        with db_session() as session:
+            if type == 'old':
+                # Drop old records if type is old
+                session.query(table).filter(table.created_at != CURR_TIME).delete()
+            else:
+                # Drop new records if type is new
                 session.query(table).filter(table.created_at == CURR_TIME).delete()
-                session.commit()
-    return
-
-
-def drop_old_entries(table_name):
-    table_names_dict = {
-        "dashboard_source": DashboardSource,
-        "research_source": ResearchSource,
-        "city": City,
-        "state": State,
-        "test_manufacturer": TestManufacturer,
-        "antibody_target": AntibodyTarget,
-        "city_bridge": CityBridge,
-        "state_bridge": StateBridge,
-        "test_manufacturer_bridge": TestManufacturerBridge,
-        "antibody_target_bridge": AntibodyTargetBridge,
-        "country": Country
-    }
-
-    table = table_names_dict[table_name]
-    with db_session() as session:
-        # Drop record if it was not added during the current run
-        session.query(table).filter(table.created_at != CURR_TIME).delete()
-        session.commit()
+            session.commit()
     return
 
 
@@ -506,8 +491,8 @@ def check_filter_options(dashboard_source):
         if new_options != set(curr_filter_options[filter_type]):
             changed_filter_options[filter_type] = new_options
             logging.info(new_options)
-    if len(changed_filter_options.keys()) > 0:
-        send_email(changed_filter_options, ["austin.atmaja@gmail.com"], "IIT BACKEND ALERT: Filter Options Have Changed")
+    # if len(changed_filter_options.keys()) > 0:
+    #     send_email(changed_filter_options, ["austin.atmaja@gmail.com"], "IIT BACKEND ALERT: Filter Options Have Changed")
 
 
 # Replace None utf-8 encoded characters with blank spaces
@@ -590,11 +575,11 @@ def main():
     # Send alert email if ISO3 codes not found
     null_iso3 = country_df[country_df['country_iso3'].isnull()]
     null_iso3_countries = list(null_iso3['country_name'])
-    if len(null_iso3_countries) > 0:
-        body = f"ISO3 codes were not found for the following countries: {null_iso3_countries}."
-        logging.error(body)
-        send_email(body, ["austin.atmaja@gmail.com", 'rahularoradfs@gmail.com',
-                          'brettdziedzic@gmail.com'], "ALERT: ISO3 Codes Not Found")
+    # if len(null_iso3_countries) > 0:
+    #     body = f"ISO3 codes were not found for the following countries: {null_iso3_countries}."
+    #     logging.error(body)
+    #     send_email(body, ["austin.atmaja@gmail.com", 'rahularoradfs@gmail.com',
+    #                       'brettdziedzic@gmail.com'], "ALERT: ISO3 Codes Not Found")
 
     # Add country_id's to dashboard_source df
     # country_dict maps country_name to country_id
@@ -664,7 +649,14 @@ def main():
 
     # Load dataframes into postgres tables
     # TODO: change how we are deleting records if ETL fails
-    load_postgres_tables(tables_dict, engine)
+    load_status = load_postgres_tables(tables_dict, engine)
+
+    # If all tables were successfully loaded, drop old entries
+    if load_status == 'success':
+        drop_table_entries(type='old')
+    # Otherwise drop entries from current ETL run
+    else:
+        drop_table_entries(type='new')
 
     # Make sure that filter options are still valid
     check_filter_options(dashboard_source)
