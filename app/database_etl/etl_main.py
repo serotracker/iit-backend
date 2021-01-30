@@ -220,9 +220,6 @@ def create_bridge_tables(original_data, multi_select_tables):
 def load_postgres_tables(tables_dict, engine):
     # Load dataframes into postgres tables
     for table_name, table_value in tables_dict.items():
-        if table_name == 'research_source':
-            table_value.loc[table_value['estimate_name'] == '0724_DeKalbFulton_CDCCOVID-19ResponseTeam_Female_PopAdj',
-                            'jbi_2'] = 'somesuperlongstringthatwillcauseitalltofailhahahahhahahyessssss'
         try:
             table_value.to_sql(table_name,
                                schema='public',
