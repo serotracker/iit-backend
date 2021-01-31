@@ -15,8 +15,9 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.serotracker_sqlalchemy import db_session, DashboardSource, ResearchSource, Country, City, State, \
     TestManufacturer, AntibodyTarget, CityBridge, StateBridge, TestManufacturerBridge, AntibodyTargetBridge, \
     DashboardSourceSchema, ResearchSourceSchema
-from app.utils import airtable_fields_config, full_airtable_fields, send_api_error_email, send_email, get_filter_static_options
-from app.utils.send_error_email import send_schema_validation_error_email
+from app.utils import airtable_fields_config, full_airtable_fields, send_api_error_slack_notif,\
+    get_filter_static_options
+from app.utils.notifications_sender import send_slack_message, send_schema_validation_slack_notif
 
 
 load_dotenv()
@@ -118,18 +119,13 @@ def get_all_records():
     # If request was not successful, there will be no records field in response
     # Just return what is in cached layer and log an error
     except KeyError as e:
-        body = "Results were not successfully retrieved from Airtable API." \
+        body = "Results were not successfully retrieved from Airtable API. " \
                "Please check connection parameters in config.py and fields in airtable_fields_config.json."
-        logging.error(body)
-        logging.error(f"Error Info: {e}")
-        logging.error(f"API Response Info: {data}")
-
         request_info = {
             "url": url,
             "headers": json.dumps(headers)
         }
-
-        send_api_error_email(body, data, error=e, request_info=request_info)
+        send_api_error_slack_notif(body, data, error=e, request_info=request_info, channel='#dev-logging-etl')
         return request_info
 
 
@@ -265,9 +261,9 @@ def validate_records(source, schema):
                 # Pull estimate name as record title if record is from research_source
                 unacceptable_records_map[record['estimate_name']] = err.messages
 
-    # Email unacceptable records and log to file here
+    # If any records failed schema validation, send slack message
     if unacceptable_records_map:
-        send_schema_validation_error_email(unacceptable_records_map)
+        send_schema_validation_slack_notif(unacceptable_records_map)
 
     if acceptable_records:
         return pd.DataFrame(acceptable_records)
@@ -492,7 +488,8 @@ def check_filter_options(dashboard_source):
             changed_filter_options[filter_type] = new_options
             logging.info(new_options)
     if len(changed_filter_options.keys()) > 0:
-        send_email(changed_filter_options, ["austin.atmaja@gmail.com"], "IIT BACKEND ALERT: Filter Options Have Changed")
+        body = f"New filter options found in ETL: {changed_filter_options}"
+        send_slack_message(message=body, channel='#dev-logging-etl')
 
 
 # Replace None utf-8 encoded characters with blank spaces
@@ -531,7 +528,7 @@ def main():
         data[col] = data[col].apply(lambda x: x[0] if x is not None else x)
 
     # Convert elements that are "Not reported" or "Not Reported" or "NR" to None
-    data.replace({'NR': None, 'Not Reported': None, 'Not reported': None, 'Not available': None}, inplace=True)
+    data.replace({'nr': None, 'NR': None, 'Not Reported': None, 'Not reported': None, 'Not available': None}, inplace=True)
 
     # Replace columns that should be floats with NaN from None and rescale to percentage
     data[['ind_sp_n', 'ind_se_n']] = data[['ind_sp_n', 'ind_se_n']].replace({None: np.nan}) / 100
@@ -578,8 +575,7 @@ def main():
     if len(null_iso3_countries) > 0:
         body = f"ISO3 codes were not found for the following countries: {null_iso3_countries}."
         logging.error(body)
-        send_email(body, ["austin.atmaja@gmail.com", 'rahularoradfs@gmail.com',
-                          'brettdziedzic@gmail.com'], "ALERT: ISO3 Codes Not Found")
+        send_slack_message(body, channel='#dev-logging-etl')
 
     # Add country_id's to dashboard_source df
     # country_dict maps country_name to country_id
@@ -648,7 +644,6 @@ def main():
     tables_dict['country'] = country_df
 
     # Load dataframes into postgres tables
-    # TODO: change how we are deleting records if ETL fails
     load_status = load_postgres_tables(tables_dict, engine)
 
     # If all tables were successfully loaded, drop old entries

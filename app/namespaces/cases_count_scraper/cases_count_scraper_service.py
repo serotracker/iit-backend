@@ -3,7 +3,7 @@ import logging
 import requests
 
 from flask import current_app as app
-from app.utils import read_from_json, send_api_error_email
+from app.utils import read_from_json, send_api_error_slack_notif
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ def get_all_records():
             "url": url,
             "headers": None
         }
-        send_api_error_email(body, data, request_info=request_info)
+        send_api_error_slack_notif(body, data, request_info=request_info)
 
         # Read and return data from cached json
         data = read_from_json(app.config['JHU_CACHED_RESULTS_PATH'])
