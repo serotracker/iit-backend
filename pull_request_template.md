@@ -1,6 +1,6 @@
-## Describe the feature or bug that this PR addresses.
+## Briefly describe the feature or bug that this PR addresses.
 
-## If this PR addresses a bug, describe the steps needed to reproduce the bug.
+## Please link the Airtable ticket associated with this PR.
 
 ## Describe the steps you took to test the feature/bugfix introduced by this PR.
 
