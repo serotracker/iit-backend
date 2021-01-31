@@ -43,7 +43,7 @@ def send_schema_validation_slack_notif(unacceptable_records_map):
 
 
 def send_slack_message(message, channel='#dev-logging-backend'):
-    bot_token = os.getenv('BOT_TOKEN')
+    bot_token = os.getenv('SLACKBOT_TOKEN')
     client = WebClient(bot_token)
     client.chat_postMessage(channel=channel, text=message)
     return
