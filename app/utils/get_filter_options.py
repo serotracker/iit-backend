@@ -2,6 +2,7 @@ from app.serotracker_sqlalchemy import db_session, DashboardSource, \
     Country
 from sqlalchemy import distinct, func
 
+
 def get_filter_static_options():
     return {
         "age": [
@@ -63,6 +64,7 @@ def get_filter_static_options():
             "Other"
         ]
     }
+
 
 def get_all_filter_options():
     with db_session() as session:
