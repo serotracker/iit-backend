@@ -528,7 +528,7 @@ def main():
         data[col] = data[col].apply(lambda x: x[0] if x is not None else x)
 
     # Convert elements that are "Not reported" or "Not Reported" or "NR" to None
-    data.replace({'NR': None, 'Not Reported': None, 'Not reported': None, 'Not available': None}, inplace=True)
+    data.replace({'nr': None, 'NR': None, 'Not Reported': None, 'Not reported': None, 'Not available': None}, inplace=True)
 
     # Replace columns that should be floats with NaN from None and rescale to percentage
     data[['ind_sp_n', 'ind_se_n']] = data[['ind_sp_n', 'ind_se_n']].replace({None: np.nan}) / 100
