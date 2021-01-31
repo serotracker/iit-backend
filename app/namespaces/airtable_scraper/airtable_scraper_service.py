@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 
 from flask import current_app as app
-from app.utils import read_from_json, send_api_error_email, airtable_fields_config
+from app.utils import read_from_json, send_api_error_slack_notif, airtable_fields_config
 
 logger = logging.getLogger(__name__)
 
@@ -89,8 +89,7 @@ def get_all_records(airtable_fields_json):
             "url": url,
             "headers": json.dumps(headers)
         }
-
-        send_api_error_email(body, data, error=e, request_info=request_info)
+        send_api_error_slack_notif(body, data, error=e, request_info=request_info)
 
         try:
             records = read_from_json(app.config['AIRTABLE_CACHED_RESULTS_PATH'])

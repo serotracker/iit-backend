@@ -3,7 +3,7 @@ import numpy
 import math
 from random import uniform
 
-from app.serotracker_sqlalchemy import db_session, DashboardSource, Country, db_model_config
+from app.serotracker_sqlalchemy import db_session, DashboardSource, Country, db_model_config, dashboard_source_cols
 from sqlalchemy import case, and_
 
 
@@ -46,7 +46,7 @@ def _get_parsed_record(results):
     for col in results_df.columns:
         # Convert multi select values into an array
         if col in multi_select_cols:
-            multi_select_vals = list(set(getattr(results_df, col).tolist()))
+            multi_select_vals = [e for e in list(set(getattr(results_df, col).tolist())) if e is not None]
             record_details[col] = multi_select_vals
 
         # Convert comma sep string of isotypes to list
@@ -67,6 +67,10 @@ def _get_parsed_record(results):
 
         if isinstance(record_details[col], numpy.int64):
             record_details[col] = int(record_details[col])
+
+        # Convert from numpy bool to standard bool - otherwise cannot jsonify endpoint return result
+        if isinstance(record_details[col], numpy.bool_):
+            record_details[col] = bool(record_details[col])
     return record_details
 
 
@@ -76,27 +80,9 @@ def get_record_details(source_id):
             # Construct case when expression to generate isotype column based on isotype bool cols
             isotype_case_expression = _get_isotype_col_expression()
 
-            # Store list of airtable source columns to pull
-            airtable_source_cols = ['source_id',
-                                    'source_name',
-                                    'summary',
-                                    'sex',
-                                    'age',
-                                    'serum_pos_prevalence',
-                                    'specimen_type',
-                                    'test_type',
-                                    'population_group',
-                                    'denominator_value',
-                                    'overall_risk_of_bias',
-                                    'sampling_method',
-                                    'sampling_start_date',
-                                    'sampling_end_date',
-                                    'sensitivity',
-                                    'specificity']
-
             # Build list of columns to use in query starting with airtable source columns
             fields_list = []
-            for col in airtable_source_cols:
+            for col in dashboard_source_cols:
                 fields_list.append(getattr(DashboardSource, col))
 
             # Store info about supplementary tables to join to airtable source
@@ -128,6 +114,15 @@ def get_record_details(source_id):
             # If multiple records are returned, parse results to return one record
             if len(result) > 1:
                 result = _get_parsed_record(result)
+            else:
+                result = result[0]
+
+            # Convert dates to use isoformat
+            if result['sampling_end_date'] is not None:
+                result['sampling_end_date'] = result['sampling_end_date'].isoformat()
+            if result['sampling_start_date'] is not None:
+                result['sampling_start_date'] = result['sampling_start_date'].isoformat()
+
         except Exception as e:
             print(e)
     return result
