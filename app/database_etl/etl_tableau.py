@@ -61,8 +61,12 @@ def get_adj_level(row):
 
 def upload_canadian_explore_csv():
     # Get Canadian records
-    columns =\
-        dashboard_source_cols + ["subgroup_var", "subgroup_specific_category", "pop_adj", "test_adj", "estimate_name"]
+    columns = dashboard_source_cols + \
+              ["subgroup_var", "subgroup_specific_category", "pop_adj",
+               "test_adj", "isotypes_reported", "pin_latitude", "pin_longitude"]
+    columns.remove("isotype_igg")
+    columns.remove("isotype_iga")
+    columns.remove("isotype_igm")
     filters = {
         "country": ["Canada"]
     }
