@@ -223,10 +223,10 @@ def load_postgres_tables(tables_dict, engine):
                                if_exists='append',
                                index=False)
         except (SQLAlchemyError, ValueError) as e:
-            # Send error email
+            # Send slack error message
             logging.error(e)
-            # TODO: send slack message with error (include the table name that failed)
-            # Break out of function and return 'failure'
+            body = f'Error occurred while loading tables into Postgres: {e}'
+            send_slack_message(body, channel='#dev-logging-etl')
             return False
     return True
 
