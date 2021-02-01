@@ -8,7 +8,7 @@ from app import app, db
 
 load_dotenv()
 manager = Manager(app)
-migrate = Migrate(app, db)
+migrate = Migrate(app, db, compare_type=True)
 
 
 @manager.command
