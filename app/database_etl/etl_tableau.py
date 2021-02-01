@@ -24,8 +24,16 @@ def upload_analyze_csv():
 
     return
 
+def get_adj_level(row):
+    lvl = 0
+    if row['test_adj']:
+        lvl += 1
+    if row['pop_adj']:
+        lvl += 1
+    return lvl
+
 def upload_canadian_explore_csv():
-    columns = dashboard_source_cols + ["subgroup_var", "estimate_name"]
+    columns = dashboard_source_cols + ["subgroup_var", "subgroup_specific_category", "pop_adj", "test_adj", "estimate_name"]
     filters = {
         "country": ["Canada"]
     }
@@ -40,10 +48,11 @@ def upload_canadian_explore_csv():
     records_df = records_df[
         (records_df['subgroup_var'] == "Primary Estimate") | (records_df['subgroup_var'] == "Geographical area")]
 
-    # Any records whose estimate name is suffixed with "unadj"
-    # Will have an adjusted version at the same geography level
-    # Thus we should get rid of any estimates whose names contain "unadj"
-    records_df = records_df[~records_df["estimate_name"].str.contains("unadj", case=False)]
+    # Get the most adjusted estimate for each subgeography
+    records_df['adj_level'] = records_df.apply(lambda row: get_adj_level(row), axis=1)
+    # note: need to fill None columns with a placeholder so that groupby works
+    records_df['subgroup_specific_category'] = records_df['subgroup_specific_category'].fillna("None")
+    records_df = records_df.loc[records_df.groupby(['study_name', 'subgroup_specific_category'])['adj_level'].idxmax()]
 
     # create CSV
     temp_filepath = "canadian_explore_records.csv"
