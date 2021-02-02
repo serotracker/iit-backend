@@ -44,10 +44,10 @@ def main():
     data = apply_study_max_estimate_grade(data)
 
     # Create dashboard source df
-    dashboard_source = create_dashboard_source_df(data)
+    dashboard_source = create_dashboard_source_df(data, current_time=CURR_TIME)
 
     # Create country table df
-    country_df = create_country_df(dashboard_source)
+    country_df = create_country_df(dashboard_source, current_time=CURR_TIME)
 
     # Add country_id's to dashboard_source df
     # country_dict maps country_name to country_id
@@ -57,10 +57,10 @@ def main():
     dashboard_source['country_id'] = dashboard_source['country'].map(lambda a: country_dict[a])
 
     # Create dictionary to store multi select tables
-    multi_select_tables_dict = create_multi_select_tables(data)
+    multi_select_tables_dict = create_multi_select_tables(data, current_time=CURR_TIME)
 
     # Create dictionary to store bridge tables
-    bridge_tables_dict = create_bridge_tables(dashboard_source, multi_select_tables_dict)
+    bridge_tables_dict = create_bridge_tables(dashboard_source, multi_select_tables_dict, current_time=CURR_TIME)
 
     # Add mapped variables to master dashboard source table
     dashboard_source = add_mapped_variables(dashboard_source)

@@ -10,9 +10,6 @@ from .table_formatter import replace_null_string
 import pandas as pd
 
 
-CURR_TIME = datetime.now()
-
-
 def isotype_col(isotype_string, x):
     # Function for creating isotype boolean columns
     if x:
@@ -20,7 +17,7 @@ def isotype_col(isotype_string, x):
     return False
 
 
-def create_dashboard_source_df(original_data):
+def create_dashboard_source_df(original_data, current_time):
     # Length of records
     num_records = original_data.shape[0]
 
@@ -35,7 +32,7 @@ def create_dashboard_source_df(original_data):
     original_data = original_data.drop(columns=['isotypes'])
 
     # Create created at column
-    original_data['created_at'] = CURR_TIME
+    original_data['created_at'] = current_time
 
     # Convert the publication, sampling start date and sampling end date to datetime
     date_cols = ['publication_date', 'sampling_start_date', 'sampling_end_date']
@@ -64,7 +61,7 @@ def create_research_source_df(dashboard_source_df):
     return research_source, research_source_cols
 
 
-def create_multi_select_tables(original_data):
+def create_multi_select_tables(original_data, current_time):
     # List of columns that are multi select (can have multiple values)
     multi_select_cols = ['city', 'state', 'test_manufacturer', 'antibody_target']
 
@@ -87,7 +84,7 @@ def create_multi_select_tables(original_data):
         # Create name all df columns and add as value to dictionary
         col_specific_df[name_col] = unique_nam_col
         col_specific_df[id_col] = [uuid4() for i in range(len(unique_nam_col))]
-        col_specific_df['created_at'] = CURR_TIME
+        col_specific_df['created_at'] = current_time
         multi_select_tables_dict[col] = col_specific_df
 
     # Add lat/lng to cities and states
@@ -97,7 +94,7 @@ def create_multi_select_tables(original_data):
     return multi_select_tables_dict
 
 
-def create_bridge_tables(original_data, multi_select_tables):
+def create_bridge_tables(original_data, multi_select_tables, current_time):
     multi_select_cols = multi_select_tables.keys()
 
     # Create bridge tables dict
@@ -118,17 +115,17 @@ def create_bridge_tables(original_data, multi_select_tables):
             if col_options is not None:
                 for option in col_options:
                     option_id = multi_select_table[multi_select_table[name_col] == option].iloc[0][id_col]
-                    new_row = {'id': uuid4(), 'source_id': source_id, id_col: option_id, 'created_at': CURR_TIME}
+                    new_row = {'id': uuid4(), 'source_id': source_id, id_col: option_id, 'created_at': current_time}
                     bridge_table_df = bridge_table_df.append(new_row, ignore_index=True)
         bridge_tables_dict[f'{col}_bridge'] = bridge_table_df
     return bridge_tables_dict
 
 
-def create_country_df(dashboard_source_df):
+def create_country_df(dashboard_source_df, current_time):
     country_df = pd.DataFrame(columns=['country_name', 'country_id'])
     country_df['country_name'] = dashboard_source_df['country'].unique()
     country_df['country_id'] = [uuid4() for _ in country_df['country_name']]
-    country_df['created_at'] = CURR_TIME
+    country_df['created_at'] = current_time
     country_df = add_latlng_to_df("country", "country_name", country_df)
     country_df['country_iso3'] = country_df["country_name"].map(lambda a: get_country_code(a))
 
