@@ -94,17 +94,6 @@ def create_multi_select_tables(original_data):
     # Get countries for each state
     multi_select_tables_dict["state"] = add_latlng_to_df("region", "state_name", multi_select_tables_dict["state"])
     multi_select_tables_dict["city"] = add_latlng_to_df("place", "city_name", multi_select_tables_dict["city"])
-
-    # Adjust city and state table schema
-    # Note this state_name field in the city table will never actually be used
-    # but is nice to have for observability
-    multi_select_tables_dict["city"]["state_name"] = multi_select_tables_dict["city"]["city_name"]\
-        .map(lambda a: a.split("_")[0].split(",")[1] if "," in a else None)
-    # remove state names from city_name field
-    multi_select_tables_dict["city"]["city_name"] = multi_select_tables_dict["city"]["city_name"]\
-        .map(lambda a: a.split(",")[0] if "," in a else a)
-    multi_select_tables_dict["state"]["state_name"] = multi_select_tables_dict["state"]["state_name"]\
-        .map(lambda a: a.split("_")[0])
     return multi_select_tables_dict
 
 

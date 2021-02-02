@@ -8,7 +8,8 @@ from sqlalchemy import create_engine
 from app.serotracker_sqlalchemy import DashboardSourceSchema, ResearchSourceSchema
 from app.database_etl.postgres_tables_handler import create_dashboard_source_df, create_bridge_tables,\
     create_multi_select_tables, create_country_df, create_research_source_df, format_dashboard_source,\
-    add_mapped_variables, validate_records, load_postgres_tables, drop_table_entries, check_filter_options
+    add_mapped_variables, validate_records, load_postgres_tables, drop_table_entries, check_filter_options,\
+    format_multi_select_tables_dict
 from app.database_etl.airtable_records_handler import get_all_records, apply_study_max_estimate_grade,\
     apply_min_risk_of_bias, standardize_airtable_data
 
@@ -70,6 +71,8 @@ def main():
     # Format dashboard source table after creating research source
     dashboard_source = format_dashboard_source(dashboard_source, research_source_cols)
 
+    multi_select_tables_dict = format_multi_select_tables_dict(multi_select_tables_dict)
+
     # Validate the dashboard source df
     dashboard_source = validate_records(dashboard_source, DashboardSourceSchema())
     research_source = validate_records(research_source, ResearchSourceSchema())
@@ -93,7 +96,6 @@ def main():
 
     # Make sure that filter options are still valid
     check_filter_options(dashboard_source)
-
     return
 
 
