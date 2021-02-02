@@ -9,7 +9,6 @@ import pandas as pd
 from dotenv import load_dotenv
 from botocore.exceptions import ClientError
 
-
 load_dotenv()
 
 
@@ -31,6 +30,11 @@ def upload_analyze_csv():
     records = get_filtered_records(research_fields=False, filters=None, columns=None, start_date=None,
                                    end_date=None, prioritize_estimates=True)
     records_df = pd.DataFrame(records)
+
+    # Turn lists into comma sep strings
+    cols = ['city', 'state', 'test_manufacturer', 'antibody_target', 'isotypes_reported']
+    for col in cols:
+        records_df[col] = records_df[col].apply(lambda x: ",".join(x))
 
     # Create CSV
     filepath = "tableau_analyze_records.csv"
@@ -74,6 +78,9 @@ def upload_canadian_explore_csv():
                                    start_date=None, end_date=None, prioritize_estimates=False)
     records_df = pd.DataFrame(records)
 
+    # Turn lists into comma sep strings
+    records_df['isotypes_reported'] = records_df['isotypes_reported'].apply(lambda x: ",".join(x))
+
     # We only want top level estimates and subgeography estimates, so
     # filter out records with subgroup estimates other than
     # "Primary Estimate" and "Geography"
@@ -106,4 +113,4 @@ def upload_canadian_explore_csv():
 
 
 if __name__ == "__main__":
-    upload_canadian_explore_csv()
+    upload_analyze_csv()
