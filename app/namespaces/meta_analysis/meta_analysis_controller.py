@@ -24,11 +24,11 @@ class MetaAnalysis(Resource):
             return make_response({"message": "No input payload provided"}, 400)
 
         # Log request info
-        # logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}, Payload: {payload}".format(
-        #     type=request.environ['REQUEST_METHOD'],
-        #     path=request.environ['PATH_INFO'],
-        #     args=dict(request.args),
-        #     payload=json_input))
+        logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}, Payload: {payload}".format(
+            type=request.environ['REQUEST_METHOD'],
+            path=request.environ['PATH_INFO'],
+            args=dict(request.args),
+            payload=json_input))
 
         # Validate input payload
         payload, status_code = validate_request_input_against_schema(json_input, MetaSchema())
