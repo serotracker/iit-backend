@@ -7,7 +7,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.utils.notifications_sender import send_schema_validation_slack_notif, send_slack_message
 from app.serotracker_sqlalchemy import db_session, DashboardSource, ResearchSource, Country, City, State, \
     TestManufacturer, AntibodyTarget, CityBridge, StateBridge, TestManufacturerBridge, AntibodyTargetBridge
-#from ..etl_main import CURR_TIME
 
 table_names_dict = {
         "dashboard_source": DashboardSource,
