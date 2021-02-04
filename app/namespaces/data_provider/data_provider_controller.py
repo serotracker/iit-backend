@@ -7,7 +7,7 @@ from .data_provider_service import get_record_details, get_country_seroprev_summ
 from .data_provider_schema import RecordDetailsSchema, RecordsSchema, StudyCountSchema
 from app.utils import validate_request_input_against_schema, get_filtered_records,\
     get_paginated_records, convert_start_end_dates
-from app.database_etl.postgres_tables_handler import get_all_filter_options
+from app.utils.filter_option_utils import get_all_filter_options
 
 data_provider_ns = Namespace('data_provider', description='Endpoints for getting database records.')
 logging.getLogger(__name__)

@@ -27,15 +27,18 @@ db_model_config = {
     ]
 }
 
-db_tables = ['airtable_source',
+db_tables = ['dashbord_source',
+             'research_source',
              'city',
              'city_bridge',
              'state',
              'state_bridge',
              'test_manufacturer',
-             'test_manufacturer_bridge']
+             'test_manufacturer_bridge',
+             'antibody_target',
+             'antibody_target_bridge']
 
-dashboard_source_cols = ['source_name', 'source_type', 'study_name', 'denominator_value',
+dashboard_source_cols = ['source_id', 'source_name', 'source_type', 'study_name', 'denominator_value',
                          'overall_risk_of_bias', 'serum_pos_prevalence', 'isotype_igm', 'isotype_iga',
                          'isotype_igg', 'sex', 'age', 'sampling_start_date', 'sampling_end_date', 'estimate_grade',
                          'isotype_comb', 'academic_primary_estimate', 'dashboard_primary_estimate', 'pop_adj',
@@ -51,3 +54,8 @@ research_source_cols = ['case_population', 'deaths_population', 'age_max', 'age_
                                     'seroprev_95_ci_upper', 'sp_n', 'subgroup_var', 'subgroup_cat', 'superceded',
                                     'test_linked_uid', 'test_name', 'test_validation', 'gbd_subregion',
                                     'lmic_hic', 'genpop', 'sampling_type']
+
+other_table_cols = ['city', 'state', 'country', 'pin_latitude', 'pin_longitude', 'pin_region_type', 'test_manufacturer',
+                    'antibody_target']
+
+all_cols = dashboard_source_cols + research_source_cols + other_table_cols

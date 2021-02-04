@@ -5,3 +5,4 @@ from .helper_funcs import validate_request_input_against_schema, convert_start_e
 from .airtable_fields_config import airtable_fields_config, full_airtable_fields, research_source_cols
 from .get_filtered_records import get_filtered_records, get_paginated_records
 from .estimate_prioritization import get_prioritized_estimates
+from .filter_option_utils import get_all_filter_options, check_filter_options, all_filter_types

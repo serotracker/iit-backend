@@ -6,7 +6,75 @@ from app.serotracker_sqlalchemy import db_session, DashboardSource, \
     Country
 from app.utils.notifications_sender import send_slack_message
 
-
+static_filter_options = {
+    "age": [
+        "Adults (18-64 years)",
+        "Children and Youth (0-17 years)",
+        "Seniors (65+ years)"
+    ],
+    "estimate_grade": [
+        "National",
+        "Regional",
+        "Local",
+        "Sublocal"
+    ],
+    "overall_risk_of_bias": [
+        "Low",
+        "Moderate",
+        "High",
+        "Unclear"
+    ],
+    "population_group": [
+        "Blood donors",
+        "Household and community samples",
+        "Residual sera",
+        "Assisted living and long-term care facilities",
+        "Students",
+        "Contacts of COVID patients",
+        "Non-essential workers and unemployed persons",
+        "Essential non-healthcare workers",
+        "Hospital visitors",
+        "Persons who are incarcerated",
+        "Persons living in slums",
+        "Pregnant or parturient women",
+        "Patients seeking care for non-COVID-19 reasons",
+        "Household and community samples",
+        "Health care workers and caregivers",
+    ],
+    "sex": [
+        "Female",
+        "Male",
+        "Other"
+    ],
+    "source_type": [
+        "Journal Article (Peer-Reviewed)",
+        "Preprint",
+        "Institutional Report",
+        "News and Media"
+    ],
+    "specimen_type": [
+        "Whole Blood",
+        "Dried Blood",
+        "Plasma",
+        "Serum",
+    ],
+    "test_type": [
+        "Neutralization",
+        "CLIA",
+        "ELISA",
+        "LFIA",
+        "Other"
+    ],
+    "gbd_region": [
+        'Central Europe, Eastern Europe, and Central Asia',
+        'High-income',
+        'Latin America and Caribbean',
+        'North Africa and Middle East',
+        'South Asia',
+        'Southeast Asia, East Asia, and Oceania',
+        'Sub-Saharan Africa'
+    ]
+}
 def get_filter_static_options():
     return {
         "age": [
@@ -66,9 +134,19 @@ def get_filter_static_options():
             "ELISA",
             "LFIA",
             "Other"
+        ],
+        "gbd_region": [
+            'Central Europe, Eastern Europe, and Central Asia',
+            'High-income',
+            'Latin America and Caribbean',
+            'North Africa and Middle East',
+            'South Asia',
+            'Southeast Asia, East Asia, and Oceania',
+            'Sub-Saharan Africa'
         ]
     }
 
+all_filter_types = list(get_filter_static_options().keys()) + ['country', 'isotypes_reported']
 
 def get_all_filter_options():
     with db_session() as session:
