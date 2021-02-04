@@ -6,7 +6,8 @@ from flask import jsonify, make_response, request
 from .data_provider_service import get_record_details, get_country_seroprev_summaries, jitter_pins
 from .data_provider_schema import RecordDetailsSchema, RecordsSchema, StudyCountSchema
 from app.utils import validate_request_input_against_schema, get_filtered_records,\
-    get_paginated_records, convert_start_end_dates, get_all_filter_options
+    get_paginated_records, convert_start_end_dates
+from app.database_etl.postgres_tables_handler import get_all_filter_options
 
 data_provider_ns = Namespace('data_provider', description='Endpoints for getting database records.')
 logging.getLogger(__name__)
@@ -27,10 +28,10 @@ class Records(Resource):
         prioritize_estimates = True if str.lower(request.args.get('prioritize_estimates', 'true', type=str)) == 'true' else False
 
         # Log request info
-        # logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}".format(
-        #     type=request.environ['REQUEST_METHOD'],
-        #     path=request.environ['PATH_INFO'],
-        #     args=dict(request.args)))
+        logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}".format(
+            type=request.environ['REQUEST_METHOD'],
+            path=request.environ['PATH_INFO'],
+            args=dict(request.args)))
 
         result = get_filtered_records(research_fields, filters=None, columns=None, start_date=None, end_date=None,
                                       prioritize_estimates=prioritize_estimates)
@@ -48,11 +49,11 @@ class Records(Resource):
             return {"message": "No input payload provided"}, 400
 
         # Log request info
-        # logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}, Payload: {payload}".format(
-        #     type=request.environ['REQUEST_METHOD'],
-        #     path=request.environ['PATH_INFO'],
-        #     args=dict(request.args),
-        #     payload=data))
+        logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}, Payload: {payload}".format(
+            type=request.environ['REQUEST_METHOD'],
+            path=request.environ['PATH_INFO'],
+            args=dict(request.args),
+            payload=data))
 
         # All of these params can be empty, in which case, our utility functions will just return all records
         filters = data.get('filters')
@@ -89,10 +90,10 @@ class RecordDetails(Resource):
     @data_provider_ns.doc('An endpoint for getting the details of a record based on source id.')
     def get(self, source_id):
         # Log request info
-        # logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}".format(
-        #     type=request.environ['REQUEST_METHOD'],
-        #     path=request.environ['PATH_INFO'],
-        #     args=dict(request.args)))
+        logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}".format(
+            type=request.environ['REQUEST_METHOD'],
+            path=request.environ['PATH_INFO'],
+            args=dict(request.args)))
 
         # Validate input
         payload, status_code = validate_request_input_against_schema({'source_id': source_id}, RecordDetailsSchema())
@@ -110,10 +111,10 @@ class GeogStudyCount(Resource):
     @data_provider_ns.doc('An endpoint for summarizing the seroprevalence data of a country.')
     def get(self):
         # Log request info
-        # logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}".format(
-        #     type=request.environ['REQUEST_METHOD'],
-        #     path=request.environ['PATH_INFO'],
-        #     args=dict(request.args)))
+        logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}".format(
+            type=request.environ['REQUEST_METHOD'],
+            path=request.environ['PATH_INFO'],
+            args=dict(request.args)))
 
         # Query all the records with no filters but only grab certain columns
         columns = ['country', 'country_iso3', 'denominator_value', 'serum_pos_prevalence', 'estimate_grade']
@@ -130,11 +131,11 @@ class GeogStudyCount(Resource):
             return make_response({"message": "No input payload provided"}, 400)
 
         # Log request info
-        # logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}, Payload: {payload}".format(
-        #     type=request.environ['REQUEST_METHOD'],
-        #     path=request.environ['PATH_INFO'],
-        #     args=dict(request.args),
-        #     payload=json_input))
+        logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}, Payload: {payload}".format(
+            type=request.environ['REQUEST_METHOD'],
+            path=request.environ['PATH_INFO'],
+            args=dict(request.args),
+            payload=json_input))
 
         # Validate input payload
         payload, status_code = validate_request_input_against_schema(json_input, StudyCountSchema())
@@ -162,10 +163,10 @@ class Records(Resource):
     @data_provider_ns.doc('An endpoint for getting all filter options from the database.')
     def get(self):
         # Log request info
-        # logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}".format(
-        #     type=request.environ['REQUEST_METHOD'],
-        #     path=request.environ['PATH_INFO'],
-        #     args=dict(request.args)))
+        logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}".format(
+            type=request.environ['REQUEST_METHOD'],
+            path=request.environ['PATH_INFO'],
+            args=dict(request.args)))
 
         result = get_all_filter_options()
         return jsonify(result)
