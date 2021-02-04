@@ -77,7 +77,8 @@ def get_all_filter_options():
         # Get countries
         query = session.query(distinct(getattr(Country, "country_name")))
         results = [q[0] for q in query if q[0] is not None]
-        options["country"] = results
+        # sort countries in alpha order
+        options["country"] = sorted(results)
 
         options["max_date"] = session.query(func.max(DashboardSource.sampling_end_date))[0][0].isoformat()
         options["min_date"] = session.query(func.min(DashboardSource.sampling_end_date))[0][0].isoformat()
