@@ -1,5 +1,5 @@
 import os
-
+from app.utils import research_source_cols
 import pandas as pd
 
 
@@ -62,9 +62,9 @@ def add_mapped_variables(df):
     return df
 
 
-def format_dashboard_source(dashboard_source_df, research_cols):
+def format_dashboard_source(dashboard_source_df):
     # Drop columns that are not needed in the dashboard source table
-    dashboard_source_unused_cols = research_cols + ['organizational_author', 'city', 'county', 'state',
+    dashboard_source_unused_cols = research_source_cols + ['organizational_author', 'city', 'county', 'state',
                                                     'test_manufacturer', 'country', 'antibody_target']
     dashboard_source = dashboard_source_df.drop(columns=dashboard_source_unused_cols)
 

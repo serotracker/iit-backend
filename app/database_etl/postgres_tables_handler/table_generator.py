@@ -3,7 +3,7 @@ from uuid import uuid4
 from datetime import datetime
 
 from app.utils.notifications_sender import send_slack_message
-from app.utils import airtable_fields_config
+from app.utils import research_source_cols
 from app.database_etl.location_utils import add_latlng_to_df, get_country_code
 from .table_formatter import replace_null_string
 
@@ -44,9 +44,6 @@ def create_dashboard_source_df(original_data, current_time):
 
 def create_research_source_df(dashboard_source_df):
     # Create research source table based on a subset of dashboard source df columns
-    # The airtable fields config columns are being pulled from airtable, the other 5 are manually created
-    research_source_cols = list(airtable_fields_config['research'].values()) + ['gbd_region', 'gbd_subregion',
-                                                                                'lmic_hic', 'genpop', 'sampling_type']
     research_source = dashboard_source_df[research_source_cols]
 
     # Add source id and created at columns from dashboard source df
@@ -58,7 +55,7 @@ def create_research_source_df(dashboard_source_df):
 
     # Remove any null string characters
     research_source = research_source.apply(lambda col: col.apply(lambda val: replace_null_string(val)))
-    return research_source, research_source_cols
+    return research_source
 
 
 def create_multi_select_tables(original_data, current_time):

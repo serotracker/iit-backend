@@ -39,7 +39,7 @@ dashboard_source_cols = ['source_name', 'source_type', 'study_name', 'denominato
                          'overall_risk_of_bias', 'serum_pos_prevalence', 'isotype_igm', 'isotype_iga',
                          'isotype_igg', 'sex', 'age', 'sampling_start_date', 'sampling_end_date', 'estimate_grade',
                          'isotype_comb', 'academic_primary_estimate', 'dashboard_primary_estimate', 'pop_adj',
-                         'test_adj', 'specimen_type', 'test_type', 'population_group', 'url']
+                         'test_adj', 'specimen_type', 'test_type', 'population_group', 'url', 'gbd_region']
 
 research_source_cols = ['case_population', 'deaths_population', 'age_max', 'age_min', 'age_variation',
                                     'age_variation_measure', 'average_age', 'case_count_neg14', 'case_count_neg9',
@@ -49,5 +49,5 @@ research_source_cols = ['case_population', 'deaths_population', 'age_max', 'age_
                                     'sample_frame_info', 'number_of_females', 'number_of_males', 'numerator_value',
                                     'estimate_name', 'test_not_linked_reason', 'se_n', 'seroprev_95_ci_lower',
                                     'seroprev_95_ci_upper', 'sp_n', 'subgroup_var', 'subgroup_cat', 'superceded',
-                                    'test_linked_uid', 'test_name', 'test_validation', 'gbd_region', 'gbd_subregion',
+                                    'test_linked_uid', 'test_name', 'test_validation', 'gbd_subregion',
                                     'lmic_hic', 'genpop', 'sampling_type']

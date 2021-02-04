@@ -45,6 +45,7 @@ class DashboardSource(db.Model):
     test_adj = Column(Boolean)
     pop_adj = Column(Boolean)
     created_at = Column(DateTime)
+    gbd_region = Column(String())
 
 
 # Research table for all additional research fields
@@ -97,7 +98,6 @@ class ResearchSource(db.Model):
     test_linked_uid = Column(String())
     test_name = Column(String())
     test_validation = Column(String())
-    gbd_region = Column(String())
     gbd_subregion = Column(String())
     lmic_hic = Column(String())
     genpop = Column(String())

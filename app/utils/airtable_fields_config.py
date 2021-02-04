@@ -199,3 +199,7 @@ full_airtable_fields_legacy = {
 
 airtable_fields_config = {'dashboard': {k: full_airtable_fields[k] for k in dashboard_fields},
                           'research': {k: full_airtable_fields[k] for k in research_fields}}
+
+# The airtable fields config columns are being pulled from airtable, the other 5 are manually created
+research_source_cols = list(airtable_fields_config['research'].values()) + ['gbd_subregion',
+                                                                            'lmic_hic', 'genpop', 'sampling_type']

@@ -66,10 +66,10 @@ def main():
     dashboard_source = add_mapped_variables(dashboard_source)
 
     # Create research source based on dashboard source
-    research_source, research_source_cols = create_research_source_df(dashboard_source)
+    research_source = create_research_source_df(dashboard_source)
 
     # Format dashboard source table after creating research source
-    dashboard_source = format_dashboard_source(dashboard_source, research_source_cols)
+    dashboard_source = format_dashboard_source(dashboard_source)
 
     multi_select_tables_dict = format_multi_select_tables_dict(multi_select_tables_dict)
 
