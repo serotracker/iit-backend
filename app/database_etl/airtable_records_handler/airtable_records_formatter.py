@@ -1,7 +1,6 @@
 import numpy as np
 
-from ..location_utils import get_city, add_country_code_to_state
-
+from ..location_utils import get_city
 
 def get_most_recent_publication_info(row):
     # Get index of most recent pub date if the pub date is not None
@@ -65,7 +64,6 @@ def standardize_airtable_data(df):
     df['test_manufacturer'] = df['test_manufacturer'].apply(lambda x: x.split(',') if x else x)
     df['state'] = df['state'].apply(lambda x: x.split(',') if x else x)
     df['city'] = df.apply(lambda row: get_city(row), axis=1)
-    df['state'] = df.apply(lambda row: add_country_code_to_state(row), axis=1)
     return df
 
 

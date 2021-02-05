@@ -4,7 +4,7 @@ from datetime import datetime
 
 from app.utils.notifications_sender import send_slack_message
 from app.utils import airtable_fields_config
-from app.database_etl.location_utils import add_latlng_to_df, get_country_code
+from app.database_etl.location_utils import add_latlng_to_df, get_country_code, add_country_iso2_to_stringlist
 from .table_formatter import replace_null_string
 
 import pandas as pd
@@ -76,10 +76,25 @@ def create_multi_select_tables(original_data, current_time):
         # Create dataframe for table with an id column, a name column, and a created_at column
         new_df_cols = [id_col, name_col, 'created_at']
         col_specific_df = pd.DataFrame(columns=new_df_cols)
+
+        # Note: We are appending country iso2 to each
+        # city/state temporarily because we must create a country iso2 column
+        if col == "state" or col == "city":
+            original_data[col] = original_data.apply(lambda row: add_country_iso2_to_stringlist(row[col], row['country']), axis=1)
+
         original_column = original_data[col].dropna()
 
         # Get all unique values in the multi select column
         unique_nam_col = list({item for sublist in original_column for item in sublist})
+
+        # Create iso2 column temporarily for state/city DFs
+        if col == "state" or col == "city":
+            def extract_country_iso2(name):
+                return name.split("_")[1] if len(name.split("_")) > 0 else None
+            country_iso2_col = [extract_country_iso2(name) for name in unique_nam_col]
+            unique_nam_col = [name.split("_")[0] for name in unique_nam_col]
+            col_specific_df["country_iso2"] = country_iso2_col
+
 
         # Create name all df columns and add as value to dictionary
         col_specific_df[name_col] = unique_nam_col
@@ -91,6 +106,12 @@ def create_multi_select_tables(original_data, current_time):
     # Get countries for each state
     multi_select_tables_dict["state"] = add_latlng_to_df("region", "state_name", multi_select_tables_dict["state"])
     multi_select_tables_dict["city"] = add_latlng_to_df("place", "city_name", multi_select_tables_dict["city"])
+
+    # Delete country iso2 column, no longer needed
+    # Note: only need this temporarily, so fine to drop
+    multi_select_tables_dict["state"] = multi_select_tables_dict["state"].drop(columns=['country_iso2'])
+    multi_select_tables_dict["city"] = multi_select_tables_dict["city"].drop(columns=['country_iso2'])
+
     return multi_select_tables_dict
 
 
@@ -122,12 +143,16 @@ def create_bridge_tables(original_data, multi_select_tables, current_time):
 
 
 def create_country_df(dashboard_source_df, current_time):
-    country_df = pd.DataFrame(columns=['country_name', 'country_id'])
+    country_df = pd.DataFrame(columns=['country_name', 'country_id', 'country_iso2'])
     country_df['country_name'] = dashboard_source_df['country'].unique()
+    country_df['country_iso2'] = country_df['country_name'].map(lambda a: get_country_code(a, iso3=False))
     country_df['country_id'] = [uuid4() for _ in country_df['country_name']]
     country_df['created_at'] = current_time
     country_df = add_latlng_to_df("country", "country_name", country_df)
     country_df['country_iso3'] = country_df["country_name"].map(lambda a: get_country_code(a))
+
+    # Note: only need this temporarily, so fine to drop
+    country_df = country_df.drop(columns=['country_iso2'])
 
     # Send alert email if ISO3 codes not found
     null_iso3 = country_df[country_df['country_iso3'].isnull()]
