@@ -4,7 +4,7 @@ from datetime import datetime
 
 from app.utils.notifications_sender import send_slack_message
 from app.utils import airtable_fields_config
-from app.database_etl.location_utils import add_latlng_to_df, get_country_code, add_country_iso2_to_stringlist
+from app.database_etl.location_utils import add_latlng_to_df, get_country_code
 from .table_formatter import replace_null_string
 
 import pandas as pd

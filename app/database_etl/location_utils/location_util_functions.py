@@ -91,17 +91,3 @@ def get_city(row):
         return cities
     else:
         return row['city']
-
-# stringlist ==> ["s1", "s2"]
-# returns ==> ["s1_countryCode", "s2_countryCode"]
-def add_country_iso2_to_stringlist(stringlist, country_name):
-    if stringlist:
-        result = []
-        for s in stringlist:
-            country_code = get_country_code(country_name, iso3=False)
-            if country_code:
-                result.append(f"{s}_{country_code}")
-            else:
-                result.append(s)
-        return result
-    return None
