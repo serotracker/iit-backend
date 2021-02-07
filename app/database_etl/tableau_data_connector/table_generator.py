@@ -3,6 +3,7 @@ import logging
 
 from app.utils import get_filtered_records, send_slack_message
 from app.serotracker_sqlalchemy import dashboard_source_cols
+from app.database_etl.tableau_data_connector.google_services_manager import GoogleServicesManager
 
 import boto3
 import pandas as pd
@@ -25,7 +26,7 @@ def upload_s3_file(file_name, bucket_name):
     return
 
 
-def upload_analyze_csv():
+def upload_analyze_csv(google):
     # Get records
     records = get_filtered_records(research_fields=False, filters=None, columns=None, start_date=None,
                                    end_date=None, prioritize_estimates=True)
@@ -39,7 +40,10 @@ def upload_analyze_csv():
     # Create CSV
     filepath = "tableau_analyze_records.csv"
     records_df.to_csv(filepath, index=False)
-
+    folder_id = '1UyEzEUGa_sOcO4gRmBhR71a5P4s_Lqd-'
+    upload_successful = google.upload_file_to_drive(filepath, folder_id)
+    print(upload_successful)
+    exit()
     # If file exists
     if os.path.isfile(filepath):
         upload_s3_file(filepath, 'tableau-csv-data')
@@ -113,4 +117,5 @@ def upload_canadian_explore_csv():
 
 
 if __name__ == "__main__":
-    upload_analyze_csv()
+    g_client = GoogleServicesManager()
+    upload_analyze_csv(g_client)
