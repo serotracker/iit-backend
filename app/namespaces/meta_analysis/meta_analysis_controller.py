@@ -65,7 +65,7 @@ class MetaAnalysis(Resource):
         columns.append(agg_var)
         records = get_filtered_records(filters=filters, columns=columns, start_date=start_date, end_date=end_date)
         if not records:
-            logging.error('No records with specified filters found.')
+            logging.warning('No records with specified filters found.')
             return {}
 
         meta_analysis_results = get_meta_analysis_records(records, agg_var, meta_transformation, meta_technique)
