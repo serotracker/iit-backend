@@ -95,10 +95,10 @@ def create_multi_select_tables(original_data, current_time):
         temp_df = temp_df.explode(col).drop_duplicates().dropna(subset=[col])
 
         # Create name all df columns and add as value to dictionary
-        col_specific_df[name_col] = list(temp_df[col])
+        col_specific_df[name_col] = temp_df[col].to_list()
         # if city or state table, add country_iso2 column to df temporarily
         if col == "state" or col == "city":
-            col_specific_df["country_iso2"] = list(temp_df["country_iso2"])
+            col_specific_df["country_iso2"] = temp_df["country_iso2"].to_list()
         col_specific_df[id_col] = [uuid4() for i in range(temp_df[col].size)]
         col_specific_df['created_at'] = current_time
 
