@@ -1,6 +1,9 @@
 import os
+import logging
 
 import pandas as pd
+
+from app.utils.notifications_sender import send_slack_message
 
 
 # Replace None utf-8 encoded characters with blank spaces
@@ -29,6 +32,11 @@ def add_mapped_variables(df):
         else:
             gbd_region_col.append(None)
             gbd_subregion_col.append(None)
+
+            # Send slack message and log warning
+            body = f'No GBD region or subregion found for {country}'
+            logging.warning(body)
+            send_slack_message(body, channel='#dev-logging-etl')
     df['gbd_region'] = gbd_region_col
     df['gbd_subregion'] = gbd_subregion_col
     df['lmic_hic'] = df['gbd_region'].apply(

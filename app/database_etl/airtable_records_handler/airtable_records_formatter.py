@@ -48,7 +48,7 @@ def standardize_airtable_data(df):
                  inplace=True)
 
     # Replace columns that should be floats with NaN from None and rescale to percentage
-    df[['ind_sp_n', 'ind_se_n']] = df[['ind_sp_n', 'ind_se_n']].replace({None: np.nan}) / 100
+    df[['ind_sp', 'ind_se']] = df[['ind_sp', 'ind_se']].replace({None: np.nan}) / 100
 
     # Drop rows if columns are null: included?, serum pos prevalence, denominator, sampling end
     df.dropna(subset=['included', 'serum_pos_prevalence', 'denominator_value', 'sampling_end_date'],

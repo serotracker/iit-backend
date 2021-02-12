@@ -19,11 +19,13 @@ def get_all_records(research_fields=False):
                          'state_longitude', 'state_latitude']
 
         # Create list of fields in DashboardSource to query unless the specific columns are specified
-        field_strings = ['source_name', 'source_type', 'study_name', 'denominator_value',
-                         'overall_risk_of_bias', 'serum_pos_prevalence', 'isotype_igm', 'isotype_iga',
-                         'isotype_igg', 'sex', 'age', 'sampling_start_date', 'sampling_end_date', 'estimate_grade',
-                         'isotype_comb', 'academic_primary_estimate', 'dashboard_primary_estimate', 'pop_adj',
-                         'test_adj', 'specimen_type', 'test_type', 'population_group', 'url']
+        field_strings = ['source_name', 'source_type', 'study_name', 'denominator_value', 'overall_risk_of_bias',
+                         'serum_pos_prevalence', 'isotype_igm', 'isotype_iga', 'isotype_igg', 'sex', 'age',
+                         'sampling_start_date', 'sampling_end_date', 'estimate_grade', 'isotype_comb',
+                         'academic_primary_estimate', 'dashboard_primary_estimate', 'pop_adj', 'test_adj',
+                         'specimen_type', 'test_type', 'population_group', 'url', 'summary', 'study_type',
+                         'sampling_method', 'specificity', 'sensitivity', 'first_author', 'publication_date',
+                         'lead_organization']
 
         # Add columns from dashboard source to select statement
         fields_list = [DashboardSource.source_id]
