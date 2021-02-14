@@ -1,7 +1,8 @@
 import pandas as pd
 import datetime
+import os
 
-CSV_DIR = "/home/ubuntu/data/"
+CSV_DIR = os.getenv('CSV_DIR')
 
 vaccination_df = pd.read_csv(CSV_DIR + "vaccinations.csv")[['date', 'iso_code', 'people_vaccinated_per_hundred', 'people_fully_vaccinated_per_hundred']]
 tests_df = pd.read_csv(CSV_DIR + "tests.csv")  # per million
