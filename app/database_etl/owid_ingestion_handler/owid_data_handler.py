@@ -22,7 +22,9 @@ def get_total_cases(country_name: str, midpoint_date: datetime):
     return float(per_million) / 10000  # per hundred
 
 
-def get_total_tests(country_id: str, midpoint_date: datetime):
+def get_total_tests(country_name: str, midpoint_date: datetime):
+    # TODO: use helper func to convert name to ISO3
+    country_id = country_name
     country_total_tests = tests_df.loc[tests_df['ISO code'] == country_id]
     per_thousand = country_total_tests.loc[country_total_tests['Date'] == midpoint_date.strftime('%Y-%m-%d')]['Cumulative total per thousand']
     return float(per_thousand) / 10  # per hundred
@@ -36,7 +38,9 @@ def get_total_deaths(country_name: str, midpoint_date: datetime):
     return float(per_million) / 10000  # per hundred
 
 
-def get_vaccinated(country_id: str, midpoint_date: datetime):
+def get_vaccinated(country_name: str, midpoint_date: datetime):
+    # TODO: use helper func to convert name to ISO3
+    country_id = country_name
     offset = datetime.timedelta(days=-14)
     target_date = midpoint_date + offset
 
@@ -44,7 +48,9 @@ def get_vaccinated(country_id: str, midpoint_date: datetime):
     return float(country_data.loc[country_data['date'] == target_date]['people_vaccinated_per_hundred'])
 
 
-def get_fully_vaccinated(country_id: str, midpoint_date: datetime):
+def get_fully_vaccinated(country_name: str, midpoint_date: datetime):
+    # TODO: use helper func to convert name to ISO3
+    country_id = country_name
     offset = datetime.timedelta(days=-14)
     target_date = midpoint_date + offset
 
