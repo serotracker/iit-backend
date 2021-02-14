@@ -6,6 +6,7 @@ from app.utils.notifications_sender import send_slack_message
 from app.utils import airtable_fields_config
 from app.database_etl.location_utils import add_latlng_to_df, get_country_code
 from .table_formatter import replace_null_string
+from app.database_etl.owid_ingestion_handler import get_fully_vaccinated, get_vaccinated, get_total_tests, get_total_deaths, get_total_cases, get_midpoint
 
 import pandas as pd
 
@@ -39,6 +40,25 @@ def create_dashboard_source_df(original_data, current_time):
     for col in date_cols:
         original_data[col] = \
             original_data[col].apply(lambda x: datetime.strptime(x, '%Y-%m-%d') if x is not None else x)
+
+    # Create midpoint date column
+    original_data['midpoint'] = original_data.apply(lambda row: get_midpoint(row['sampling_start_date'], row['sampling_end_date']), axis=1)
+
+    # Create total cases column
+    original_data['case_count'] = original_data.apply(lambda row: get_total_cases(row['country_name'], row['midpoint']))
+
+    # Create total tests column
+    original_data['test_count'] = original_data.apply(lambda row: get_total_tests(row['country_id'], row['midpoint']))
+
+    # Create total deaths column
+    original_data['death_count'] = original_data.apply(lambda row: get_total_deaths(row['country_name'], row['midpoint']))
+
+    # Create vaccination count column
+    original_data['vaccination_count'] = original_data.apply(lambda row: get_vaccinated(row['country_id'], row['midpoint']))
+
+    # Create full vaccination count column
+    original_data['full_vaccination_count'] = original_data.apply(lambda row: get_fully_vaccinated(row['country_id'], row['midpoint']))
+
     return original_data
 
 
@@ -108,6 +128,8 @@ def create_multi_select_tables(original_data, current_time):
     # Get countries for each state
     multi_select_tables_dict["state"] = add_latlng_to_df("region", "state_name", multi_select_tables_dict["state"])
     multi_select_tables_dict["city"] = add_latlng_to_df("place", "city_name", multi_select_tables_dict["city"])
+
+    #
 
     # Delete country iso2 column, no longer needed
     # Note: only need this temporarily, so fine to drop
