@@ -6,13 +6,13 @@ Server side code for the International Immunity Tracker
 
 ## Cloning
 
-This repo contains a submodule: the shared_scripts submodule, which contains scripts used accross the SeroTracker project, in both research code and backend. This web page provides a great explanation of submodules, on which the below is based.
+This repo contains a submodule: the shared_scripts submodule, which contains scripts used accross the SeroTracker project, in both research code and backend. [This web page](https://git-scm.com/book/en/v2/Git-Tools-Submodules) provides a great explanation of submodules, on which the below is based.
 
-To clone this repo, git clone will fetch the reference to the submodule but not load the submodule itself. Instead, use git clone --recurse-submodules {url}. Similarly, instead of git pull - which will fetch remote updates in the parent repo as to which submodules are required, but not insert them - use git pull --recurse-submodules.
+To clone this repo, `git clone` will fetch the reference to the submodule but not load the submodule itself. Instead, use `git clone --recurse-submodules {url}`. Similarly, instead of `git pull` - which will fetch remote updates in the parent repo as to which submodules are required, but not insert them - use `git pull --recurse-submodules`.
 
-Note that in the parent repo, the reference to the submodule is NOT to the submodule git repo as a whole in its constantly-updating form. Rather, it is to a specific commit. You need to deliberately integrate the updated version of submodule code. To do so, use git submodule update --remote, and then commit that change. Alternatively, cd shared_scripts; git pull then commit that change.
+Note that in the parent repo, the reference to the submodule is NOT to the submodule git repo as a whole in its constantly-updating form. Rather, it is to a specific commit. You need to deliberately integrate the updated version of submodule code. To do so, use `git submodule update --remote`, and then commit that change. Alternatively, `cd shared_scripts; git pull` then commit that change.
 
-Submodules enable you to update submodule code at the same time as you update core code. The easiest way to do this is probably to clone the submodule's git repo into another repo (outside of the parent module), modify it there, and pull in the the updated version of the submodule to the parent repo per above. Alternatively, you can check out a branch in the submodule (cd shared_scripts; git checkout main). After modifying the submodule as desired, you can push these changes, either from the submodule (git push) or the parent repo (git push --recurse-submodules=on-demand).
+Submodules enable you to update submodule code at the same time as you update core code. The easiest way to do this is probably to clone the submodule's git repo into another repo (outside of the parent module), modify it there, and pull in the the updated version of the submodule to the parent repo per above. Alternatively, you can check out a branch in the submodule (`cd shared_scripts; git checkout main`). After modifying the submodule as desired, you can push these changes, either from the submodule (`git push`) or the parent repo (`git push --recurse-submodules=on-demand`).
 
 ## Dependencies
 
@@ -60,7 +60,9 @@ Ask someone on the Data team for the actual environment variables you'll need!
 
 2. Download and install pgAdmin 4, a management tool for Postgres.
 
-   [https://www.pgadmin.org/download/](https://www.pgadmin.org/download/)
+   From the source: [https://www.pgadmin.org/download/](https://www.pgadmin.org/download/)
+
+   Or, on a Mac: `brew install --cask pgadmin4`
 
 After installation of pgAdmin 4, launch the program.
 
