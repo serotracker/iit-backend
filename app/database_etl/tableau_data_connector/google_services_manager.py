@@ -1,43 +1,59 @@
-from pydrive.auth import GoogleAuth
-from pydrive.drive import GoogleDrive
+from __future__ import print_function
+import os
+import pickle
+
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError, BatchError
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
+
+from app.utils import send_slack_message
 
 
-class GoogleServicesManager:
+class GoogleSheetsManager:
     def __init__(self):
-        self.gauth = GoogleAuth()
-        self.gauth.DEFAULT_SETTINGS['oauth_scope'] = ['https://www.googleapis.com/auth/drive']
-        # Authenticate the user
-        self.authenticate()
-        # Initialize google clients
-        self.drive_client = GoogleDrive(self.gauth)
+        self.scope = ['https://www.googleapis.com/auth/spreadsheets']
+        self.range = 'A1:ZZ10000'
+        self.client_service = self.create_service()
         return
 
-    def authenticate(self):
-        # Try to load saved client credentials
-        self.gauth.LoadCredentialsFile("credentials.txt")
-        if self.gauth.credentials is None:
-            # Authenticate if they're not there
-            self.gauth.LocalWebserverAuth()
-        elif self.gauth.access_token_expired:
-            # Refresh them if expired
-            self.gauth.Refresh()
-        else:
-            # Initialize the saved creds
-            self.gauth.Authorize()
-        # Save the current credentials to a file
-        self.gauth.SaveCredentialsFile("credentials.txt")
+    def create_service(self):
+        creds = None
+        if os.path.exists('token.pickle'):
+            with open('token.pickle', 'rb') as token:
+                creds = pickle.load(token)
+
+            # If there are no (valid) credentials available, let the user log in.
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+            else:
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    'credentials.json', self.scope)
+                creds = flow.run_local_server(port=0)
+
+            # Save the credentials for the next run
+            with open('token.pickle', 'wb') as token:
+                pickle.dump(creds, token)
+        service = build('sheets', 'v4', credentials=creds)
+        return service
+
+    def clear_sheet(self, spreadsheet_id):
+        sheet = self.client_service.spreadsheets()
+        sheet.values().clear(spreadsheetId=spreadsheet_id, range=self.range).execute()
         return
 
-    def upload_file_to_drive(self, local_file_path, drive_folder_id):
+    def update_sheet(self, spreadsheet_id, df):
+        sheet = self.client_service.spreadsheets()
+        batch_update_values_request_body = {'valueInputOption': 'RAW',
+                                            'data': {'range': self.range,
+                                                     'majorDimension': 'ROWS',
+                                                     'values': df.T.reset_index().T.values.tolist()}}
+        self.clear_sheet(spreadsheet_id)
         try:
-            file_title = local_file_path.split('.')[0]
-            file = self.drive_client.CreateFile({'title': file_title,
-                                                 "mimeType": "text/csv",
-                                                 'parents': [{'id': drive_folder_id}]})
-            file.SetContentFile(local_file_path)
-            file.Upload({"convert": True})
-            successful_upload = True
-        except Exception as e:
-            print(e)
-            successful_upload = False
-        return successful_upload
+            sheet.values().batchUpdate(spreadsheetId=spreadsheet_id,
+                                       body=batch_update_values_request_body).execute()
+        except (HttpError, BatchError) as e:
+            body = f'Error loading Tableau CSV to google sheets: {e}'
+            send_slack_message(body, channel='#dev-logging-etl')
+        return
