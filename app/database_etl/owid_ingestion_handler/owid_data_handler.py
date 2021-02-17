@@ -7,7 +7,7 @@ from app.database_etl.location_utils import get_alternative_names, get_country_c
 CSV_DIR = os.getenv('CSV_DIR')
 
 vaccination_df = pd.read_csv(CSV_DIR + "vaccinations.csv")[['date', 'iso_code', 'people_vaccinated_per_hundred', 'people_fully_vaccinated_per_hundred']]
-tests_df = pd.read_csv(CSV_DIR + "tests.csv")[['Date', 'ISO code', 'Cumulative total per thousand']]  # per thousand
+tests_df = pd.read_csv(CSV_DIR + "tests.csv")[['Entity', 'Date', 'ISO code', 'Cumulative total per thousand']]  # per thousand
 cases_df = pd.read_csv(CSV_DIR + "cases.csv")  # per million
 deaths_df = pd.read_csv(CSV_DIR + "deaths.csv")  # per million
 
@@ -31,7 +31,7 @@ def get_total_tests(country_name: str, midpoint_date: datetime):
     country_id = get_country_code(country_name)
     country_total_tests = tests_df.loc[tests_df['ISO code'] == country_id]
     per_thousand = country_total_tests.loc[country_total_tests['Date'] == midpoint_date.strftime('%Y-%m-%d')]['Cumulative total per thousand']
-    return float(per_thousand) / 10  # per hundred
+    return float(per_thousand) / 10 if not per_thousand.empty else None
 
 
 def get_total_cases(country_name: str, midpoint_date: datetime):
@@ -43,7 +43,7 @@ def get_total_cases(country_name: str, midpoint_date: datetime):
 
     if country_name is None: return None
     per_million = cases_df[['date', country_name]].loc[cases_df['date'] == target_date][country_name]
-    return float(per_million) / 10000  # per hundred
+    return float(per_million) / 10000 if not per_million.empty else None
 
 
 def get_total_deaths(country_name: str, midpoint_date: datetime):
@@ -55,7 +55,7 @@ def get_total_deaths(country_name: str, midpoint_date: datetime):
 
     if country_name is None: return None
     per_million = deaths_df[['date', country_name]].loc[deaths_df['date'] == target_date][country_name]
-    return float(per_million) / 10000  # per hundred
+    return float(per_million) / 10000 if not per_million.empty else None
 
 
 def get_vaccinated(country_name: str, midpoint_date: datetime):
@@ -64,7 +64,8 @@ def get_vaccinated(country_name: str, midpoint_date: datetime):
     target_date = midpoint_date + offset
 
     country_data = vaccination_df.loc[vaccination_df['iso_code'] == country_id]
-    return float(country_data.loc[country_data['date'] == target_date]['people_vaccinated_per_hundred'])
+    ret = country_data.loc[country_data['date'] == target_date]['people_vaccinated_per_hundred']
+    return float(ret) if not ret.empty else None
 
 
 def get_fully_vaccinated(country_name: str, midpoint_date: datetime):
@@ -73,5 +74,7 @@ def get_fully_vaccinated(country_name: str, midpoint_date: datetime):
     target_date = midpoint_date + offset
 
     country_data = vaccination_df.loc[vaccination_df['iso_code'] == country_id]
-    return float(country_data.loc[country_data['date'] == target_date]['people_fully_vaccinated_per_hundred'])
+    ret = country_data.loc[country_data['date'] == target_date]['people_fully_vaccinated_per_hundred']
+    return float(ret) if not ret.empty else None
+
 
