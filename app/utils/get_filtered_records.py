@@ -23,7 +23,8 @@ def get_all_records(research_fields=False):
                          'overall_risk_of_bias', 'serum_pos_prevalence', 'isotype_igm', 'isotype_iga',
                          'isotype_igg', 'sex', 'age', 'sampling_start_date', 'sampling_end_date', 'estimate_grade',
                          'isotype_comb', 'academic_primary_estimate', 'dashboard_primary_estimate', 'pop_adj',
-                         'test_adj', 'specimen_type', 'test_type', 'population_group', 'url']
+                         'test_adj', 'specimen_type', 'test_type', 'population_group', 'url', 'case_count',
+                         'test_count', 'death_count', 'vaccination_count', 'full_vaccination_count']
 
         # Add columns from dashboard source to select statement
         fields_list = [DashboardSource.source_id]
