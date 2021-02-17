@@ -47,24 +47,24 @@ def create_dashboard_source_df(original_data, current_time):
         lambda row: get_midpoint(row['sampling_start_date'], row['sampling_end_date']), axis=1)
 
     # Create total cases column
-    original_data['case_count'] = original_data.apply(lambda row: get_total_cases(row['country_name'], row['midpoint']),
+    original_data['case_count'] = original_data.apply(lambda row: get_total_cases(row['country'], row['midpoint']),
                                                       axis=1)
 
     # Create total tests column
-    original_data['test_count'] = original_data.apply(lambda row: get_total_tests(row['country_name'], row['midpoint']),
+    original_data['test_count'] = original_data.apply(lambda row: get_total_tests(row['country'], row['midpoint']),
                                                       axis=1)
 
     # Create total deaths column
     original_data['death_count'] = original_data.apply(
-        lambda row: get_total_deaths(row['country_name'], row['midpoint']), axis=1)
+        lambda row: get_total_deaths(row['country'], row['midpoint']), axis=1)
 
     # Create vaccination count column
     original_data['vaccination_count'] = original_data.apply(
-        lambda row: get_vaccinated(row['country_name'], row['midpoint']), axis=1)
+        lambda row: get_vaccinated(row['country'], row['midpoint']), axis=1)
 
     # Create full vaccination count column
     original_data['full_vaccination_count'] = original_data.apply(
-        lambda row: get_fully_vaccinated(row['country_name'], row['midpoint']), axis=1)
+        lambda row: get_fully_vaccinated(row['country'], row['midpoint']), axis=1)
 
     return original_data
 
