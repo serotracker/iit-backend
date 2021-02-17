@@ -30,8 +30,11 @@ def get_midpoint(start_date: datetime, end_date: datetime):
 def get_total_tests(country_name: str, midpoint_date: datetime):
     country_id = get_country_code(country_name)
     country_total_tests = tests_df.loc[tests_df['ISO code'] == country_id]
-    per_thousand = country_total_tests.loc[country_total_tests['Date'] == midpoint_date.strftime('%Y-%m-%d')]['Cumulative total per thousand']
-    return float(per_thousand) / 10 if not per_thousand.empty else None
+    per_thousand = country_total_tests.loc[country_total_tests['Date'] == midpoint_date.strftime('%Y-%m-%d')][['Entity', 'Cumulative total per thousand']]
+    if not per_thousand.empty:
+        ret = per_thousand[per_thousand['Entity'].str.contains('tests performed')]['Cumulative total per thousand']
+        return float(ret) / 10
+    return None
 
 
 def get_total_cases(country_name: str, midpoint_date: datetime):
