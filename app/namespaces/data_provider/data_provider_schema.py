@@ -4,8 +4,9 @@ from marshmallow import Schema, fields, validate
 class RecordsSchema(Schema):
     sorting_key = fields.String(validate=validate.OneOf(["serum_pos_prevalence", "denominator_value",
                                                          "overall_risk_of_bias", "source_name",
-                                                         "source_id"]))
-    page_index = fields.Integer(allow_none=True)
+                                                         "source_id", "sampling_end_date"]))
+    min_page_index = fields.Integer(allow_none=True)
+    max_page_index = fields.Integer(allow_none=True)
     per_page = fields.Integer(allow_none=True)
     reverse = fields.Boolean(allow_none=True)
     research_fields = fields.Boolean(allow_none=True)

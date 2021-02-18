@@ -19,13 +19,14 @@ class Records(Resource):
     def get(self):
         # Parse pagination request args if they are present
         sorting_key = request.args.get('sorting_key', None, type=str)
-        reverse = request.args.get('reverse', None, type=bool)
-        page_index = request.args.get('page_index', None, type=int)
+        min_page_index = request.args.get('min_page_index', None, type=int)
+        max_page_index = request.args.get('max_page_index', None, type=int)
         per_page = request.args.get('per_page', None, type=int)
 
         # Type must be string not bool, because bool evaluates to true for any non None value including False and True
         research_fields = False if str.lower(request.args.get('research_fields', 'false', type=str)) == 'false' else True
         prioritize_estimates = True if str.lower(request.args.get('prioritize_estimates', 'true', type=str)) == 'true' else False
+        reverse = False if str.lower(request.args.get('reverse', 'false', type=str)) == 'false' else True
 
         # Log request info
         logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}".format(
@@ -38,8 +39,8 @@ class Records(Resource):
         result = jitter_pins(result)
 
         # Only paginate if all the pagination parameters have been specified
-        if page_index is not None and per_page is not None and sorting_key is not None and reverse is not None:
-            result = get_paginated_records(result, sorting_key, page_index, per_page, reverse)
+        if min_page_index is not None and max_page_index is not None and per_page is not None and sorting_key is not None and reverse is not None:
+            result = get_paginated_records(result, sorting_key, min_page_index, max_page_index, per_page, reverse)
         return jsonify(result)
 
     def post(self):
@@ -65,7 +66,8 @@ class Records(Resource):
             return make_response(payload, status_code)
 
         sorting_key = data.get('sorting_key')
-        page_index = data.get('page_index')
+        min_page_index = data.get('min_page_index')
+        max_page_index = data.get('max_page_index')
         per_page = data.get('per_page')
         reverse = data.get('reverse')
         columns = data.get('columns')
@@ -79,8 +81,8 @@ class Records(Resource):
             result = jitter_pins(result)
 
         # Only paginate if all the pagination parameters have been specified
-        if page_index is not None and per_page is not None and sorting_key is not None and reverse is not None:
-            result = get_paginated_records(result, sorting_key, page_index, per_page, reverse)
+        if min_page_index is not None and max_page_index is not None and per_page is not None and sorting_key is not None and reverse is not None:
+            result = get_paginated_records(result, sorting_key, min_page_index, max_page_index, per_page, reverse)
         return jsonify(result)
 
 

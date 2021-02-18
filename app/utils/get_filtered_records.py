@@ -229,11 +229,13 @@ Note: `page_index` is zero-indexed here!
 '''
 
 
-def get_paginated_records(query_dicts, sorting_key, page_index, per_page, reverse):
+def get_paginated_records(query_dicts, sorting_key, min_page_index, max_page_index, per_page, reverse):
     # Order the records first
     sorted_records = sorted(query_dicts, key=lambda x: (x[sorting_key] is None, x[sorting_key]), reverse=reverse)
 
-    start = page_index * per_page
-    end = page_index * per_page + per_page
+    # Input is non-zero indexing, but we map to zero indexing (e.g. input 1-3 maps to 0-2) but we still return non-zero indexing
+    min_page_index -= 1
+    max_page_index -= 1
 
-    return sorted_records[start:end]
+    # Create dictionary of pages of records 
+    return {i+1:sorted_records[i*per_page:i*per_page+per_page] if i * per_page + per_page < len(sorted_records) else sorted_records[i*per_page:] for i in range(min_page_index, max_page_index + 1)} 
