@@ -31,6 +31,3 @@ def upload_analyze_csv():
     g_client.update_sheet(os.getenv('ANALYZE_SPREADSHEET_ID'), records_df)
     return
 
-
-if __name__ == "__main__":
-    upload_analyze_csv()

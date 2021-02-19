@@ -46,6 +46,7 @@ LOG_CONFIG_PATH=___
 LOG_FILE_PATH=___
 PYTHONPATH=___
 SLACKBOT_TOKEN=___
+ANALYZE_SPREADSHEET_ID=___
 ```
 
 Ask someone on the Data team for the actual environment variables you'll need!
