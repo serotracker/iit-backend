@@ -23,3 +23,5 @@ jobs:
         AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
         AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
         FLASK_ENV: 'test'
+        LOG_CONFIG_PATH: '/home/runner/work/iit-backend/iit-backend/logging.cfg'
+        LOG_FILE_PATH: '/home/runner/work/iit-backend/iit-backend/logfile.log'

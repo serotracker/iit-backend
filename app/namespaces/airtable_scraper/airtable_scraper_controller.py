@@ -35,7 +35,7 @@ class AirtableScraper(Resource):
                 file_created_datetime = datetime.now()
             if generate_new_cache:
                 # Get all records from using airtable API
-                records, status_code = get_all_records(visualize_on_serotracker_filter, airtable_fields_json_name)
+                records, status_code = get_all_records(airtable_fields_json_name)
                 if status_code == 200:
                     # Write new records to json only if the airtable API request was successful
                     write_to_json(records, app.config['AIRTABLE_CACHED_RESULTS_PATH'])
@@ -47,7 +47,7 @@ class AirtableScraper(Resource):
         # If records aren't being pulled for dashboard, make new request and don't write to cache
         else:
             # Get all records from using airtable API
-            records, status_code = get_all_records(visualize_on_serotracker_filter, airtable_fields_json_name)
+            records, status_code = get_all_records(airtable_fields_json_name)
             file_created_datetime = datetime.now()
 
         max_pub_date = datetime.min

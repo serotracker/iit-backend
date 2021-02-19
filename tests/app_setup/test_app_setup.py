@@ -8,7 +8,7 @@ def test_flask_environment_variable():
 
 def test_app_namespaces(app):
     app_namespaces = app.config['APP_NAMESPACES']
-    namespace_options = ['healthcheck', 'airtable_scraper', 'cases_count_scraper', 'meta_analysis']
+    namespace_options = ['airtable_scraper', 'healthcheck', 'data_provider', 'cases_count_scraper', 'meta_analysis']
     for namespace in app_namespaces:
         assert namespace in namespace_options
 
@@ -43,3 +43,29 @@ def test_caching_refresh_variables(app):
     assert airtable_cache_refresh_hour_frequency == 24
     assert jhu_cache_refresh_hour_frequency == 24
 
+
+def test_cached_results_path(app):
+    airtable_cached_results_path = app.config['AIRTABLE_CACHED_RESULTS_PATH']
+    jhu_cached_results_path = app.config['JHU_CACHED_RESULTS_PATH']
+    assert airtable_cached_results_path is not None
+    assert jhu_cached_results_path is not None
+
+
+def test_meta_analysis_vars(app):
+    min_denominator = app.config['MIN_DENOMINATOR']
+    assert min_denominator == 200
+
+
+def test_db_variables(app):
+    db_username = app.config['DATABASE_USERNAME']
+    db_pass = app.config['DATABASE_PASSWORD']
+    db_host_address = app.config['DATABASE_HOST_ADDRESS']
+    db_name = app.config['DATABASE_NAME']
+    db_uri = app.config['SQLALCHEMY_DATABASE_URI']
+    db_track_modifications = app.config['SQLALCHEMY_TRACK_MODIFICATIONS']
+    assert db_username is not None
+    assert db_pass is not None
+    assert db_host_address is not None
+    assert db_name is not None
+    assert db_uri is not None
+    assert db_track_modifications is not None
