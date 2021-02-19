@@ -4,7 +4,6 @@ import logging
 import requests
 import pandas as pd
 import numpy as np
-import math
 
 from flask import current_app as app
 from app.utils import read_from_json, send_api_error_slack_notif, airtable_fields_config
@@ -135,11 +134,9 @@ def get_country_seroprev_summaries(records):
                 # Add number of estimates for that grade
                 estimate_grade_dict['n_estimates'] = n_estimates
 
-                minimum = records_for_grade.serum_pos_prevalence.min()
-                maximum = records_for_grade.serum_pos_prevalence.max()
                 # Add min and max seroprev estimates
-                estimate_grade_dict['min_estimate'] = minimum if not math.isnan(minimum) else None
-                estimate_grade_dict['max_estimate'] = maximum if not math.isnan(maximum) else None
+                estimate_grade_dict['min_estimate'] = records_for_grade.serum_pos_prevalence.min()
+                estimate_grade_dict['max_estimate'] = records_for_grade.serum_pos_prevalence.max()
             grades_seroprev_summaries_dict[grade] = estimate_grade_dict
         country_seroprev_summary_dict['seroprevalence_estimate_summary'] = grades_seroprev_summaries_dict
         study_counts_list.append(country_seroprev_summary_dict)
