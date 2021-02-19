@@ -12,7 +12,7 @@ cases_df = pd.read_csv(CSV_DIR + "cases.csv")  # per million
 deaths_df = pd.read_csv(CSV_DIR + "deaths.csv")  # per million
 
 
-def _get_alt_name(country_name, df):
+def _get_alt_name(country_name: str, df: pd.DataFrame):
     country_id = get_country_code(country_name)
     if country_id is None: return None
     alt_names = get_alternative_names(country_id)
