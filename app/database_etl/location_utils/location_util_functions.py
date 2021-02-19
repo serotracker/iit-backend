@@ -16,27 +16,24 @@ ISO3_CODES = read_from_json('country_iso3.json')
 ISO2_CODES = read_from_json('country_iso2.json')
 
 
-# Format of place: "{place_name}_{country_code}"
-# Note country code is used as an optional argument to the mapbox api
-# to improve search results, it might not exist
-# If place_type is a "place" (meaning a city or town)
+# Place = string representing the name of the place
+# Country code = ISO2 alpha country code, used as an optional argument to the mapbox api
+# to improve search results
+# Place type = geographic granularity of the place of interest
+# Note: If place_type is a "place" (meaning a city or town)
 # place_name is only valid if it's in the format "city,state"
-def get_coords(place, place_type):
+def get_coords(place, place_type, country_code=None):
     # If a city doesn't have a state
     # associated with it, we cannot
     # accurately find it's location
     if (not place) or (place_type == 'place' and "," not in place):
         return None
 
-    # If place_name contains "_", then the string
-    # after it should be an iso2 country code
-    place_arr = place.split("_")
-
-    url = f"https://api.mapbox.com/geocoding/v5/mapbox.places/{place_arr[0]}.json?" \
+    url = f"https://api.mapbox.com/geocoding/v5/mapbox.places/{place}.json?" \
           f"access_token={os.getenv('MAPBOX_API_KEY')}&types={place_type}"
 
-    if len(place_arr) > 1:
-        url += f"&country={place_arr[1]}"
+    if country_code:
+        url += f"&country={country_code}"
 
     r = requests.get(url)
     data = r.json()
@@ -47,7 +44,7 @@ def get_coords(place, place_type):
 
 
 def add_latlng_to_df(place_type, place_type_name, df):
-    df['coords'] = df[place_type_name].map(lambda a: get_coords(a, place_type))
+    df['coords'] = df.apply(lambda row: get_coords(row[place_type_name], place_type, country_code=row['country_iso2']), axis=1)
     df['longitude'] = df['coords'].map(lambda a: a[0] if isinstance(a, list) else None)
     df['latitude'] = df['coords'].map(lambda a: a[1] if isinstance(a, list) else None)
     df = df.drop(columns=['coords'])
@@ -78,7 +75,7 @@ def get_country_code(country_name, iso3=True):
     return code
 
 
-# Returns a list of 'city,state_countryCode' if we
+# Returns a list of 'city,state' if we
 # can associate a city with a state, else
 # returns a list of cities
 # This is necessary to properly geosearch cities
@@ -90,30 +87,7 @@ def get_city(row):
         # associate the city with the state
         # so that we can get a pin for it
         if row['state'] and len(row['state']) == 1:
-            cities_return = []
-            for city in cities:
-                country_code = get_country_code(row['country'], iso3=False)
-                if country_code:
-                    cities_return.append(f"{city},{row['state'][0]}_{country_code}")
-                else:
-                    cities_return.append(f"{city},{row['state'][0]}")
-            return cities_return
+            return [f"{city},{row['state'][0]}" for city in cities]
         return cities
     else:
         return row['city']
-
-
-# Returns "state_countryCode"
-# Needed because country code is used to limit mapbox API
-# geosearch queries (improving query accuracy)
-def add_country_code_to_state(row):
-    if row['state']:
-        states = []
-        for state in row['state']:
-            country_code = get_country_code(row['country'], iso3=False)
-            if country_code:
-                states.append(f"{state}_{country_code}")
-            else:
-                states.append(state)
-        return states
-    return None

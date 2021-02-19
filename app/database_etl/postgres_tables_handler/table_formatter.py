@@ -72,16 +72,3 @@ def format_dashboard_source(dashboard_source_df, research_cols):
     dashboard_source = dashboard_source.apply(lambda col: col.apply(lambda val: replace_null_string(val)))
     return dashboard_source
 
-
-def format_multi_select_tables_dict(multi_select_tables_dict):
-    # Adjust city and state table schema
-    # Note this state_name field in the city table will never actually be used
-    # but is nice to have for observability
-    multi_select_tables_dict["city"]["state_name"] = multi_select_tables_dict["city"]["city_name"]\
-        .map(lambda a: a.split("_")[0].split(",")[1] if "," in a else None)
-    # remove state names from city_name field
-    multi_select_tables_dict["city"]["city_name"] = multi_select_tables_dict["city"]["city_name"]\
-        .map(lambda a: a.split(",")[0] if "," in a else a)
-    multi_select_tables_dict["state"]["state_name"] = multi_select_tables_dict["state"]["state_name"]\
-        .map(lambda a: a.split("_")[0])
-    return multi_select_tables_dict

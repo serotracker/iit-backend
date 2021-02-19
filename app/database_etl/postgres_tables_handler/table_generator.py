@@ -68,6 +68,10 @@ def create_multi_select_tables(original_data, current_time):
     # Create dictionary to store multi select tables
     multi_select_tables_dict = {}
 
+    # Create country iso2 column, needed temporarily
+    # to get lat/lngs for the state/city tables
+    original_data['country_iso2'] = original_data['country'].map(lambda a: get_country_code(a, iso3=False))
+
     # Create one multi select table per multi select column
     for col in multi_select_cols:
         id_col = '{}_id'.format(col)
@@ -76,21 +80,41 @@ def create_multi_select_tables(original_data, current_time):
         # Create dataframe for table with an id column, a name column, and a created_at column
         new_df_cols = [id_col, name_col, 'created_at']
         col_specific_df = pd.DataFrame(columns=new_df_cols)
-        original_column = original_data[col].dropna()
 
-        # Get all unique values in the multi select column
-        unique_nam_col = list({item for sublist in original_column for item in sublist})
+        columns_to_grab = [col]
+        # Need to subset country_iso2 col for state/city tables
+        if col == "state" or col == "city":
+            columns_to_grab.append('country_iso2')
+
+        # create temporary dataframe to operate on
+        temp_df = original_data[columns_to_grab]
+        # explode the dataframe to make each multiselect element
+        # its own row, then drop duplicates
+        # note: drop_duplicates only drops entire duplicate rows
+        # (so rows {city: c1, country_iso2: I1} and {city: c1, country_iso2: I2} would not be considered dupes)
+        temp_df = temp_df.explode(col).drop_duplicates().dropna(subset=[col])
 
         # Create name all df columns and add as value to dictionary
-        col_specific_df[name_col] = unique_nam_col
-        col_specific_df[id_col] = [uuid4() for i in range(len(unique_nam_col))]
+        col_specific_df[name_col] = temp_df[col].to_list()
+        # if city or state table, add country_iso2 column to df temporarily
+        if col == "state" or col == "city":
+            col_specific_df["country_iso2"] = temp_df["country_iso2"].to_list()
+        col_specific_df[id_col] = [uuid4() for i in range(temp_df[col].size)]
         col_specific_df['created_at'] = current_time
+
         multi_select_tables_dict[col] = col_specific_df
 
     # Add lat/lng to cities and states
     # Get countries for each state
     multi_select_tables_dict["state"] = add_latlng_to_df("region", "state_name", multi_select_tables_dict["state"])
     multi_select_tables_dict["city"] = add_latlng_to_df("place", "city_name", multi_select_tables_dict["city"])
+
+    # Delete country iso2 column, no longer needed
+    # Note: only need this temporarily, so fine to drop
+    multi_select_tables_dict["state"] = multi_select_tables_dict["state"].drop(columns=['country_iso2'])
+    multi_select_tables_dict["city"] = multi_select_tables_dict["city"].drop(columns=['country_iso2'])
+    original_data = original_data.drop(columns=['country_iso2'])
+
     return multi_select_tables_dict
 
 
@@ -122,12 +146,16 @@ def create_bridge_tables(original_data, multi_select_tables, current_time):
 
 
 def create_country_df(dashboard_source_df, current_time):
-    country_df = pd.DataFrame(columns=['country_name', 'country_id'])
+    country_df = pd.DataFrame(columns=['country_name', 'country_id', 'country_iso2'])
     country_df['country_name'] = dashboard_source_df['country'].unique()
+    country_df['country_iso2'] = country_df['country_name'].map(lambda a: get_country_code(a, iso3=False))
     country_df['country_id'] = [uuid4() for _ in country_df['country_name']]
     country_df['created_at'] = current_time
     country_df = add_latlng_to_df("country", "country_name", country_df)
     country_df['country_iso3'] = country_df["country_name"].map(lambda a: get_country_code(a))
+
+    # Note: only need this temporarily, so fine to drop
+    country_df = country_df.drop(columns=['country_iso2'])
 
     # Send alert email if ISO3 codes not found
     null_iso3 = country_df[country_df['country_iso3'].isnull()]
