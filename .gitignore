@@ -24,4 +24,4 @@ logfile.log
 
 # Google sheets credentials
 app/database_etl/tableau_data_connector/credentials.json
-app/database_etl/token.pickle
+app/database_etl/tableau_data_connector/token.pickle
