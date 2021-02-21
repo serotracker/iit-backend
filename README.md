@@ -46,6 +46,7 @@ LOG_CONFIG_PATH=___
 LOG_FILE_PATH=___
 PYTHONPATH=___
 SLACKBOT_TOKEN=___
+ANALYZE_SPREADSHEET_ID=___
 ```
 
 Ask someone on the Data team for the actual environment variables you'll need!
@@ -145,3 +146,10 @@ Confirm that the data has indeed been migrated by checking pgAdmin 4.
 1. Create a config in which `FLASK_ENV=test`
 2. Create an empty database called `whiteclaw_test`
 3. Run `python manage.py test`
+
+## Loading Tableau CSV to Google Sheets
+1. Navigate to `https://console.cloud.google.com/apis/credentials/oauthclient/702218053502-fcrju4976lt0p1dntbln2qdolo72qjki.apps.googleusercontent.com?authuser=3&project=covid-corporate--1589232879130`.
+2. Make sure you are signed into the console as `can.serosurveillance.dev@gmail.com`.
+3. Click `DOWNLOAD JSON` and save the file as `credentials.json` in the `tableau_data_connector` directory.
+4. Run `table_generator.py` for the first time. Authenticate using `can.serosurveillance.dev@gmail.com` the first time you run this.
+

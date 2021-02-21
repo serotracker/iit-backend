@@ -1,7 +1,7 @@
 from itertools import groupby
 from functools import reduce
 from app.serotracker_sqlalchemy import db_session, DashboardSource, ResearchSource, \
-    db_model_config, Country, State, City
+    db_model_config, Country, State, City, dashboard_source_cols, research_source_cols
 import pandas as pd
 import numpy as np
 from .estimate_prioritization import get_prioritized_estimates
@@ -26,23 +26,14 @@ def get_all_records(research_fields=False):
                          'test_adj', 'specimen_type', 'test_type', 'population_group', 'url', 'case_count',
                          'test_count', 'death_count', 'vaccination_count', 'full_vaccination_count']
 
+
         # Add columns from dashboard source to select statement
         fields_list = [DashboardSource.source_id]
-        for field_string in field_strings:
+        for field_string in dashboard_source_cols:
             fields_list.append(getattr(DashboardSource, field_string))
 
         # If research fields is True, add columns from research source to select statement
         if research_fields:
-            research_source_cols = ['case_population', 'deaths_population', 'age_max', 'age_min', 'age_variation',
-                                    'age_variation_measure', 'average_age', 'case_count_neg14', 'case_count_neg9',
-                                    'case_count_0', 'death_count_plus11', 'death_count_plus4', 'ind_eval_lab',
-                                    'ind_eval_link', 'ind_se', 'ind_se_n', 'ind_sp', 'ind_sp_n', 'jbi_1', 'jbi_2',
-                                    'jbi_3', 'jbi_4', 'jbi_5', 'jbi_6', 'jbi_7', 'jbi_8', 'jbi_9', 'measure_of_age',
-                                    'sample_frame_info', 'number_of_females', 'number_of_males', 'numerator_value',
-                                    'estimate_name', 'test_not_linked_reason', 'se_n', 'seroprev_95_ci_lower',
-                                    'seroprev_95_ci_upper', 'sp_n', 'subgroup_var', 'subgroup_cat', 'superceded',
-                                    'test_linked_uid', 'test_name', 'test_validation', 'gbd_region', 'gbd_subregion',
-                                    'lmic_hic', 'genpop', 'sampling_type']
             for col in research_source_cols:
                 fields_list.append(getattr(ResearchSource, col))
 

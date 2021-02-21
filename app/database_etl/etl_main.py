@@ -11,6 +11,7 @@ from app.database_etl.postgres_tables_handler import create_dashboard_source_df,
     add_mapped_variables, validate_records, load_postgres_tables, drop_table_entries, check_filter_options
 from app.database_etl.airtable_records_handler import get_all_records, apply_study_max_estimate_grade,\
     apply_min_risk_of_bias, standardize_airtable_data
+from app.database_etl.tableau_data_connector import upload_analyze_csv
 
 
 load_dotenv()
@@ -97,6 +98,9 @@ def main():
 
     # Make sure that filter options are still valid
     check_filter_options(dashboard_source)
+
+    # Upload tableau csv to google sheets
+    upload_analyze_csv()
     return
 
 
