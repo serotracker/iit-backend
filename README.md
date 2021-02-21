@@ -137,7 +137,14 @@ recreate all the tables in the schema: `flask db upgrade`
 
 ### Populate local database
 
-Run the script `python app/database_etl/etl_main.py`.
+Run the script `python app/database_etl/etl_main.py`.  
+To run the ETL script, you must have the following CSVs cloned:
+- [Tests](https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/testing/covid-testing-all-observations.csv)  --> `tests.csv`
+- [Cases](https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/jhu/total_cases_per_million.csv)  --> `cases.csv`
+- [Deaths](https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/jhu/total_deaths_per_million.csv)  --> `deaths.csv`
+- [Vaccinations](https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/vaccinations.csv)  --> `vaccinations.csv`
+
+Save these CSVs in one directory, then add the directory path to your `.env` file as `CSV_DIR`.
 
 Confirm that the data has indeed been migrated by checking pgAdmin 4.
 
