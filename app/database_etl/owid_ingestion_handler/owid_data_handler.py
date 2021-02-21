@@ -39,6 +39,8 @@ def get_total_tests(country_name: str, midpoint_date: datetime):
     country_id = get_country_code(country_name)
     country_total_tests = tests_df.loc[tests_df['ISO code'] == country_id]
     per_thousand = country_total_tests.loc[country_total_tests['Date'] == midpoint_date.strftime('%Y-%m-%d')][['Entity', 'Cumulative total per thousand']]
+
+    # Capture tests performed and omit all other data from the CSV (e.g. people tested, samples tested)
     ret = per_thousand[per_thousand['Entity'].str.contains('tests performed')]['Cumulative total per thousand']
     return float(ret) / 10 if not ret.empty else None
 
