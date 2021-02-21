@@ -14,7 +14,7 @@ def read_from_json(path_to_json):
 
 ISO3_CODES = read_from_json('country_iso3.json')
 ISO2_CODES = read_from_json('country_iso2.json')
-
+COUNTRY_ALTERNATIVE_NAMES = read_from_json('country_alternative_names.json')
 
 # Place = string representing the name of the place
 # Country code = ISO2 alpha country code, used as an optional argument to the mapbox api
@@ -73,6 +73,10 @@ def get_country_code(country_name, iso3=True):
         except:
             pass
     return code
+
+
+def get_alternative_names(country_code):
+    return COUNTRY_ALTERNATIVE_NAMES[country_code] if country_code in COUNTRY_ALTERNATIVE_NAMES else None
 
 
 # Returns a list of 'city,state' if we
