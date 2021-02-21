@@ -4,6 +4,13 @@ import os
 
 from app.database_etl.location_utils import get_alternative_names, get_country_code
 
+# Define adjustment offsets
+OFFSETS = {
+    "CASES": datetime.timedelta(days=-9),
+    "DEATHS": datetime.timedelta(days=4),
+    "VACCINATIONS": datetime.timedelta(days=-14)
+}
+
 CSV_DIR = os.getenv('CSV_DIR')
 
 vaccination_df = pd.read_csv(CSV_DIR + "vaccinations.csv")[['date', 'iso_code', 'people_vaccinated_per_hundred', 'people_fully_vaccinated_per_hundred']]
@@ -38,7 +45,7 @@ def get_total_tests(country_name: str, midpoint_date: datetime):
 
 def get_total_cases(country_name: str, midpoint_date: datetime):
     if str(midpoint_date) == 'NaT': return None
-    offset = datetime.timedelta(days=-9)
+    offset = OFFSETS['CASES']
     target_date = (midpoint_date + offset).strftime('%Y-%m-%d')
 
     if country_name not in cases_df.columns:
@@ -51,7 +58,7 @@ def get_total_cases(country_name: str, midpoint_date: datetime):
 
 def get_total_deaths(country_name: str, midpoint_date: datetime):
     if str(midpoint_date) == 'NaT': return None
-    offset = datetime.timedelta(days=4)
+    offset = OFFSETS['DEATHS']
     target_date = (midpoint_date + offset).strftime('%Y-%m-%d')
 
     if country_name not in deaths_df.columns:
@@ -62,23 +69,13 @@ def get_total_deaths(country_name: str, midpoint_date: datetime):
     return float(per_million) / 10000 if not per_million.empty else None
 
 
-def get_vaccinated(country_name: str, midpoint_date: datetime):
+def get_vaccinated(country_name: str, midpoint_date: datetime, fully_vaccinated=False):
     if str(midpoint_date) == 'NaT': return None
     country_id = get_country_code(country_name)
-    offset = datetime.timedelta(days=-14)
+    offset = OFFSETS['VACCINATIONS']
     target_date = (midpoint_date + offset).strftime('%Y-%m-%d')
 
     country_data = vaccination_df.loc[vaccination_df['iso_code'] == country_id]
-    ret = country_data.loc[country_data['date'] == target_date]['people_vaccinated_per_hundred']
-    return float(ret) if not ret.empty else None
-
-
-def get_fully_vaccinated(country_name: str, midpoint_date: datetime):
-    if str(midpoint_date) == 'NaT': return None
-    country_id = get_country_code(country_name)
-    offset = datetime.timedelta(days=-14)
-    target_date = (midpoint_date + offset).strftime('%Y-%m-%d')
-
-    country_data = vaccination_df.loc[vaccination_df['iso_code'] == country_id]
-    ret = country_data.loc[country_data['date'] == target_date]['people_fully_vaccinated_per_hundred']
+    ret = country_data.loc[country_data['date'] == target_date]['people_vaccinated_per_hundred'] if not fully_vaccinated else \
+          country_data.loc[country_data['date'] == target_date]['people_fully_vaccinated_per_hundred']
     return float(ret) if not ret.empty else None
