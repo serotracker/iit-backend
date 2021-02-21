@@ -78,6 +78,6 @@ def get_vaccinated(country_name: str, midpoint_date: datetime, fully_vaccinated=
     target_date = (midpoint_date + offset).strftime('%Y-%m-%d')
 
     country_data = vaccination_df.loc[vaccination_df['iso_code'] == country_id]
-    ret = country_data.loc[country_data['date'] == target_date]['people_vaccinated_per_hundred'] if not fully_vaccinated else \
-          country_data.loc[country_data['date'] == target_date]['people_fully_vaccinated_per_hundred']
+    col_name = 'people_fully_vaccinated_per_hundred' if fully_vaccinated else 'people_vaccinated_per_hundred'
+    ret = country_data.loc[country_data['date'] == target_date][col_name]
     return float(ret) if not ret.empty else None
