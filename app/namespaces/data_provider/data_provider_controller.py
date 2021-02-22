@@ -13,35 +13,9 @@ data_provider_ns = Namespace('data_provider', description='Endpoints for getting
 logging.getLogger(__name__)
 
 
-@data_provider_ns.route('/records', methods=['GET', 'POST'])
+@data_provider_ns.route('/records', methods=['POST'])
 class Records(Resource):
     @data_provider_ns.doc('An endpoint for getting all records from database with or without filters.')
-    def get(self):
-        # Parse pagination request args if they are present
-        sorting_key = request.args.get('sorting_key', None, type=str)
-        min_page_index = request.args.get('min_page_index', None, type=int)
-        max_page_index = request.args.get('max_page_index', None, type=int)
-        per_page = request.args.get('per_page', None, type=int)
-
-        # Type must be string not bool, because bool evaluates to true for any non None value including False and True
-        research_fields = False if str.lower(request.args.get('research_fields', 'false', type=str)) == 'false' else True
-        prioritize_estimates = True if str.lower(request.args.get('prioritize_estimates', 'true', type=str)) == 'true' else False
-        reverse = False if str.lower(request.args.get('reverse', 'false', type=str)) == 'false' else True
-
-        # Log request info
-        logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}".format(
-            type=request.environ['REQUEST_METHOD'],
-            path=request.environ['PATH_INFO'],
-            args=dict(request.args)))
-
-        result = get_filtered_records(research_fields, filters=None, columns=None, start_date=None, end_date=None,
-                                      prioritize_estimates=prioritize_estimates)
-        result = jitter_pins(result)
-
-        # Only paginate if all the pagination parameters have been specified
-        if min_page_index is not None and max_page_index is not None and per_page is not None and sorting_key is not None and reverse is not None:
-            result = get_paginated_records(result, sorting_key, min_page_index, max_page_index, per_page, reverse)
-        return jsonify(result)
 
     def post(self):
         # Convert input payload to json and throw error if it doesn't exist
