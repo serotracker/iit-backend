@@ -6,16 +6,60 @@ from flask import jsonify, make_response, request
 from .data_provider_service import get_record_details, get_country_seroprev_summaries, jitter_pins
 from .data_provider_schema import RecordDetailsSchema, RecordsSchema, StudyCountSchema
 from app.utils import validate_request_input_against_schema, get_filtered_records,\
-    get_paginated_records, convert_start_end_dates
+    get_paginated_records_list, get_paginated_records_dict convert_start_end_dates
 from app.database_etl.postgres_tables_handler import get_all_filter_options
 
 data_provider_ns = Namespace('data_provider', description='Endpoints for getting database records.')
 logging.getLogger(__name__)
 
-
 @data_provider_ns.route('/records', methods=['POST'])
 class Records(Resource):
     @data_provider_ns.doc('An endpoint for getting all records from database with or without filters.')
+
+    def post(self):
+        # Convert input payload to json and throw error if it doesn't exist
+        data = request.get_json()
+        if not data:
+            return {"message": "No input payload provided"}, 400
+
+        # Log request info
+        logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}, Payload: {payload}".format(
+            type=request.environ['REQUEST_METHOD'],
+            path=request.environ['PATH_INFO'],
+            args=dict(request.args),
+            payload=data))
+
+        # All of these params can be empty, in which case, our utility functions will just return all records
+        filters = data.get('filters')
+
+        # Validate input payload
+        payload, status_code = validate_request_input_against_schema(data, RecordsSchema())
+        if status_code != 200:
+            # If there was an error with the input payload, return the error and 422 response
+            return make_response(payload, status_code)
+
+        sorting_key = data.get('sorting_key')
+        page_index = data.get('page_index')
+        per_page = data.get('per_page')
+        reverse = data.get('reverse')
+        columns = data.get('columns')
+        research_fields = data.get('research_fields')
+        prioritize_estimates = data.get('prioritize_estimates', True)
+        start_date, end_date = convert_start_end_dates(data)
+
+        result = get_filtered_records(research_fields, filters, columns, start_date=start_date, end_date=end_date,
+                                      prioritize_estimates=prioritize_estimates)
+        if not columns or ("pin_latitude" in columns and "pin_longitude" in columns):
+            result = jitter_pins(result)
+
+        # Only paginate if all the pagination parameters have been specified
+        if page_index is not None and per_page is not None and sorting_key is not None and reverse is not None:
+            result = get_paginated_records_list(result, sorting_key, page_index, per_page, reverse)
+        return jsonify(result)
+
+@data_provider_ns.route('/records/paginated', methods=['POST'])
+class Records(Resource):
+    @data_provider_ns.doc('An endpoint for getting all paginated records from database with or without filters.')
 
     def post(self):
         # Convert input payload to json and throw error if it doesn't exist
@@ -56,7 +100,7 @@ class Records(Resource):
 
         # Only paginate if all the pagination parameters have been specified
         if min_page_index is not None and max_page_index is not None and per_page is not None and sorting_key is not None and reverse is not None:
-            result = get_paginated_records(result, sorting_key, min_page_index, max_page_index, per_page, reverse)
+            result = get_paginated_records_dict(result, sorting_key, min_page_index, max_page_index, per_page, reverse)
         return jsonify(result)
 
 
