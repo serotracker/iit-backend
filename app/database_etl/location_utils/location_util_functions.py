@@ -53,26 +53,8 @@ def add_latlng_to_df(place_type, place_type_name, df):
 
 # Get iso3 or iso2 code for a given country name
 def get_country_code(country_name, iso3=True):
-    code = None
     code_dict = ISO3_CODES if iso3 else ISO2_CODES
-    if country_name in code_dict:
-        code = code_dict[country_name]
-    else:
-        url = f"https://restcountries.eu/rest/v2/name/{country_name}"
-        r = requests.get(url)
-        data = r.json()
-        try:
-            idx = 0
-            # try to find result with an exact name match
-            # if one can't be found, default to index 0
-            for i in range(len(data)):
-                if data[i]["name"] == country_name:
-                    idx = i
-                    break
-            code = data[idx]["alpha3Code"] if iso3 else data[idx]["alpha2Code"]
-        except:
-            pass
-    return code
+    return code_dict[country_name] if country_name in code_dict else None
 
 
 def get_alternative_names(country_code):
