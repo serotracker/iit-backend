@@ -5,7 +5,7 @@ from flask import jsonify, make_response, request
 
 from .data_provider_service import get_record_details, get_country_seroprev_summaries, jitter_pins
 from .data_provider_schema import RecordDetailsSchema, RecordsSchema, StudyCountSchema
-from app.utils import validate_request_input_against_schema, get_filtered_records, get_paginated_records_list, get_paginated_records_dict, convert_start_end_dates
+from app.utils import validate_request_input_against_schema, get_filtered_records, get_paginated_records, convert_start_end_dates
 from app.database_etl.postgres_tables_handler import get_all_filter_options
 
 data_provider_ns = Namespace('data_provider', description='Endpoints for getting database records.')
@@ -37,10 +37,6 @@ class Records(Resource):
             # If there was an error with the input payload, return the error and 422 response
             return make_response(payload, status_code)
 
-        sorting_key = data.get('sorting_key')
-        page_index = data.get('page_index')
-        per_page = data.get('per_page')
-        reverse = data.get('reverse')
         columns = data.get('columns')
         research_fields = data.get('research_fields')
         prioritize_estimates = data.get('prioritize_estimates', True)
@@ -50,10 +46,6 @@ class Records(Resource):
                                       prioritize_estimates=prioritize_estimates)
         if not columns or ("pin_latitude" in columns and "pin_longitude" in columns):
             result = jitter_pins(result)
-
-        # Only paginate if all the pagination parameters have been specified
-        if page_index is not None and per_page is not None and sorting_key is not None and reverse is not None:
-            result = get_paginated_records_list(result, sorting_key, page_index, per_page, reverse)
         return jsonify(result)
 
 @data_provider_ns.route('/records/paginated', methods=['POST'])
@@ -99,7 +91,7 @@ class Records(Resource):
 
         # Only paginate if all the pagination parameters have been specified
         if min_page_index is not None and max_page_index is not None and per_page is not None and sorting_key is not None and reverse is not None:
-            result = get_paginated_records_dict(result, sorting_key, min_page_index, max_page_index, per_page, reverse)
+            result = get_paginated_records(result, sorting_key, min_page_index, max_page_index, per_page, reverse)
         return jsonify(result)
 
 

@@ -227,18 +227,7 @@ def get_filtered_records(research_fields=False, filters=None, columns=None, star
 '''
 Note: `page_index` is zero-indexed here!
 '''
-
-def get_paginated_records_list(query_dicts, sorting_key, page_index, per_page, reverse):
-    # Order the records first
-    sorted_records = sorted(query_dicts, key=lambda x: (x[sorting_key] is None, x[sorting_key]), reverse=reverse)
-
-    start = page_index * per_page
-    end = page_index * per_page + per_page
-
-    return sorted_records[start:end]
-
-
-def get_paginated_records_dict(query_dicts, sorting_key, min_page_index, max_page_index, per_page, reverse):
+def get_paginated_records(query_dicts, sorting_key, min_page_index, max_page_index, per_page, reverse):
     # Order the records first
     sorted_records = sorted(query_dicts, key=lambda x: (x[sorting_key] is None, x[sorting_key]), reverse=reverse)
 
