@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 from .estimate_prioritization import get_prioritized_estimates
 from statistics import mean
+from typing import List, Dict, Any
 
 
 def get_all_records(research_fields=False):
@@ -224,12 +225,19 @@ def get_filtered_records(research_fields=False, filters=None, columns=None, star
         result = [grab_cols(i, columns) for i in result]
     return result
 
+'''Gets and returns a dictionary of pages of records
+
+:param records: list of unpaginated records
+:param min_page_index: minimum page index
+:param max_page_index: maximum page index
+:param per_page: number of records per page
+:param reverse: whether to sort list of unpaginated records in reverse order or not 
+:param sorting_key: key by which list of unpaginated records are sorted
+:returns a dictionary of lists of records (len(list) == per_page)
 '''
-Note: `page_index` is zero-indexed here!
-'''
-def get_paginated_records(query_dicts, sorting_key, min_page_index, max_page_index, per_page, reverse):
+def get_paginated_records(records: List[Dict[str, Any]], min_page_index: int, max_page_index: int, per_page: int = 5, reverse: bool = False, sorting_key: str = "sampling_end_date") -> Dict[int, List[Dict[str, Any]]]:
     # Order the records first
-    sorted_records = sorted(query_dicts, key=lambda x: (x[sorting_key] is None, x[sorting_key]), reverse=reverse)
+    sorted_records = sorted(records, key=lambda x: (x[sorting_key] is None, x[sorting_key]), reverse=reverse)
 
     # Input is non-zero indexing, but we map to zero indexing (e.g. input 1-3 maps to 0-2) but we still return non-zero indexing
     min_page_index -= 1

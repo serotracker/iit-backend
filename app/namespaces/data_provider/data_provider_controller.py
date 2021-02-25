@@ -4,7 +4,7 @@ from flask_restplus import Resource, Namespace
 from flask import jsonify, make_response, request
 
 from .data_provider_service import get_record_details, get_country_seroprev_summaries, jitter_pins
-from .data_provider_schema import RecordDetailsSchema, RecordsSchema, StudyCountSchema
+from .data_provider_schema import RecordDetailsSchema, RecordsSchema, PaginatedRecordsSchema, StudyCountSchema
 from app.utils import validate_request_input_against_schema, get_filtered_records, get_paginated_records, convert_start_end_dates
 from app.database_etl.postgres_tables_handler import get_all_filter_options
 
@@ -49,7 +49,7 @@ class Records(Resource):
         return jsonify(result)
 
 @data_provider_ns.route('/records/paginated', methods=['POST'])
-class Records(Resource):
+class PaginatedRecords(Resource):
     @data_provider_ns.doc('An endpoint for getting all paginated records from database with or without filters.')
 
     def post(self):
@@ -69,7 +69,7 @@ class Records(Resource):
         filters = data.get('filters')
 
         # Validate input payload
-        payload, status_code = validate_request_input_against_schema(data, RecordsSchema())
+        payload, status_code = validate_request_input_against_schema(data, PaginatedRecordsSchema())
         if status_code != 200:
             # If there was an error with the input payload, return the error and 422 response
             return make_response(payload, status_code)
@@ -89,9 +89,19 @@ class Records(Resource):
         if not columns or ("pin_latitude" in columns and "pin_longitude" in columns):
             result = jitter_pins(result)
 
-        # Only paginate if all the pagination parameters have been specified
-        if min_page_index is not None and max_page_index is not None and per_page is not None and sorting_key is not None and reverse is not None:
-            result = get_paginated_records(result, sorting_key, min_page_index, max_page_index, per_page, reverse)
+        kwargs = {
+            "records": result,
+            "min_page_index": min_page_index,
+            "max_page_index": max_page_index,
+            "per_page": per_page,
+            "reverse": reverse,
+            "sorting_key": sorting_key
+        }
+
+        kwargs_not_none = { k: v for k, v in kwargs.items() if v is not None }
+
+        # Only paginate if pagination params min_page_index, max_page_index and per_page are specified (sorting_key="sampling_end_date", reverse=true, per_page=5 by default)
+        result = get_paginated_records(**kwargs_not_none)
         return jsonify(result)
 
 
