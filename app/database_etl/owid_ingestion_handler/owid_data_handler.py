@@ -1,6 +1,5 @@
 import pandas as pd
 import datetime
-import os
 
 from app.database_etl.location_utils import get_alternative_names, get_country_code
 
@@ -11,12 +10,16 @@ OFFSETS = {
     "VACCINATIONS": datetime.timedelta(days=-14)
 }
 
-CSV_DIR = os.getenv('CSV_DIR')
-
-vaccination_df = pd.read_csv(CSV_DIR + "vaccinations.csv")[['date', 'iso_code', 'people_vaccinated_per_hundred', 'people_fully_vaccinated_per_hundred']]
-tests_df = pd.read_csv(CSV_DIR + "tests.csv")[['Entity', 'Date', 'ISO code', 'Cumulative total per thousand']]  # per thousand
-cases_df = pd.read_csv(CSV_DIR + "cases.csv")  # per million
-deaths_df = pd.read_csv(CSV_DIR + "deaths.csv")  # per million
+vaccination_df = pd.read_csv('https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/'
+                             'vaccinations/vaccinations.csv')[['date', 'iso_code', 'people_vaccinated_per_hundred',
+                                                               'people_fully_vaccinated_per_hundred']]
+tests_df = pd.read_csv('https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/'
+                       'testing/covid-testing-all-observations.csv')[['Entity', 'Date', 'ISO code',
+                                                                      'Cumulative total per thousand']]  # per thousand
+cases_df = pd.read_csv('https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/'
+                       'jhu/total_cases_per_million.csv')  # per million
+deaths_df = pd.read_csv('https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/'
+                        'jhu/total_deaths_per_million.csv')  # per million
 
 
 def _get_alt_name(country_name: str, df: pd.DataFrame):
