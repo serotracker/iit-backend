@@ -13,7 +13,7 @@ OFFSETS = {
 }
 
 try:
-    vaccination_df = pd.read_csv('https://raw.githubusercontent.com/owid/cvid-19-data/master/public/data/'
+    vaccination_df = pd.read_csv('https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/'
                                  'vaccinations/vaccinations.csv')[['date', 'iso_code', 'people_vaccinated_per_hundred',
                                                                    'people_fully_vaccinated_per_hundred']]
     tests_df = pd.read_csv('https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/'
