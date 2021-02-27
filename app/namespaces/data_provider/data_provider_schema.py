@@ -39,8 +39,8 @@ class PaginatedRecordsSchema(RecordsSchema):
     sorting_key = fields.String(validate=validate.OneOf(["serum_pos_prevalence", "denominator_value",
                                                          "overall_risk_of_bias", "source_name",
                                                          "source_id", "sampling_end_date"]), allow_none=True)
-    min_page_index = fields.Integer()
-    max_page_index = fields.Integer()
+    min_page_index = fields.Integer(required=True)
+    max_page_index = fields.Integer(required=True)
     per_page = fields.Integer(allow_none=True)
     reverse = fields.Boolean(allow_none=True)
 
