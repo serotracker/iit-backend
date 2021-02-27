@@ -5,9 +5,11 @@ from sqlalchemy import distinct, func
 from app.serotracker_sqlalchemy import db_session, DashboardSource, \
     Country
 from app.utils.notifications_sender import send_slack_message
+import pandas as pd
+from typing import Dict, List, Any
 
 
-def get_filter_static_options():
+def get_filter_static_options() -> Dict[str, List[str]]:
     return {
         "age": [
             "Adults (18-64 years)",
@@ -31,7 +33,7 @@ def get_filter_static_options():
             "Household and community samples",
             "Residual sera",
             "Assisted living and long-term care facilities",
-            "Students",
+            "Students and Daycares",
             "Contacts of COVID patients",
             "Non-essential workers and unemployed persons",
             "Essential non-healthcare workers",
@@ -39,6 +41,7 @@ def get_filter_static_options():
             "Persons who are incarcerated",
             "Persons living in slums",
             "Pregnant or parturient women",
+            "Perinatal",
             "Patients seeking care for non-COVID-19 reasons",
             "Household and community samples",
             "Health care workers and caregivers",
@@ -70,7 +73,7 @@ def get_filter_static_options():
     }
 
 
-def get_all_filter_options():
+def get_all_filter_options() -> Dict[str, Any]:
     with db_session() as session:
         options = get_filter_static_options()
 
@@ -88,7 +91,8 @@ def get_all_filter_options():
 
 
 # Send alert email if filter options have changed
-def check_filter_options(dashboard_source):
+# Typing a function with void return: https://stackoverflow.com/questions/36797282/python-void-return-type-annotation
+def check_filter_options(dashboard_source: pd.DataFrame) -> None:
     curr_filter_options = get_filter_static_options()
     to_ignore = set(["All", "Multiple groups", "Multiple populations", "Multiple Types", None])
     changed_filter_options = {}
@@ -99,10 +103,16 @@ def check_filter_options(dashboard_source):
         # Remove options that are unused (e.g. "All", "Multiple groups", etc)
         new_options = set([s for s in new_options if s not in to_ignore])
         # Check to see if the new options are equal to the curr hardcoded options
-        # Check to see if the new options are equal to the curr hardcoded options
-        if new_options != set(curr_filter_options[filter_type]):
-            changed_filter_options[filter_type] = new_options
+        old_options = set(curr_filter_options[filter_type])
+        if new_options != old_options:
+            options_added = new_options - old_options
+            options_removed = old_options - new_options
+            changed_filter_options[filter_type] = {}
+            changed_filter_options[filter_type]['options_added'] = options_added
+            changed_filter_options[filter_type]['options_removed'] = options_removed
             logging.info(new_options)
     if len(changed_filter_options.keys()) > 0:
         body = f"New filter options found in ETL: {changed_filter_options}"
         send_slack_message(message=body, channel='#dev-logging-etl')
+
+    return
