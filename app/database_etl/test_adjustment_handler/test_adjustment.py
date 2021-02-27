@@ -9,6 +9,11 @@ import arviz
 
 from marshmallow import Schema, fields, ValidationError
 
+# To resolve error when running multiple chains at once:
+# https://discourse.mc-stan.org/t/new-to-pystan-always-get-this-error-when-attempting-to-sample-modulenotfounderror-no-module-named-stanfit4anon-model/19288/3
+import multiprocessing
+multiprocessing.set_start_method("fork")
+
 def validate_against_schema(input_payload, schema):
     try:
         payload = schema.load(input_payload)
