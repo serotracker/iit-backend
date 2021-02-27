@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 
 from app.utils import get_filtered_records
 from app.database_etl.tableau_data_connector.google_services_manager import GoogleSheetsManager
+from app.namespaces.data_provider.data_provider_service import jitter_pins
 
 load_dotenv()
 
@@ -13,6 +14,7 @@ def upload_analyze_csv():
     # Get records
     records = get_filtered_records(research_fields=True, filters=None, columns=None, start_date=None,
                                    end_date=None, prioritize_estimates=False)
+    records = jitter_pins(records)
     records_df = pd.DataFrame(records)
 
     # Turn lists into comma sep strings
