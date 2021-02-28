@@ -208,45 +208,49 @@ def get_adjusted_estimate(estimate, n_iter=2000, n_chains=4):
     # unadjusted estimate available and thus prioritized in estimate selection code
     if pd.isna(estimate['TEST_ADJ']):
 
-        if estimate['IND_EVAL_AVAIL']:
-            adj_type = '1. FINDDx / MUHC independent evaluation'
-            se = estimate['IND_SE']
-            sp = estimate['IND_SP']
-            se_n = estimate['IND_SE_N'] if pd.notna(estimate['IND_SE_N']) else 30
-            sp_n = estimate['IND_SP_N'] if pd.notna(estimate['IND_SP_N']) else 80
+        # Independent evaluation is available
+        if estimate['ind_se'].notnull() & estimate['ind_sp'].notnull():
+            adj_type = 'FINDDx / MUHC independent evaluation'
+            se = estimate['ind_se']
+            sp = estimate['ind_sp']
+            se_n = estimate['ind_se_n'] if pd.notna(estimate['ind_se_n']) else 30
+            sp_n = estimate['ind_sp_n'] if pd.notna(estimate['ind_sp_n']) else 80
 
-        elif estimate['ATHR_EVAL_AVAIL']:
-            if 'Validated by independent authors/third party/non-developers' in estimate['TEST_VALIDATION']:
-                adj_type = '2. Author-reported independent evaluation'
+        # Author evaluation is available
+        elif estimate['se_n'].notnull() & estimate['sp_n'].notnull() & estimate['sensitivity'].notnull() & estimate['specificity'].notnull():
+            if 'Validated by independent authors/third party/non-developers' in estimate['test_validation']:
+                adj_type = 'Author-reported independent evaluation'
             else:
-                adj_type = '3. Test developer / manufacturer evaluation'
-            se = estimate['SENSITIVITY']
-            sp = estimate['SPECIFICITY']
-            se_n = estimate['SE_N'] if pd.notna(estimate['SE_N']) else 30
-            sp_n = estimate['SP_N'] if pd.notna(estimate['SP_N']) else 80
+                adj_type = 'Test developer / manufacturer evaluation'
+            se = estimate['sensitivity']
+            sp = estimate['specificity']
+            se_n = estimate['se_n'] if pd.notna(estimate['se_n']) else 30
+            sp_n = estimate['sp_n'] if pd.notna(estimate['sp_n']) else 80
 
-        elif estimate['MFR_EVAL_AVAIL']:
-            adj_type = '3. Test developer / manufacturer evaluation'
-            se = estimate['SENSITIVITY']
-            sp = estimate['SPECIFICITY']
-            se_n, sp_n = 30, 80  # per FDA minimum requirements https://www.fda.gov/medical-devices/coronavirus-disease-2019-covid-19-emergency-use-authorizations-medical-devices/eua-authorized-serology-test-performance
+        # Manufacturer evaluation is available
+        elif estimate['sensitivity'].notnull() & estimate['specificity'].notnull():
+            adj_type = 'Test developer / manufacturer evaluation'
+            se = estimate['sensitivity']
+            sp = estimate['specificity']
+            # per FDA minimum requirements https://www.fda.gov/medical-devices/coronavirus-disease-2019-covid-19-emergency-use-authorizations-medical-devices/eua-authorized-serology-test-performance
+            se_n, sp_n = 30, 80
 
         else:
             # if there is no matched adjusted estimate available:
             for test_type in ['LFIA', 'CLIA', 'ELISA', None]:
-                if test_type in estimate['TEST_TYPES_GROUPED']:
+                if test_type in estimate['test_types']:
                     se = bastos_estimates[test_type]['se']['50']
                     sp = bastos_estimates[test_type]['sp']['50']
                     se_n = bastos_estimates[test_type]['se']['n']
                     sp_n = bastos_estimates[test_type]['sp']['n']
-                    adj_type = '5. Used Bastos SR/MA data; no sens, spec, or author adjustment available'
+                    adj_type = 'Used Bastos SR/MA data; no sens, spec, or author adjustment available'
                     break
 
                 if pd.isna(test_type):
-                    adj_type = '6. No data altogether'
+                    adj_type = 'No data altogether'
                     break
 
-        if adj_type == '6. No data altogether':
+        if adj_type == 'No data altogether':
             adj_prev = nan
             se = nan
             sp = nan
@@ -254,9 +258,9 @@ def get_adjusted_estimate(estimate, n_iter=2000, n_chains=4):
             upper = nan
         else:
             print(f'ADJUSTING ESTIMATE AT INDEX {estimate.name}')
-            lower, adj_prev, upper = pystan_adjust(n_prev_obs=int(estimate['DENOMINATOR']),
+            lower, adj_prev, upper = pystan_adjust(n_prev_obs=int(estimate['denominator_value']),
                                                    y_prev_obs=int(
-                                                       estimate['SERUM_POS_PREVALENCE'] * estimate['DENOMINATOR']),
+                                                       estimate['serum_pos_prevalence'] * estimate['denominator_value']),
                                                    n_se=int(se_n),
                                                    y_se=int(se_n * se),
                                                    n_sp=int(sp_n),
@@ -267,20 +271,20 @@ def get_adjusted_estimate(estimate, n_iter=2000, n_chains=4):
                 print(f'FAILED TO ADJUST ESTIMATE AT INDEX {estimate.name}')
 
     else:
-        adj_type = '4. Used author-adjusted estimate'
-        adj_prev = estimate['SERUM_POS_PREVALENCE']
-        se = estimate['SENSITIVITY']
-        sp = estimate['SPECIFICITY']
+        adj_type = 'Used author-adjusted estimate'
+        adj_prev = estimate['serum_pos_prevalence']
+        se = estimate['sensitivity']
+        sp = estimate['specificity']
 
-        lower, upper = proportion_confint(int(estimate['DENOMINATOR'] * estimate['SERUM_POS_PREVALENCE']),
-                                          estimate['DENOMINATOR'], alpha=0.1, method='jeffreys')
+        lower, upper = proportion_confint(int(estimate['denominator_value'] * estimate['serum_pos_prevalence']),
+                                          estimate['denominator_value'], alpha=0.1, method='jeffreys')
 
-    estimate['ADJ_PREV'] = adj_prev
-    estimate['ADJ_SENS'] = se
-    estimate['ADJ_SPEC'] = sp
-    estimate['IND_EVAL_TYPE'] = adj_type
-    estimate['ADJ_PREV_LOWER'] = lower
-    estimate['ADJ_PREV_UPPER'] = upper
+    estimate['adj_prevalence'] = adj_prev
+    estimate['adj_sensitivity'] = se
+    estimate['adj_specificity'] = sp
+    estimate['ind_eval_type'] = adj_type
+    estimate['adj_prev_ci_lower'] = lower
+    estimate['adj_prev_ci_upper'] = upper
 
     return estimate
 
