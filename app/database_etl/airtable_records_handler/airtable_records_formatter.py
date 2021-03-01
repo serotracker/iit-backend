@@ -2,6 +2,7 @@ import numpy as np
 
 from ..location_utils import get_city
 
+
 def get_most_recent_publication_info(row):
     # Get index of most recent pub date if the pub date is not None
     try:
@@ -12,16 +13,25 @@ def get_most_recent_publication_info(row):
     # If pub date is None set to index to 0
     except AttributeError:
         max_index = 0
-
     # If source type exists, get element at that index
     if row['source_type']:
-        row['source_type'] = row['source_type'][max_index]
+        # We should take either the max_index based on the latest pub date,
+        # or the last element of source type if the max index doesn't exist
+        i = min(max_index, len(row['source_type']) - 1)
+        row['source_type'] = row['source_type'][i]
 
     # Index whether org author exists and corresponding first author
     if row['organizational_author'] and row['first_author']:
-        is_org_author = row['organizational_author'][max_index]
+        # We should take either the max_index based on the latest pub date,
+        # or the last element of org author if the max index doesn't exist
+        i = min(max_index, len(row['organizational_author']) - 1)
+        is_org_author = row['organizational_author'][i]
         row['organizational_author'] = is_org_author
-        row['first_author'] = row['first_author'][max_index]
+
+        # We should take either the max_index based on the latest pub date,
+        # or the last element of first author if the max index doesn't exist
+        i = min(max_index, len(row['first_author']) - 1)
+        row['first_author'] = row['first_author'][i]
 
         # If it is not an organizational author, then get last name
         if not is_org_author and len(row['first_author']) > 0:
