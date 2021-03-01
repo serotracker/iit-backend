@@ -74,11 +74,11 @@ class PaginatedRecords(Resource):
             # If there was an error with the input payload, return the error and 422 response
             return make_response(payload, status_code)
 
-        sorting_key = data.get('sorting_key')
+        sorting_key = data.get('sorting_key', None)
         min_page_index = data.get('min_page_index')
         max_page_index = data.get('max_page_index')
-        per_page = data.get('per_page')
-        reverse = data.get('reverse')
+        per_page = data.get('per_page', None)
+        reverse = data.get('reverse', None)
         columns = data.get('columns')
         research_fields = data.get('research_fields')
         prioritize_estimates = data.get('prioritize_estimates', True)
@@ -98,7 +98,7 @@ class PaginatedRecords(Resource):
             "sorting_key": sorting_key
         }
 
-        kwargs_not_none = { k: v for k, v in kwargs.items() if v is not None }
+        kwargs_not_none = { k:v for k, v in kwargs.items() if v is not None }
 
         # Only paginate if pagination params min_page_index, max_page_index and per_page are specified (sorting_key="sampling_end_date", reverse=true, per_page=5 by default)
         result = get_paginated_records(**kwargs_not_none)
