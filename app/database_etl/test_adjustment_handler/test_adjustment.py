@@ -6,13 +6,14 @@ from statsmodels.stats.proportion import proportion_confint
 import pandas as pd
 import pystan
 import arviz
+from app.utils import get_filtered_records
+from app.namespaces.data_provider.data_provider_service import jitter_pins
+from app.database_etl.test_adjustment_handler import bastos_estimates, testadj_model_code
 
 from marshmallow import Schema, fields, ValidationError
-
-# To resolve error when running multiple chains at once:
-# https://discourse.mc-stan.org/t/new-to-pystan-always-get-this-error-when-attempting-to-sample-modulenotfounderror-no-module-named-stanfit4anon-model/19288/3
 import multiprocessing
-multiprocessing.set_start_method("fork")
+
+TESTADJ_MODEL = pystan.StanModel(model_code=testadj_model_code)
 
 def validate_against_schema(input_payload, schema):
     try:
@@ -29,91 +30,8 @@ class ModelParamsSchema(Schema):
     n_sp = fields.Integer()
     y_sp = fields.Float()
 
-# Bastos 2020 in BMJ provided a SR&MA of serological test diagnostic accuracy
-# https://www.bmj.com/content/370/bmj.m2516
-# we use their provided Se and Sp figures when independent evaluations are not available in our data
-# and infer their distributions from the total number of samples provided
-
-bastos_estimates = {
-    'ELISA': {
-        'se': {
-            '50': 75.6,
-            '2.5': 84.3,
-            '97.5': 90.9,
-            'n': 766
-        },
-        'sp': {
-            '50': 97.6,
-            '2.5': 93.2,
-            '97.5': 99.4,
-            'n': 1109
-        }
-    },
-    'LFIA': {
-        'se': {
-            '50': 66.0,
-            '2.5': 49.3,
-            '97.5': 79.3,
-            'n': 2660
-        },
-        'sp': {
-            '50': 96.6,
-            '2.5': 94.3,
-            '97.5': 98.2,
-            'n': 2874
-        }
-    },
-    'CLIA': {
-        'se': {
-            '50': 97.8,
-            '2.5': 46.2,
-            '97.5': 100,
-            'n': 375
-        },
-        'sp': {
-            '50': 97.8,
-            '2.5': 62.9,
-            '97.5': 99.9,
-            'n': 2804
-        }
-    }
-}
-
-# rescale seroprevalence data from percentages to proportion
-bastos_estimates = {test_type: {
-    char: {prop: value / 100 if prop != 'n' else value for prop, value in char_di.items()}
-    for char, char_di in test_type_di.items()}
-    for test_type, test_type_di in bastos_estimates.items()}
-
-# TODO: Figure out if we can serialize this
-def build_testadj_model():
-    # specify and compile stan model
-    testadj_model_code = """
-    data {
-        int<lower = 0> n_prev_obs;
-        int<lower = 0> y_prev_obs;
-        int<lower = 0> n_se;
-        int<lower = 0> y_se;
-        int<lower = 0> n_sp;
-        int<lower = 0> y_sp;
-    }
-    parameters {
-        real<lower = 0, upper = 1> prev;
-        real<lower = 0, upper = 1> sens;
-        real<lower = 0, upper = 1> spec;
-    }
-    model {
-        real prev_obs = prev * sens + (1 - prev) * (1 - spec);
-        y_prev_obs ~ binomial(n_prev_obs, prev_obs);
-        y_se ~ binomial(n_se, sens);
-        y_sp ~ binomial(n_sp, spec);
-    }
-    """
-
-    return pystan.StanModel(model_code=testadj_model_code)
-
-def fit_one_pystan_model(testadj_model, model_params, n_iter, n_chains):
-    fit = testadj_model.sampling(data=model_params, iter=n_iter, chains=n_chains,
+def fit_one_pystan_model(model_params, n_iter, n_chains):
+    fit = TESTADJ_MODEL.sampling(data=model_params, iter=n_iter, chains=n_chains,
                                  control={'adapt_delta': 0.95},
                                  check_hmc_diagnostics=False)
 
@@ -134,7 +52,7 @@ def fit_one_pystan_model(testadj_model, model_params, n_iter, n_chains):
 
     return summary_df_parsed, satisfactory_model
 
-def pystan_adjust(testadj_model, model_params, execution_params={}):
+def pystan_adjust(model_params, execution_params={}):
     # Parse execution options
     n_iter = execution_params.get('n_iter', 2000)
     n_chains = execution_params.get('n_chains', 4)
@@ -165,7 +83,7 @@ def pystan_adjust(testadj_model, model_params, execution_params={}):
 
             while not satisfactory_model_found:
                 # Attempt to fit a model
-                summary_df_parsed, satisfactory_model = fit_one_pystan_model(testadj_model, model_params, n_iter, n_chains)
+                summary_df_parsed, satisfactory_model = fit_one_pystan_model(model_params, n_iter, n_chains)
                 # If number of attempts exceeded, return Nones
                 n_trials += 1
                 if n_trials >= trials_lim:
@@ -205,20 +123,29 @@ def pystan_adjust(testadj_model, model_params, execution_params={}):
 
 
 def get_adjusted_estimate(estimate, n_iter=2000, n_chains=4):
+    # initialize adj_type
+    adj_type = None
+
     # unadjusted estimate available and thus prioritized in estimate selection code
-    if pd.isna(estimate['TEST_ADJ']):
+    if pd.isna(estimate['test_adj']):
 
         # Independent evaluation is available
-        if estimate['ind_se'].notnull() & estimate['ind_sp'].notnull():
+        if pd.notna(estimate['ind_se']) and pd.notna(estimate['ind_sp']):
             adj_type = 'FINDDx / MUHC independent evaluation'
-            se = estimate['ind_se']
-            sp = estimate['ind_sp']
-            se_n = estimate['ind_se_n'] if pd.notna(estimate['ind_se_n']) else 30
-            sp_n = estimate['ind_sp_n'] if pd.notna(estimate['ind_sp_n']) else 80
+            # Also note these must be divided by 100
+            # TODO: Change ETL to insert these as decimals to keep consistent with 'sensitivity' and 'specificity' cols
+            se = estimate['ind_se']/100
+            sp = estimate['ind_sp']/100
+            # Note: for some reason ind_se_n and ind_sp_n are floats in the DB
+            # See line 51 in airtable_records_formatter.py to see where the conversion is happening in the ETL
+            # Test adjustment expects them to be integers so we gotta convert back
+            se_n = estimate['ind_se_n']*100 if pd.notna(estimate['ind_se_n']) else 30
+            sp_n = estimate['ind_sp_n']*100 if pd.notna(estimate['ind_sp_n']) else 80
 
         # Author evaluation is available
-        elif estimate['se_n'].notnull() & estimate['sp_n'].notnull() & estimate['sensitivity'].notnull() & estimate['specificity'].notnull():
-            if 'Validated by independent authors/third party/non-developers' in estimate['test_validation']:
+        elif pd.notna(estimate['se_n']) and pd.notna(estimate['sp_n']) and \
+                pd.notna(estimate['sensitivity']) and pd.notna(estimate['specificity']):
+            if estimate['test_validation'] and 'Validated by independent authors/third party/non-developers' in estimate['test_validation']:
                 adj_type = 'Author-reported independent evaluation'
             else:
                 adj_type = 'Test developer / manufacturer evaluation'
@@ -228,7 +155,7 @@ def get_adjusted_estimate(estimate, n_iter=2000, n_chains=4):
             sp_n = estimate['sp_n'] if pd.notna(estimate['sp_n']) else 80
 
         # Manufacturer evaluation is available
-        elif estimate['sensitivity'].notnull() & estimate['specificity'].notnull():
+        elif pd.notna(estimate['sensitivity']) and pd.notna(estimate['specificity']):
             adj_type = 'Test developer / manufacturer evaluation'
             se = estimate['sensitivity']
             sp = estimate['specificity']
@@ -237,18 +164,18 @@ def get_adjusted_estimate(estimate, n_iter=2000, n_chains=4):
 
         else:
             # if there is no matched adjusted estimate available:
-            for test_type in ['LFIA', 'CLIA', 'ELISA', None]:
-                if test_type in estimate['test_types']:
+            found_test_type = False
+            for test_type in ['LFIA', 'CLIA', 'ELISA']:
+                if estimate['test_type'] and test_type in estimate['test_type']:
                     se = bastos_estimates[test_type]['se']['50']
                     sp = bastos_estimates[test_type]['sp']['50']
                     se_n = bastos_estimates[test_type]['se']['n']
                     sp_n = bastos_estimates[test_type]['sp']['n']
                     adj_type = 'Used Bastos SR/MA data; no sens, spec, or author adjustment available'
+                    found_test_type = True
                     break
-
-                if pd.isna(test_type):
-                    adj_type = 'No data altogether'
-                    break
+            if not found_test_type:
+                adj_type = 'No data altogether'
 
         if adj_type == 'No data altogether':
             adj_prev = nan
@@ -257,16 +184,21 @@ def get_adjusted_estimate(estimate, n_iter=2000, n_chains=4):
             lower = nan
             upper = nan
         else:
-            print(f'ADJUSTING ESTIMATE AT INDEX {estimate.name}')
-            lower, adj_prev, upper = pystan_adjust(n_prev_obs=int(estimate['denominator_value']),
-                                                   y_prev_obs=int(
-                                                       estimate['serum_pos_prevalence'] * estimate['denominator_value']),
-                                                   n_se=int(se_n),
-                                                   y_se=int(se_n * se),
-                                                   n_sp=int(sp_n),
-                                                   y_sp=int(sp_n * sp),
-                                                   n_iter=n_iter,
-                                                   n_chains=n_chains)
+            print(f'ADJUSTING ESTIMATE AT INDEX {estimate.name}', adj_type)
+            model_params = dict(
+                n_prev_obs=int(estimate['denominator_value']),
+                y_prev_obs=int(
+                    estimate['serum_pos_prevalence'] * estimate['denominator_value']),
+                n_se=int(se_n),
+                y_se=int(se_n * se),
+                n_sp=int(sp_n),
+                y_sp=int(sp_n * sp)
+            )
+            execution_params = dict(
+                n_iter=n_iter,
+                n_chains=n_chains
+            )
+            lower, adj_prev, upper = pystan_adjust(model_params, execution_params)
             if pd.isna(adj_prev):
                 print(f'FAILED TO ADJUST ESTIMATE AT INDEX {estimate.name}')
 
@@ -279,39 +211,34 @@ def get_adjusted_estimate(estimate, n_iter=2000, n_chains=4):
         lower, upper = proportion_confint(int(estimate['denominator_value'] * estimate['serum_pos_prevalence']),
                                           estimate['denominator_value'], alpha=0.1, method='jeffreys')
 
-    estimate['adj_prevalence'] = adj_prev
-    estimate['adj_sensitivity'] = se
-    estimate['adj_specificity'] = sp
-    estimate['ind_eval_type'] = adj_type
-    estimate['adj_prev_ci_lower'] = lower
-    estimate['adj_prev_ci_upper'] = upper
-
-    return estimate
+    return adj_prev, se, sp, adj_type, lower, upper
 
 
 if __name__ == '__main__':
+    # To resolve error when running multiple chains at once:
+    # https://discourse.mc-stan.org/t/new-to-pystan-always-get-this-error-when-attempting-to-sample-modulenotfounderror-no-module-named-stanfit4anon-model/19288/3
+    multiprocessing.set_start_method("fork")
 
-    # use santa clara and denmark findings as sample data
-    bendavid_data = {
-        'n_prev_obs': 3330,
-        'y_prev_obs': 50,
-        'n_se': 122,
-        'y_se': 103,
-        'n_sp': 401,
-        'y_sp': 399
-    }
+    # Get records
+    records = get_filtered_records(research_fields=True, filters=None, columns=None, start_date=None,
+                                   end_date=None, prioritize_estimates=False)
+    records = jitter_pins(records)
+    records_df = pd.DataFrame(records)
 
-    denmark_data_1 = {
-        'n_prev_obs': 20640,
-        'y_prev_obs': 413,
-        'n_se': 59,
-        'y_se': 40,
-        'n_sp': 14,
-        'y_sp': 9
-    }
+    # Turn lists into comma sep strings
+    cols = ['city', 'state', 'test_manufacturer', 'antibody_target', 'isotypes_reported']
+    for col in cols:
+        records_df[col] = records_df[col].apply(lambda x: ",".join(x))
 
-    testadj_model = build_testadj_model()
-    execution_params = {"return_fit": True}
+    # Clean df
+    records_df['source_id'] = records_df['source_id'].apply(lambda x: str(x))
+    records_df = records_df.replace('[', '')
+    records_df = records_df.replace(']', '')
 
-    print(pystan_adjust(testadj_model, bendavid_data, execution_params))
-    print(pystan_adjust(testadj_model, denmark_data_1, execution_params))
+    # Write to csv
+    records_df['adj_prevalence'], records_df['adj_sensitivity'], records_df['adj_specificity'], \
+    records_df['ind_eval_type'], records_df['adj_prev_ci_lower'], records_df['adj_prev_ci_upper'] = \
+        zip(*records_df.apply(lambda row: get_adjusted_estimate(row), axis=1))
+
+    records_df.to_csv("test_adj.csv")
+    print("COMPLETED")
