@@ -1,9 +1,11 @@
 import numpy as np
 
+from typing import Dict
+
 from ..location_utils import get_city
 
 
-def get_most_recent_publication_info(row):
+def get_most_recent_publication_info(row: Dict) -> Dict:
     # Get index of most recent pub date if the pub date is not None
     try:
         pub_dates = row['publication_date']
