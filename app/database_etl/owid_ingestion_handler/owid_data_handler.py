@@ -90,3 +90,9 @@ def get_vaccinated(country_name: str, midpoint_date: datetime, fully_vaccinated=
     col_name = 'people_fully_vaccinated_per_hundred' if fully_vaccinated else 'people_vaccinated_per_hundred'
     ret = country_data.loc[country_data['date'] == target_date][col_name]
     return float(ret) if not ret.empty else None
+
+
+def get_whether_exact_match(country_name: str):
+    # TODO: implement once we have a source providing granular data
+    # For now, will always be exact match
+    return True

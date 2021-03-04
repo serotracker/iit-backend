@@ -50,6 +50,7 @@ class DashboardSource(db.Model):
     death_count = Column(Float)
     vaccination_count = Column(Float)
     full_vaccination_count = Column(Float)
+    geo_exact_match = Column(Boolean)
 
 
 # Research table for all additional research fields

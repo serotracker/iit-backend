@@ -6,7 +6,7 @@ from app.utils.notifications_sender import send_slack_message
 from app.utils import airtable_fields_config
 from app.database_etl.location_utils import add_latlng_to_df, get_country_code
 from .table_formatter import replace_null_string
-from app.database_etl.owid_ingestion_handler import get_vaccinated, get_total_tests, get_total_deaths, get_total_cases, get_midpoint
+from app.database_etl.owid_ingestion_handler import get_vaccinated, get_total_tests, get_total_deaths, get_total_cases, get_midpoint, get_whether_exact_match
 
 import pandas as pd
 
@@ -64,6 +64,9 @@ def create_dashboard_source_df(original_data, current_time):
     # Create full vaccination count column
     original_data['full_vaccination_count'] = original_data.apply(
         lambda row: get_vaccinated(row['country'], row['sampling_midpoint_date'], fully_vaccinated=True), axis=1)
+
+    # Create flag denoting whether geographic mapping is 1:1
+    original_data['geo_exact_match'] = original_data.apply(lambda row: get_whether_exact_match(row['country']), axis=1)
 
     original_data = original_data.drop(columns=['sampling_midpoint_date'])
     return original_data
