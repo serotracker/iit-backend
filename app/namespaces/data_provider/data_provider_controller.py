@@ -4,43 +4,16 @@ from flask_restplus import Resource, Namespace
 from flask import jsonify, make_response, request
 
 from .data_provider_service import get_record_details, get_country_seroprev_summaries, jitter_pins
-from .data_provider_schema import RecordDetailsSchema, RecordsSchema, StudyCountSchema
-from app.utils import validate_request_input_against_schema, get_filtered_records,\
-    get_paginated_records, convert_start_end_dates
+from .data_provider_schema import RecordDetailsSchema, RecordsSchema, PaginatedRecordsSchema, StudyCountSchema
+from app.utils import validate_request_input_against_schema, get_filtered_records, get_paginated_records, convert_start_end_dates
 from app.database_etl.postgres_tables_handler import get_all_filter_options
 
 data_provider_ns = Namespace('data_provider', description='Endpoints for getting database records.')
 logging.getLogger(__name__)
 
-
-@data_provider_ns.route('/records', methods=['GET', 'POST'])
+@data_provider_ns.route('/records', methods=['POST'])
 class Records(Resource):
     @data_provider_ns.doc('An endpoint for getting all records from database with or without filters.')
-    def get(self):
-        # Parse pagination request args if they are present
-        sorting_key = request.args.get('sorting_key', None, type=str)
-        reverse = request.args.get('reverse', None, type=bool)
-        page_index = request.args.get('page_index', None, type=int)
-        per_page = request.args.get('per_page', None, type=int)
-
-        # Type must be string not bool, because bool evaluates to true for any non None value including False and True
-        research_fields = False if str.lower(request.args.get('research_fields', 'false', type=str)) == 'false' else True
-        prioritize_estimates = True if str.lower(request.args.get('prioritize_estimates', 'true', type=str)) == 'true' else False
-
-        # Log request info
-        logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}".format(
-            type=request.environ['REQUEST_METHOD'],
-            path=request.environ['PATH_INFO'],
-            args=dict(request.args)))
-
-        result = get_filtered_records(research_fields, filters=None, columns=None, start_date=None, end_date=None,
-                                      prioritize_estimates=prioritize_estimates)
-        result = jitter_pins(result)
-
-        # Only paginate if all the pagination parameters have been specified
-        if page_index is not None and per_page is not None and sorting_key is not None and reverse is not None:
-            result = get_paginated_records(result, sorting_key, page_index, per_page, reverse)
-        return jsonify(result)
 
     def post(self):
         # Convert input payload to json and throw error if it doesn't exist
@@ -64,10 +37,48 @@ class Records(Resource):
             # If there was an error with the input payload, return the error and 422 response
             return make_response(payload, status_code)
 
-        sorting_key = data.get('sorting_key')
-        page_index = data.get('page_index')
-        per_page = data.get('per_page')
-        reverse = data.get('reverse')
+        columns = data.get('columns')
+        research_fields = data.get('research_fields')
+        prioritize_estimates = data.get('prioritize_estimates', True)
+        start_date, end_date = convert_start_end_dates(data)
+
+        result = get_filtered_records(research_fields, filters, columns, start_date=start_date, end_date=end_date,
+                                      prioritize_estimates=prioritize_estimates)
+        if not columns or ("pin_latitude" in columns and "pin_longitude" in columns):
+            result = jitter_pins(result)
+        return jsonify(result)
+
+@data_provider_ns.route('/records/paginated', methods=['POST'])
+class PaginatedRecords(Resource):
+    @data_provider_ns.doc('An endpoint for getting all paginated records from database with or without filters.')
+
+    def post(self):
+        # Convert input payload to json and throw error if it doesn't exist
+        data = request.get_json()
+        if not data:
+            return {"message": "No input payload provided"}, 400
+
+        # Log request info
+        logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}, Payload: {payload}".format(
+            type=request.environ['REQUEST_METHOD'],
+            path=request.environ['PATH_INFO'],
+            args=dict(request.args),
+            payload=data))
+
+        # All of these params can be empty, in which case, our utility functions will just return all records
+        filters = data.get('filters')
+
+        # Validate input payload
+        payload, status_code = validate_request_input_against_schema(data, PaginatedRecordsSchema())
+        if status_code != 200:
+            # If there was an error with the input payload, return the error and 422 response
+            return make_response(payload, status_code)
+
+        sorting_key = data.get('sorting_key', None)
+        min_page_index = data.get('min_page_index')
+        max_page_index = data.get('max_page_index')
+        per_page = data.get('per_page', None)
+        reverse = data.get('reverse', None)
         columns = data.get('columns')
         research_fields = data.get('research_fields')
         prioritize_estimates = data.get('prioritize_estimates', True)
@@ -78,9 +89,19 @@ class Records(Resource):
         if not columns or ("pin_latitude" in columns and "pin_longitude" in columns):
             result = jitter_pins(result)
 
-        # Only paginate if all the pagination parameters have been specified
-        if page_index is not None and per_page is not None and sorting_key is not None and reverse is not None:
-            result = get_paginated_records(result, sorting_key, page_index, per_page, reverse)
+        kwargs = {
+            "records": result,
+            "min_page_index": min_page_index,
+            "max_page_index": max_page_index,
+            "per_page": per_page,
+            "reverse": reverse,
+            "sorting_key": sorting_key
+        }
+
+        kwargs_not_none = { k:v for k, v in kwargs.items() if v is not None }
+
+        # Only paginate if pagination params min_page_index, max_page_index and per_page are specified (sorting_key="sampling_end_date", reverse=true, per_page=5 by default)
+        result = get_paginated_records(**kwargs_not_none)
         return jsonify(result)
 
 
