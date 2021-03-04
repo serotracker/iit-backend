@@ -40,7 +40,7 @@ dashboard_source_cols = ['source_name', 'source_type', 'study_name', 'denominato
                          'isotype_igg', 'sex', 'age', 'sampling_start_date', 'sampling_end_date', 'estimate_grade',
                          'isotype_comb', 'academic_primary_estimate', 'dashboard_primary_estimate', 'pop_adj',
                          'test_adj', 'specimen_type', 'test_type', 'population_group', 'url', 'case_count',
-                         'test_count', 'death_count', 'vaccination_count', 'full_vaccination_count']
+                         'test_count', 'death_count', 'vaccination_count', 'full_vaccination_count', 'publication_date']
 
 research_source_cols = ['case_population', 'deaths_population', 'age_max', 'age_min', 'age_variation',
                                     'age_variation_measure', 'average_age', 'case_count_neg14', 'case_count_neg9',

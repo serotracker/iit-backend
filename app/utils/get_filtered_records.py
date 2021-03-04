@@ -125,8 +125,9 @@ Output: set of records represented by dicts
 '''
 
 
-def get_filtered_records(research_fields=False, filters=None, columns=None, start_date=None, end_date=None,
-                         prioritize_estimates=True):
+def get_filtered_records(research_fields=False, filters=None, columns=None,
+                         sampling_start_date=None, sampling_end_date=None,
+                         publication_start_date=None, publication_end_date=None, prioritize_estimates=True):
     query_dicts = get_all_records(research_fields)
     if query_dicts is None or len(query_dicts) == 0:
         return []
@@ -159,16 +160,29 @@ def get_filtered_records(research_fields=False, filters=None, columns=None, star
     else:
         result = query_dicts
 
-    def date_filter(record, start_date=None, end_date=None):
+    def date_filter(record, start_date=None, end_date=None, sampling_date_type=True):
         status = True
 
         if start_date is not None:
-            status = status and record["sampling_end_date"] and start_date <= record["sampling_end_date"]
+            # If sampling_date_type is True, compare to the sampling start date
+            if sampling_date_type:
+                status = status and record["sampling_start_date"] and record["sampling_start_date"] >= start_date
+            # If sampling_date_type is False, compare to the publication date
+            else:
+                status = status and record["publication_date"] and record["publication_date"] >= start_date
         if end_date is not None:
-            status = status and record["sampling_end_date"] and end_date >= record["sampling_end_date"]
+            # If sampling_date_type is True, compare to the sampling end date
+            if sampling_date_type:
+                status = status and record["sampling_end_date"] and record["sampling_end_date"] <= end_date
+            # If sampling_date_type is False, compare to the publication date
+            else:
+                status = status and record["publication_date"] and record["publication_date"] <= end_date
         return status
 
-    result = list(filter(lambda x: date_filter(x, start_date=start_date, end_date=end_date), result))
+    result = list(filter(lambda x: date_filter(x, start_date=sampling_start_date,
+                                               end_date=sampling_end_date, sampling_date_type=True), result))
+    result = list(filter(lambda x: date_filter(x, start_date=publication_start_date,
+                                               end_date=publication_end_date, sampling_date_type=False), result))
 
     # Format dates after date filter has been applied
     for record in result:
@@ -176,6 +190,8 @@ def get_filtered_records(research_fields=False, filters=None, columns=None, star
             record['sampling_end_date'] = record['sampling_end_date'].isoformat()
         if record['sampling_start_date'] is not None:
             record['sampling_start_date'] = record['sampling_start_date'].isoformat()
+        if record['publication_date'] is not None:
+            record['publication_date'] = record['publication_date'].isoformat()
 
     # TODO: Determine whether to update get_prioritized_estimates to work on dictionaries
     # or keep everything in dataframes (don't want to have this conversion here long term)
