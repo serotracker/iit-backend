@@ -22,7 +22,6 @@ research_fields = ['2020 Population Count - Case', '2020 Population Count - Mort
                    'Superceded?', 'Test Link Unique ID', 'Test Name', 'Test Validation',
                    'Sub-group specific category (clean)']
 
-
 full_airtable_fields = {'2020 Population Count - Case': 'case_population',
                         '2020 Population Count - Mortality': 'deaths_population',
                         'Academic Primary Estimate': 'academic_primary_estimate',

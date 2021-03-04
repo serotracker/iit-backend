@@ -65,14 +65,13 @@ def get_pooled_estimate(estimates):
     
     elif estimates.shape[0] > 1:
         
-        pooled = estimates.loc[estimates['denominator_value'].idxmax(axis = 1)] # estimate with max denominator
+        pooled = estimates.loc[estimates['denominator_value'].idxmax(axis=1)] # estimate with max denominator
         
         pooled.at['denominator_value'] = sum(estimates['denominator_value'])
         pooled.at['numerator_value'] = sum(estimates['denominator_value'] * estimates['serum_pos_prevalence'])
         pooled.at['serum_pos_prevalence'] =  pooled.at['numerator_value']/pooled.at['denominator_value']
 
         # have population group, state, and city to be the union of the inputs
-        pooled.at['population_group'] = list(estimates['population_group'].dropna().unique())
         pooled.at['state'] = list(estimates['state'].explode().dropna().unique())
         pooled.at['state_longitude'] = list(estimates['state_longitude'].explode().dropna().unique())
         pooled.at['state_latitude'] = list(estimates['state_latitude'].explode().dropna().unique())
@@ -87,10 +86,10 @@ def get_pooled_estimate(estimates):
         # else:
         #     pooled.at['GENPOP'] = 'Study examining special population seroprevalence'
         # same pop only if all are the same, multiple otherwise
-        # if (estimates['POPULATION'] == estimates['POPULATION'].iloc[0]).all(): # all pops are the same
-        #     pooled.at['POPULATION'] = estimates['POPULATION'].iloc[0]
-        # else:
-        #     pooled.at['POPULATION'] = 'Multiple populations'
+        if len(estimates['population_group'].dropna().unique()) == 1: #all pops are the same
+            pooled.at['population_group'] = estimates['population_group'].iloc[0]
+        else:
+            pooled.at['population_group'] = 'Multiple populations'
         
         # take the minimum sampling start date and the maximum sampling end date
         # Note: dashboard will supply dates as datetimes instead of as strings in the
@@ -123,7 +122,7 @@ def get_prioritized_estimates(estimates,
     
     selected_estimates = []
     for study_name, study_estimates in estimates.groupby('study_name'):
-            
+
         # if there is only one estimate, use that
         if study_estimates.shape[0] == 1:
             selected_estimates.append(study_estimates.iloc[0])

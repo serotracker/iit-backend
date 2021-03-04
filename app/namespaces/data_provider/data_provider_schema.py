@@ -4,7 +4,8 @@ from marshmallow import Schema, fields, validate
 class RecordsSchema(Schema):
     sorting_key = fields.String(validate=validate.OneOf(["serum_pos_prevalence", "denominator_value",
                                                          "overall_risk_of_bias", "source_name",
-                                                         "source_id"]))
+                                                         "source_id", "sampling_end_date"]))
+    # TODO: Deprecreate page_index, sorting_key, per_page, reverse from RecordsSchema once we update the frontend to not make requests to /records
     page_index = fields.Integer(allow_none=True)
     per_page = fields.Integer(allow_none=True)
     reverse = fields.Boolean(allow_none=True)
@@ -34,6 +35,14 @@ class RecordsSchema(Schema):
     start_date = fields.String()
     end_date = fields.String()
 
+class PaginatedRecordsSchema(RecordsSchema):
+    sorting_key = fields.String(validate=validate.OneOf(["serum_pos_prevalence", "denominator_value",
+                                                         "overall_risk_of_bias", "source_name",
+                                                         "source_id", "sampling_end_date"]), allow_none=True)
+    min_page_index = fields.Integer(required=True)
+    max_page_index = fields.Integer(required=True)
+    per_page = fields.Integer(allow_none=True)
+    reverse = fields.Boolean(allow_none=True)
 
 class RecordDetailsSchema(Schema):
     source_id = fields.UUID(required=True)

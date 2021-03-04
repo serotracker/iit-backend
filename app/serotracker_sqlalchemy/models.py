@@ -45,6 +45,11 @@ class DashboardSource(db.Model):
     test_adj = Column(Boolean)
     pop_adj = Column(Boolean)
     created_at = Column(DateTime)
+    case_count = Column(Float)
+    test_count = Column(Float)
+    death_count = Column(Float)
+    vaccination_count = Column(Float)
+    full_vaccination_count = Column(Float)
 
 
 # Research table for all additional research fields

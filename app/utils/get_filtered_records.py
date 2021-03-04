@@ -1,11 +1,12 @@
 from itertools import groupby
 from functools import reduce
 from app.serotracker_sqlalchemy import db_session, DashboardSource, ResearchSource, \
-    db_model_config, Country, State, City
+    db_model_config, Country, State, City, dashboard_source_cols, research_source_cols
 import pandas as pd
 import numpy as np
 from .estimate_prioritization import get_prioritized_estimates
 from statistics import mean
+from typing import List, Dict, Any
 
 
 def get_all_records(research_fields=False):
@@ -18,32 +19,13 @@ def get_all_records(research_fields=False):
         entity_names += ['country_latitude', 'country_longitude', 'city_longitude', 'city_latitude',
                          'state_longitude', 'state_latitude']
 
-        # Create list of fields in DashboardSource to query unless the specific columns are specified
-        field_strings = ['source_name', 'source_type', 'study_name', 'denominator_value', 'overall_risk_of_bias',
-                         'serum_pos_prevalence', 'isotype_igm', 'isotype_iga', 'isotype_igg', 'sex', 'age',
-                         'sampling_start_date', 'sampling_end_date', 'estimate_grade', 'isotype_comb',
-                         'academic_primary_estimate', 'dashboard_primary_estimate', 'pop_adj', 'test_adj',
-                         'specimen_type', 'test_type', 'population_group', 'url', 'summary', 'study_type',
-                         'sampling_method', 'specificity', 'sensitivity', 'first_author', 'publication_date',
-                         'lead_organization']
-
         # Add columns from dashboard source to select statement
         fields_list = [DashboardSource.source_id]
-        for field_string in field_strings:
+        for field_string in dashboard_source_cols:
             fields_list.append(getattr(DashboardSource, field_string))
 
         # If research fields is True, add columns from research source to select statement
         if research_fields:
-            research_source_cols = ['case_population', 'deaths_population', 'age_max', 'age_min', 'age_variation',
-                                    'age_variation_measure', 'average_age', 'case_count_neg14', 'case_count_neg9',
-                                    'case_count_0', 'death_count_plus11', 'death_count_plus4', 'ind_eval_lab',
-                                    'ind_eval_link', 'ind_se', 'ind_se_n', 'ind_sp', 'ind_sp_n', 'jbi_1', 'jbi_2',
-                                    'jbi_3', 'jbi_4', 'jbi_5', 'jbi_6', 'jbi_7', 'jbi_8', 'jbi_9', 'measure_of_age',
-                                    'sample_frame_info', 'number_of_females', 'number_of_males', 'numerator_value',
-                                    'estimate_name', 'test_not_linked_reason', 'se_n', 'seroprev_95_ci_lower',
-                                    'seroprev_95_ci_upper', 'sp_n', 'subgroup_var', 'subgroup_cat', 'superceded',
-                                    'test_linked_uid', 'test_name', 'test_validation', 'gbd_region', 'gbd_subregion',
-                                    'lmic_hic', 'genpop', 'sampling_type']
             for col in research_source_cols:
                 fields_list.append(getattr(ResearchSource, col))
 
@@ -243,16 +225,26 @@ def get_filtered_records(research_fields=False, filters=None, columns=None, star
         result = [grab_cols(i, columns) for i in result]
     return result
 
-'''
-Note: `page_index` is zero-indexed here!
-'''
+'''Gets and returns a dictionary of pages of records
 
-
-def get_paginated_records(query_dicts, sorting_key, page_index, per_page, reverse):
+:param records: list of unpaginated records
+:param min_page_index: minimum page index
+:param max_page_index: maximum page index
+:param per_page: number of records per page
+:param reverse: whether to sort list of unpaginated records in reverse order or not 
+:param sorting_key: key by which list of unpaginated records are sorted
+:returns a dictionary of lists of records (len(list) == per_page)
+'''
+def get_paginated_records(records: List[Dict[str, Any]], min_page_index: int, max_page_index: int, per_page: int = 5, reverse: bool = False, sorting_key: str = "sampling_end_date") -> Dict[int, List[Dict[str, Any]]]:
     # Order the records first
-    sorted_records = sorted(query_dicts, key=lambda x: (x[sorting_key] is None, x[sorting_key]), reverse=reverse)
+    sorted_records = sorted(records, key=lambda x: (x[sorting_key] is None, x[sorting_key]), reverse=reverse)
 
-    start = page_index * per_page
-    end = page_index * per_page + per_page
+    # Input is non-zero indexing, but we map to zero indexing (e.g. input 1-3 maps to 0-2) but we still return non-zero indexing
+    min_page_index -= 1
+    max_page_index -= 1
 
-    return sorted_records[start:end]
+    # Create dictionary of pages of records
+    return {i+1:sorted_records[i*per_page:i*per_page+per_page]
+            if i * per_page + per_page < len(sorted_records)
+            else sorted_records[i*per_page:]
+            for i in range(min_page_index, max_page_index + 1)}
