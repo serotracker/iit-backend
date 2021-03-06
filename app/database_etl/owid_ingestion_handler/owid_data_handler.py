@@ -43,7 +43,7 @@ def get_midpoint(start_date: datetime, end_date: datetime):
     return start_date + (end_date - start_date) / 2
 
 
-def get_total_tests(country_name: str, midpoint_date: datetime):
+def get_tests_per_hundred(country_name: str, midpoint_date: datetime):
     if str(midpoint_date) == 'NaT': return None
     country_id = get_country_code(country_name)
     country_total_tests = tests_df.loc[tests_df['ISO code'] == country_id]
@@ -54,7 +54,7 @@ def get_total_tests(country_name: str, midpoint_date: datetime):
     return float(ret) / 10 if not ret.empty else None
 
 
-def get_total_cases(country_name: str, midpoint_date: datetime):
+def get_cases_per_hundred(country_name: str, midpoint_date: datetime):
     if str(midpoint_date) == 'NaT': return None
     offset = OFFSETS['CASES']
     target_date = (midpoint_date + offset).strftime('%Y-%m-%d')
@@ -67,7 +67,7 @@ def get_total_cases(country_name: str, midpoint_date: datetime):
     return float(per_million) / 10000 if not per_million.empty else None
 
 
-def get_total_deaths(country_name: str, midpoint_date: datetime):
+def get_deaths_per_hundred(country_name: str, midpoint_date: datetime):
     if str(midpoint_date) == 'NaT': return None
     offset = OFFSETS['DEATHS']
     target_date = (midpoint_date + offset).strftime('%Y-%m-%d')
@@ -80,7 +80,7 @@ def get_total_deaths(country_name: str, midpoint_date: datetime):
     return float(per_million) / 10000 if not per_million.empty else None
 
 
-def get_vaccinated(country_name: str, midpoint_date: datetime, fully_vaccinated=False):
+def get_vaccinations_per_hundred(country_name: str, midpoint_date: datetime, fully_vaccinated=False):
     if str(midpoint_date) == 'NaT': return None
     country_id = get_country_code(country_name)
     offset = OFFSETS['VACCINATIONS']

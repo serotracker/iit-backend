@@ -6,7 +6,7 @@ from app.utils.notifications_sender import send_slack_message
 from app.utils import airtable_fields_config
 from app.database_etl.location_utils import add_latlng_to_df, get_country_code
 from .table_formatter import replace_null_string
-from app.database_etl.owid_ingestion_handler import get_vaccinated, get_total_tests, get_total_deaths, get_total_cases, get_midpoint, get_whether_exact_match
+from app.database_etl.owid_ingestion_handler import get_vaccinations_per_hundred, get_tests_per_hundred, get_deaths_per_hundred, get_cases_per_hundred, get_midpoint, get_whether_exact_match
 
 import pandas as pd
 
@@ -46,24 +46,24 @@ def create_dashboard_source_df(original_data, current_time):
         lambda row: get_midpoint(row['sampling_start_date'], row['sampling_end_date']), axis=1)
 
     # Create total cases column
-    original_data['case_count'] = original_data.apply(lambda row: get_total_cases(row['country'], row['sampling_midpoint_date']),
-                                                      axis=1)
+    original_data['cases_per_hundred'] = original_data.apply(lambda row: get_cases_per_hundred(row['country'], row['sampling_midpoint_date']),
+                                                             axis=1)
 
     # Create total tests column
-    original_data['test_count'] = original_data.apply(lambda row: get_total_tests(row['country'], row['sampling_midpoint_date']),
-                                                      axis=1)
+    original_data['tests_per_hundred'] = original_data.apply(lambda row: get_tests_per_hundred(row['country'], row['sampling_midpoint_date']),
+                                                             axis=1)
 
     # Create total deaths column
-    original_data['death_count'] = original_data.apply(
-        lambda row: get_total_deaths(row['country'], row['sampling_midpoint_date']), axis=1)
+    original_data['deaths_per_hundred'] = original_data.apply(
+        lambda row: get_deaths_per_hundred(row['country'], row['sampling_midpoint_date']), axis=1)
 
     # Create vaccination count column
-    original_data['vaccination_count'] = original_data.apply(
-        lambda row: get_vaccinated(row['country'], row['sampling_midpoint_date']), axis=1)
+    original_data['vaccinations_per_hundred'] = original_data.apply(
+        lambda row: get_vaccinations_per_hundred(row['country'], row['sampling_midpoint_date']), axis=1)
 
     # Create full vaccination count column
-    original_data['full_vaccination_count'] = original_data.apply(
-        lambda row: get_vaccinated(row['country'], row['sampling_midpoint_date'], fully_vaccinated=True), axis=1)
+    original_data['full_vaccinations_per_hundred'] = original_data.apply(
+        lambda row: get_vaccinations_per_hundred(row['country'], row['sampling_midpoint_date'], fully_vaccinated=True), axis=1)
 
     # Create flag denoting whether geographic mapping is 1:1
     original_data['geo_exact_match'] = original_data.apply(lambda row: get_whether_exact_match(row['country']), axis=1)
