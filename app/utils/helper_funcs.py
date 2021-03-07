@@ -11,9 +11,9 @@ def validate_request_input_against_schema(input_payload, schema):
     return payload, 200
 
 
-def convert_start_end_dates(data, sampling_date_type=True):
+def convert_start_end_dates(data, use_sampling_date=True):
     # Set the proper date type (sampling or publication date)
-    if sampling_date_type:
+    if use_sampling_date:
         type = 'sampling'
     else:
         type = 'publication'

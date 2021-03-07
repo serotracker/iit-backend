@@ -160,29 +160,21 @@ def get_filtered_records(research_fields=False, filters=None, columns=None,
     else:
         result = query_dicts
 
-    def date_filter(record, start_date=None, end_date=None, sampling_date_type=True):
+    def date_filter(record, start_date=None, end_date=None, use_sampling_date=True):
         status = True
+        record_end_date = record["sampling_end_date"] if use_sampling_date else record["publication_date"]
 
+        # Filter the sampling end date or publication date by start and/or end date bounds
         if start_date is not None:
-            # If sampling_date_type is True, compare to the sampling start date
-            if sampling_date_type:
-                status = status and record["sampling_start_date"] and record["sampling_start_date"] >= start_date
-            # If sampling_date_type is False, compare to the publication date
-            else:
-                status = status and record["publication_date"] and record["publication_date"] >= start_date
+            status = status and record_end_date and record_end_date >= start_date
         if end_date is not None:
-            # If sampling_date_type is True, compare to the sampling end date
-            if sampling_date_type:
-                status = status and record["sampling_end_date"] and record["sampling_end_date"] <= end_date
-            # If sampling_date_type is False, compare to the publication date
-            else:
-                status = status and record["publication_date"] and record["publication_date"] <= end_date
+            status = status and record_end_date and record_end_date <= end_date
         return status
 
     result = list(filter(lambda x: date_filter(x, start_date=sampling_start_date,
-                                               end_date=sampling_end_date, sampling_date_type=True), result))
+                                               end_date=sampling_end_date, use_sampling_date=True), result))
     result = list(filter(lambda x: date_filter(x, start_date=publication_start_date,
-                                               end_date=publication_end_date, sampling_date_type=False), result))
+                                               end_date=publication_end_date, use_sampling_date=False), result))
 
     # Format dates after date filter has been applied
     for record in result:

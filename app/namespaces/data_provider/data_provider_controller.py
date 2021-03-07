@@ -40,8 +40,8 @@ class Records(Resource):
         columns = data.get('columns')
         research_fields = data.get('research_fields')
         prioritize_estimates = data.get('prioritize_estimates', True)
-        sampling_start_date, sampling_end_date = convert_start_end_dates(data, sampling_date_type=True)
-        publication_start_date, publication_end_date = convert_start_end_dates(data, sampling_date_type=False)
+        sampling_start_date, sampling_end_date = convert_start_end_dates(data, use_sampling_date=True)
+        publication_start_date, publication_end_date = convert_start_end_dates(data, use_sampling_date=False)
 
         result = get_filtered_records(research_fields,
                                       filters,
