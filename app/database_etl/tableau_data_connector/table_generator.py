@@ -28,10 +28,6 @@ def upload_analyze_csv():
     records_df = records_df.replace('[', '')
     records_df = records_df.replace(']', '')
 
-    # Convert date fields to strings (otherwise get Timestamp is not JSON serializable error)
-    # records_df[['publication_date', 'date_created', 'last_modified_time']] =\
-    #     records_df[['publication_date', 'date_created', 'last_modified_time']].astype(str)
-
     # Upload df to google sheet
     g_client = GoogleSheetsManager()
     g_client.update_sheet(os.getenv('ANALYZE_SPREADSHEET_ID'), records_df)
