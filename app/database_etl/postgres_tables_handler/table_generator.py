@@ -85,6 +85,12 @@ def create_research_source_df(dashboard_source_df):
 
     # Remove any null string characters
     research_source = research_source.apply(lambda col: col.apply(lambda val: replace_null_string(val)))
+
+    # Convert the date_created and last_modified_time fields from str to datetime
+    research_source['date_created'] =\
+        research_source['date_created'].apply(lambda x: datetime.strptime(x, '%Y-%m-%d'))
+    research_source['last_modified_time'] =\
+        research_source['last_modified_time'].apply(lambda x: datetime.strptime(x, '%Y-%m-%d'))
     return research_source, research_source_cols
 
 
