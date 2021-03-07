@@ -16,6 +16,12 @@ def upload_analyze_csv():
                                    end_date=None, prioritize_estimates=False)
     records = jitter_pins(records)
     records_df = pd.DataFrame(records)
+    s = records_df['sampling_start_date'][0]
+    p = records_df['publication_date'][0]
+
+    print(s, p)
+    print(type(s), type(p))
+    exit()
 
     # Turn lists into comma sep strings
     cols = ['city', 'state', 'test_manufacturer', 'antibody_target', 'isotypes_reported']
@@ -27,6 +33,10 @@ def upload_analyze_csv():
     records_df = records_df.fillna('')
     records_df = records_df.replace('[', '')
     records_df = records_df.replace(']', '')
+
+    # Convert date fields to strings (otherwise get Timestamp is not JSON serializable error)
+    # records_df[['publication_date', 'date_created', 'last_modified_time']] =\
+    #     records_df[['publication_date', 'date_created', 'last_modified_time']].astype(str)
 
     # Upload df to google sheet
     g_client = GoogleSheetsManager()

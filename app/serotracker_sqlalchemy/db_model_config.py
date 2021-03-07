@@ -1,4 +1,4 @@
-from app.serotracker_sqlalchemy import CityBridge, City, StateBridge, State,\
+from app.serotracker_sqlalchemy import CityBridge, City, StateBridge, State, \
     TestManufacturerBridge, TestManufacturer, AntibodyTargetBridge, AntibodyTarget
 
 db_model_config = {
@@ -40,15 +40,15 @@ dashboard_source_cols = ['source_name', 'source_type', 'study_name', 'denominato
                          'isotype_igg', 'sex', 'age', 'sampling_start_date', 'sampling_end_date', 'estimate_grade',
                          'isotype_comb', 'academic_primary_estimate', 'dashboard_primary_estimate', 'pop_adj',
                          'test_adj', 'specimen_type', 'test_type', 'population_group', 'url', 'case_count',
-                         'test_count', 'death_count', 'vaccination_count', 'full_vaccination_count']
+                         'test_count', 'death_count', 'vaccination_count', 'full_vaccination_count', 'publication_date']
 
 research_source_cols = ['case_population', 'deaths_population', 'age_max', 'age_min', 'age_variation',
-                                    'age_variation_measure', 'average_age', 'case_count_neg14', 'case_count_neg9',
-                                    'case_count_0', 'death_count_plus11', 'death_count_plus4', 'ind_eval_lab',
-                                    'ind_eval_link', 'ind_se', 'ind_se_n', 'ind_sp', 'ind_sp_n', 'jbi_1', 'jbi_2',
-                                    'jbi_3', 'jbi_4', 'jbi_5', 'jbi_6', 'jbi_7', 'jbi_8', 'jbi_9', 'measure_of_age',
-                                    'sample_frame_info', 'number_of_females', 'number_of_males', 'numerator_value',
-                                    'estimate_name', 'test_not_linked_reason', 'se_n', 'seroprev_95_ci_lower',
-                                    'seroprev_95_ci_upper', 'sp_n', 'subgroup_var', 'subgroup_cat', 'superceded',
-                                    'test_linked_uid', 'test_name', 'test_validation', 'gbd_region', 'gbd_subregion',
-                                    'lmic_hic', 'genpop', 'sampling_type', 'subgroup_specific_category']
+                        'age_variation_measure', 'average_age', 'case_count_neg14', 'case_count_neg9',
+                        'case_count_0', 'death_count_plus11', 'death_count_plus4', 'ind_eval_lab',
+                        'ind_eval_link', 'ind_se', 'ind_se_n', 'ind_sp', 'ind_sp_n', 'jbi_1', 'jbi_2',
+                        'jbi_3', 'jbi_4', 'jbi_5', 'jbi_6', 'jbi_7', 'jbi_8', 'jbi_9', 'measure_of_age',
+                        'sample_frame_info', 'number_of_females', 'number_of_males', 'numerator_value',
+                        'estimate_name', 'test_not_linked_reason', 'se_n', 'seroprev_95_ci_lower',
+                        'seroprev_95_ci_upper', 'sp_n', 'subgroup_var', 'subgroup_cat', 'superceded',
+                        'test_linked_uid', 'test_name', 'test_validation', 'gbd_region', 'gbd_subregion',
+                        'lmic_hic', 'genpop', 'sampling_type', 'subgroup_specific_category']
