@@ -24,8 +24,6 @@ CURR_TIME = datetime.now()
 
 
 def main():
-    upload_analyze_csv()
-    exit()
     # Create engine to connect to whiteclaw database
     engine = create_engine('postgresql://{username}:{password}@{host_address}/whiteclaw'.format(
         username=os.getenv('DATABASE_USERNAME'),

@@ -16,12 +16,6 @@ def upload_analyze_csv():
                                    end_date=None, prioritize_estimates=False)
     records = jitter_pins(records)
     records_df = pd.DataFrame(records)
-    s = records_df['sampling_start_date'][0]
-    p = records_df['publication_date'][0]
-
-    print(s, p)
-    print(type(s), type(p))
-    exit()
 
     # Turn lists into comma sep strings
     cols = ['city', 'state', 'test_manufacturer', 'antibody_target', 'isotypes_reported']
