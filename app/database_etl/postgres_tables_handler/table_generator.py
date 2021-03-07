@@ -37,10 +37,10 @@ def create_dashboard_source_df(original_data, current_time):
     original_data['created_at'] = current_time
 
     # Convert the publication, sampling start date and sampling end date to datetime
-    original_data[['publication_date', 'sampling_start_date', 'sampling_end_date']] = \
-        original_data[['publication_date',
-                       'sampling_start_date',
-                       'sampling_end_date']].apply(lambda x: datetime.strptime(x, '%Y-%m-%d') if x is not None else x)
+    date_cols = ['publication_date', 'sampling_start_date', 'sampling_end_date']
+    for col in date_cols:
+        original_data[col] = \
+            original_data[col].apply(lambda x: datetime.strptime(x, '%Y-%m-%d') if x is not None else x)
 
     # Create midpoint date column
     original_data['sampling_midpoint_date'] = original_data.apply(
@@ -90,9 +90,11 @@ def create_research_source_df(dashboard_source_df):
     research_source = research_source.apply(lambda col: col.apply(lambda val: replace_null_string(val)))
 
     # Convert the date_created and last_modified_time fields from str to datetime
-    research_source[['date_created', 'last_modified_time']] = \
-        research_source[['date_created', 'last_modified_time']].apply(
-            lambda x: datetime.strptime(x, '%Y-%m-%d') if x is not None else x)
+    date_cols = ['date_created', 'last_modified_time']
+    for col in date_cols:
+        research_source[col] = \
+            research_source[col].apply(lambda x: datetime.strptime(x, '%Y-%m-%d') if x is not None else x)
+
     return research_source, research_source_cols
 
 

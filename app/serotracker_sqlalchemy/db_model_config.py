@@ -51,4 +51,5 @@ research_source_cols = ['case_population', 'deaths_population', 'age_max', 'age_
                         'estimate_name', 'test_not_linked_reason', 'se_n', 'seroprev_95_ci_lower',
                         'seroprev_95_ci_upper', 'sp_n', 'subgroup_var', 'subgroup_cat', 'superceded',
                         'test_linked_uid', 'test_name', 'test_validation', 'gbd_region', 'gbd_subregion',
-                        'lmic_hic', 'genpop', 'sampling_type', 'subgroup_specific_category']
+                        'lmic_hic', 'genpop', 'sampling_type', 'subgroup_specific_category', 'last_modified_time',
+                        'date_created']

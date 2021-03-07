@@ -177,6 +177,13 @@ def get_filtered_records(research_fields=False, filters=None, columns=None, star
         if record['sampling_start_date'] is not None:
             record['sampling_start_date'] = record['sampling_start_date'].isoformat()
 
+        # Also apply this formatting to date_created and last_modified_time in research source
+        if research_fields:
+            if record['last_modified_time'] is not None:
+                record['last_modified_time'] = record['last_modified_time'].isoformat()
+            if record['date_created'] is not None:
+                record['date_created'] = record['date_created'].isoformat()
+
     # TODO: Determine whether to update get_prioritized_estimates to work on dictionaries
     # or keep everything in dataframes (don't want to have this conversion here long term)
     if prioritize_estimates:
