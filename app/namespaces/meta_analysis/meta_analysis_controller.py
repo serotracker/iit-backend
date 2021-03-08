@@ -60,10 +60,13 @@ class MetaAnalysis(Resource):
 
         # Query all the records with the desired filters. Pull only country, denom, and seroprev cols
         filters = json_input.get('filters', None)
-        start_date, end_date = convert_start_end_dates(json_input)
+        sampling_start_date, sampling_end_date = convert_start_end_dates(json_input, use_sampling_date=True)
         columns = ['country', 'denominator_value', 'serum_pos_prevalence']
         columns.append(agg_var)
-        records = get_filtered_records(filters=filters, columns=columns, start_date=start_date, end_date=end_date)
+        records = get_filtered_records(filters=filters,
+                                       columns=columns,
+                                       sampling_start_date=sampling_start_date,
+                                       sampling_end_date=sampling_end_date)
         if not records:
             logging.warning('No records with specified filters found.')
             return {}
