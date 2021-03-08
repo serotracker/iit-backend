@@ -89,9 +89,10 @@ class PaginatedRecords(Resource):
         columns = data.get('columns')
         research_fields = data.get('research_fields')
         prioritize_estimates = data.get('prioritize_estimates', True)
-        start_date, end_date = convert_start_end_dates(data)
+        sampling_start_date, sampling_end_date = convert_start_end_dates(data, use_sampling_date=True)
 
-        result = get_filtered_records(research_fields, filters, columns, start_date=start_date, end_date=end_date,
+        result = get_filtered_records(research_fields, filters, columns, sampling_start_date=sampling_start_date,
+                                      sampling_end_date=sampling_end_date,
                                       prioritize_estimates=prioritize_estimates)
         if not columns or ("pin_latitude" in columns and "pin_longitude" in columns):
             result = jitter_pins(result)
@@ -146,7 +147,7 @@ class GeogStudyCount(Resource):
 
         # Query all the records with no filters but only grab certain columns
         columns = ['country', 'country_iso3', 'denominator_value', 'serum_pos_prevalence', 'estimate_grade']
-        records = get_filtered_records(filters=None, columns=columns, start_date=None, end_date=None)
+        records = get_filtered_records(filters=None, columns=columns, sampling_start_date=None, sampling_end_date=None)
 
         # Compute seroprevalence summaries per country per estimate grade level
         country_seroprev_summaries = get_country_seroprev_summaries(records)
@@ -173,9 +174,12 @@ class GeogStudyCount(Resource):
 
         # Query all the records with the desired filters. Pull only country, denom, and seroprev cols
         filters = json_input.get('filters')
-        start_date, end_date = convert_start_end_dates(json_input)
+        sampling_start_date, sampling_end_date = convert_start_end_dates(json_input, use_sampling_date=True)
         columns = ['country', 'country_iso3', 'denominator_value', 'serum_pos_prevalence', 'estimate_grade']
-        records = get_filtered_records(filters=filters, columns=columns, start_date=start_date, end_date=end_date)
+        records = get_filtered_records(filters=filters,
+                                       columns=columns,
+                                       sampling_start_date=sampling_start_date,
+                                       sampling_end_date=sampling_end_date)
 
         # Check if no records are returned
         if not records:
