@@ -50,8 +50,8 @@ class PaginatedRecordsSchema(RecordsSchema):
 
 class RecordDetailsSchema(Schema):
     source_id = fields.UUID(required=True)
-    start_date = fields.String()
-    end_date = fields.String()
+    sampling_start_date = fields.String()
+    sampling_end_date = fields.String()
 
 
 class StudyCountSchema(Schema):
@@ -62,5 +62,5 @@ class StudyCountSchema(Schema):
                                                     "specimen_type", "estimate_grade"])),
         values=fields.List(fields.String())
     )
-    start_date = fields.String()
-    end_date = fields.String()
+    sampling_start_date = fields.String()
+    sampling_end_date = fields.String()
