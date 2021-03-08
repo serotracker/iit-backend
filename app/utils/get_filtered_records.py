@@ -125,8 +125,9 @@ Output: set of records represented by dicts
 '''
 
 
-def get_filtered_records(research_fields=False, filters=None, columns=None, start_date=None, end_date=None,
-                         prioritize_estimates=True):
+def get_filtered_records(research_fields=False, filters=None, columns=None,
+                         sampling_start_date=None, sampling_end_date=None,
+                         publication_start_date=None, publication_end_date=None, prioritize_estimates=True):
     query_dicts = get_all_records(research_fields)
     if query_dicts is None or len(query_dicts) == 0:
         return []
@@ -159,20 +160,26 @@ def get_filtered_records(research_fields=False, filters=None, columns=None, star
     else:
         result = query_dicts
 
-    def date_filter(record, start_date=None, end_date=None):
+    def date_filter(record, start_date=None, end_date=None, use_sampling_date=True):
         status = True
+        record_end_date = record["sampling_end_date"] if use_sampling_date else record["publication_date"]
 
+        # Filter the sampling end date or publication date by start and/or end date bounds
         if start_date is not None:
-            status = status and record["sampling_end_date"] and start_date <= record["sampling_end_date"]
+            status = status and record_end_date and record_end_date >= start_date
         if end_date is not None:
-            status = status and record["sampling_end_date"] and end_date >= record["sampling_end_date"]
+            status = status and record_end_date and record_end_date <= end_date
         return status
 
-    result = list(filter(lambda x: date_filter(x, start_date=start_date, end_date=end_date), result))
+    result = list(filter(lambda x: date_filter(x, start_date=sampling_start_date,
+                                               end_date=sampling_end_date, use_sampling_date=True), result))
+    result = list(filter(lambda x: date_filter(x, start_date=publication_start_date,
+                                               end_date=publication_end_date, use_sampling_date=False), result))
 
     # Format dates after date filter has been applied
     for record in result:
-        isoformat_fields = ['sampling_end_date', 'sampling_start_date', 'date_created', 'last_modified_time']
+        isoformat_fields =\
+            ['sampling_end_date', 'sampling_start_date', 'publication_date', 'date_created', 'last_modified_time']
         for field in isoformat_fields:
             if record.get(field, None) is not None:
                 record[field] = record[field].isoformat()
@@ -243,8 +250,8 @@ def get_paginated_records(records: List[Dict[str, Any]], min_page_index: int, ma
     min_page_index -= 1
     max_page_index -= 1
 
-    # Create dictionary of pages of records 
-    return {i+1:sorted_records[i*per_page:i*per_page+per_page] 
-            if i * per_page + per_page < len(sorted_records) 
-            else sorted_records[i*per_page:] 
-            for i in range(min_page_index, max_page_index + 1)} 
+    # Create dictionary of pages of records
+    return {i+1:sorted_records[i*per_page:i*per_page+per_page]
+            if i * per_page + per_page < len(sorted_records)
+            else sorted_records[i*per_page:]
+            for i in range(min_page_index, max_page_index + 1)}

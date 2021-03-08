@@ -57,14 +57,14 @@ def standardize_airtable_data(df):
 
     # Convert elements that are "Not reported" or "Not Reported" or "NR" to None
     df.replace({'nr': None, 'NR': None, 'Not Reported': None, 'Not reported': None, 'Not available': None},
-                 inplace=True)
+               inplace=True)
 
     # Replace columns that should be floats with NaN from None and rescale to percentage
-    df[['ind_sp_n', 'ind_se_n']] = df[['ind_sp_n', 'ind_se_n']].replace({None: np.nan}) / 100
+    df[['ind_sp', 'ind_se']] = df[['ind_sp', 'ind_se']].replace({None: np.nan}) / 100
 
     # Drop rows if columns are null: included?, serum pos prevalence, denominator, sampling end
     df.dropna(subset=['included', 'serum_pos_prevalence', 'denominator_value', 'sampling_end_date'],
-                inplace=True)
+              inplace=True)
 
     # Convert superceded to True/False values
     df['superceded'] = df['superceded'].apply(lambda x: True if x else False)
@@ -100,4 +100,3 @@ def apply_study_max_estimate_grade(df):
                 subset['estimate_grade'] = level
                 continue
     return df
-
