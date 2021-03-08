@@ -172,10 +172,10 @@ def get_filtered_records(research_fields=False, filters=None, columns=None, star
 
     # Format dates after date filter has been applied
     for record in result:
-        if record['sampling_end_date'] is not None:
-            record['sampling_end_date'] = record['sampling_end_date'].isoformat()
-        if record['sampling_start_date'] is not None:
-            record['sampling_start_date'] = record['sampling_start_date'].isoformat()
+        isoformat_fields = ['sampling_end_date', 'sampling_start_date', 'date_created', 'last_modified_time']
+        for field in isoformat_fields:
+            if record.get(field, None) is not None:
+                record[field] = record[field].isoformat()
 
     # TODO: Determine whether to update get_prioritized_estimates to work on dictionaries
     # or keep everything in dataframes (don't want to have this conversion here long term)

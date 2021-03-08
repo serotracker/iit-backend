@@ -6,7 +6,8 @@ from app.utils.notifications_sender import send_slack_message
 from app.utils import airtable_fields_config
 from app.database_etl.location_utils import add_latlng_to_df, get_country_code
 from .table_formatter import replace_null_string
-from app.database_etl.owid_ingestion_handler import get_vaccinated, get_total_tests, get_total_deaths, get_total_cases, get_midpoint
+from app.database_etl.owid_ingestion_handler import get_vaccinated, get_total_tests, get_total_deaths, get_total_cases, \
+    get_midpoint
 
 import pandas as pd
 
@@ -46,12 +47,14 @@ def create_dashboard_source_df(original_data, current_time):
         lambda row: get_midpoint(row['sampling_start_date'], row['sampling_end_date']), axis=1)
 
     # Create total cases column
-    original_data['case_count'] = original_data.apply(lambda row: get_total_cases(row['country'], row['sampling_midpoint_date']),
-                                                      axis=1)
+    original_data['case_count'] = original_data.apply(
+        lambda row: get_total_cases(row['country'], row['sampling_midpoint_date']),
+        axis=1)
 
     # Create total tests column
-    original_data['test_count'] = original_data.apply(lambda row: get_total_tests(row['country'], row['sampling_midpoint_date']),
-                                                      axis=1)
+    original_data['test_count'] = original_data.apply(
+        lambda row: get_total_tests(row['country'], row['sampling_midpoint_date']),
+        axis=1)
 
     # Create total deaths column
     original_data['death_count'] = original_data.apply(
@@ -85,6 +88,13 @@ def create_research_source_df(dashboard_source_df):
 
     # Remove any null string characters
     research_source = research_source.apply(lambda col: col.apply(lambda val: replace_null_string(val)))
+
+    # Convert the date_created and last_modified_time fields from str to datetime
+    date_cols = ['date_created', 'last_modified_time']
+    for col in date_cols:
+        research_source[col] = \
+            research_source[col].apply(lambda x: datetime.strptime(x, '%Y-%m-%d') if x is not None else x)
+
     return research_source, research_source_cols
 
 
