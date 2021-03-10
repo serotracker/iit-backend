@@ -93,6 +93,6 @@ def get_vaccinations_per_hundred(country_name: str, midpoint_date: datetime, ful
     return float(ret) if not ret.empty else None
 
 
-def get_whether_exact_match(country_name: str, estimate_grade: str):
+def get_whether_exact_match(estimate_grade: str):
     # TODO: implement check for sublocal/local/regional after integrating source providing granular data
     return True if estimate_grade == "National" else False

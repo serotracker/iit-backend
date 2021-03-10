@@ -71,7 +71,7 @@ def create_dashboard_source_df(original_data, current_time):
 
     # Create flag denoting whether geographic mapping is 1:1
     original_data['geo_exact_match'] = original_data.apply(
-        lambda row: get_whether_exact_match(row['country'], row['estimate_grade']), axis=1)
+        lambda row: get_whether_exact_match(row['estimate_grade']), axis=1)
 
     original_data = original_data.drop(columns=['sampling_midpoint_date'])
     return original_data
