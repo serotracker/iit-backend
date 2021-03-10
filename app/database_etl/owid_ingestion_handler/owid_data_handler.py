@@ -43,18 +43,19 @@ def get_midpoint(start_date: datetime, end_date: datetime):
     return start_date + (end_date - start_date) / 2
 
 
-def get_total_tests(country_name: str, midpoint_date: datetime):
+def get_tests_per_hundred(country_name: str, midpoint_date: datetime):
     if str(midpoint_date) == 'NaT': return None
     country_id = get_country_code(country_name)
     country_total_tests = tests_df.loc[tests_df['ISO code'] == country_id]
-    per_thousand = country_total_tests.loc[country_total_tests['Date'] == midpoint_date.strftime('%Y-%m-%d')][['Entity', 'Cumulative total per thousand']]
+    per_thousand = country_total_tests.loc[country_total_tests['Date'] == midpoint_date.strftime('%Y-%m-%d')][
+        ['Entity', 'Cumulative total per thousand']]
 
     # Capture tests performed and omit all other data from the CSV (e.g. people tested, samples tested)
     ret = per_thousand[per_thousand['Entity'].str.contains('tests performed')]['Cumulative total per thousand']
     return float(ret) / 10 if not ret.empty else None
 
 
-def get_total_cases(country_name: str, midpoint_date: datetime):
+def get_cases_per_hundred(country_name: str, midpoint_date: datetime):
     if str(midpoint_date) == 'NaT': return None
     offset = OFFSETS['CASES']
     target_date = (midpoint_date + offset).strftime('%Y-%m-%d')
@@ -67,7 +68,7 @@ def get_total_cases(country_name: str, midpoint_date: datetime):
     return float(per_million) / 10000 if not per_million.empty else None
 
 
-def get_total_deaths(country_name: str, midpoint_date: datetime):
+def get_deaths_per_hundred(country_name: str, midpoint_date: datetime):
     if str(midpoint_date) == 'NaT': return None
     offset = OFFSETS['DEATHS']
     target_date = (midpoint_date + offset).strftime('%Y-%m-%d')
@@ -80,7 +81,7 @@ def get_total_deaths(country_name: str, midpoint_date: datetime):
     return float(per_million) / 10000 if not per_million.empty else None
 
 
-def get_vaccinated(country_name: str, midpoint_date: datetime, fully_vaccinated=False):
+def get_vaccinations_per_hundred(country_name: str, midpoint_date: datetime, fully_vaccinated=False):
     if str(midpoint_date) == 'NaT': return None
     country_id = get_country_code(country_name)
     offset = OFFSETS['VACCINATIONS']
@@ -90,3 +91,8 @@ def get_vaccinated(country_name: str, midpoint_date: datetime, fully_vaccinated=
     col_name = 'people_fully_vaccinated_per_hundred' if fully_vaccinated else 'people_vaccinated_per_hundred'
     ret = country_data.loc[country_data['date'] == target_date][col_name]
     return float(ret) if not ret.empty else None
+
+
+def get_whether_exact_match(estimate_grade: str):
+    # TODO: implement check for sublocal/local/regional after integrating source providing granular data
+    return True if estimate_grade == "National" else False
