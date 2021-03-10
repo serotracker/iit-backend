@@ -11,10 +11,10 @@ from app.database_etl.postgres_tables_handler import get_all_filter_options
 data_provider_ns = Namespace('data_provider', description='Endpoints for getting database records.')
 logging.getLogger(__name__)
 
+
 @data_provider_ns.route('/records', methods=['POST'])
 class Records(Resource):
     @data_provider_ns.doc('An endpoint for getting all records from database with or without filters.')
-
     def post(self):
         # Convert input payload to json and throw error if it doesn't exist
         data = request.get_json()
@@ -40,18 +40,25 @@ class Records(Resource):
         columns = data.get('columns')
         research_fields = data.get('research_fields')
         prioritize_estimates = data.get('prioritize_estimates', True)
-        start_date, end_date = convert_start_end_dates(data)
+        sampling_start_date, sampling_end_date = convert_start_end_dates(data, use_sampling_date=True)
+        publication_start_date, publication_end_date = convert_start_end_dates(data, use_sampling_date=False)
 
-        result = get_filtered_records(research_fields, filters, columns, start_date=start_date, end_date=end_date,
+        result = get_filtered_records(research_fields,
+                                      filters,
+                                      columns,
+                                      sampling_start_date=sampling_start_date,
+                                      sampling_end_date=sampling_end_date,
+                                      publication_start_date=publication_start_date,
+                                      publication_end_date=publication_end_date,
                                       prioritize_estimates=prioritize_estimates)
         if not columns or ("pin_latitude" in columns and "pin_longitude" in columns):
             result = jitter_pins(result)
         return jsonify(result)
 
+
 @data_provider_ns.route('/records/paginated', methods=['POST'])
 class PaginatedRecords(Resource):
     @data_provider_ns.doc('An endpoint for getting all paginated records from database with or without filters.')
-
     def post(self):
         # Convert input payload to json and throw error if it doesn't exist
         data = request.get_json()
@@ -82,9 +89,10 @@ class PaginatedRecords(Resource):
         columns = data.get('columns')
         research_fields = data.get('research_fields')
         prioritize_estimates = data.get('prioritize_estimates', True)
-        start_date, end_date = convert_start_end_dates(data)
+        sampling_start_date, sampling_end_date = convert_start_end_dates(data, use_sampling_date=True)
 
-        result = get_filtered_records(research_fields, filters, columns, start_date=start_date, end_date=end_date,
+        result = get_filtered_records(research_fields, filters, columns, sampling_start_date=sampling_start_date,
+                                      sampling_end_date=sampling_end_date,
                                       prioritize_estimates=prioritize_estimates)
         if not columns or ("pin_latitude" in columns and "pin_longitude" in columns):
             result = jitter_pins(result)
@@ -139,7 +147,7 @@ class GeogStudyCount(Resource):
 
         # Query all the records with no filters but only grab certain columns
         columns = ['country', 'country_iso3', 'denominator_value', 'serum_pos_prevalence', 'estimate_grade']
-        records = get_filtered_records(filters=None, columns=columns, start_date=None, end_date=None)
+        records = get_filtered_records(filters=None, columns=columns, sampling_start_date=None, sampling_end_date=None)
 
         # Compute seroprevalence summaries per country per estimate grade level
         country_seroprev_summaries = get_country_seroprev_summaries(records)
@@ -166,9 +174,12 @@ class GeogStudyCount(Resource):
 
         # Query all the records with the desired filters. Pull only country, denom, and seroprev cols
         filters = json_input.get('filters')
-        start_date, end_date = convert_start_end_dates(json_input)
+        sampling_start_date, sampling_end_date = convert_start_end_dates(json_input, use_sampling_date=True)
         columns = ['country', 'country_iso3', 'denominator_value', 'serum_pos_prevalence', 'estimate_grade']
-        records = get_filtered_records(filters=filters, columns=columns, start_date=start_date, end_date=end_date)
+        records = get_filtered_records(filters=filters,
+                                       columns=columns,
+                                       sampling_start_date=sampling_start_date,
+                                       sampling_end_date=sampling_end_date)
 
         # Check if no records are returned
         if not records:

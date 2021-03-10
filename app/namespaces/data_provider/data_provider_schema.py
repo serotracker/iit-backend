@@ -32,8 +32,11 @@ class RecordsSchema(Schema):
                                                                  "estimate_grade", "isotypes_reported", "created_at",
                                                                  "pin_longitude", "pin_latitude", "pin_region_type"])))
     # Date fields should be supplied as unix timestamp
-    start_date = fields.String()
-    end_date = fields.String()
+    sampling_start_date = fields.String()
+    sampling_end_date = fields.String()
+    publication_start_date = fields.String()
+    publication_end_date = fields.String()
+
 
 class PaginatedRecordsSchema(RecordsSchema):
     sorting_key = fields.String(validate=validate.OneOf(["serum_pos_prevalence", "denominator_value",
@@ -44,10 +47,11 @@ class PaginatedRecordsSchema(RecordsSchema):
     per_page = fields.Integer(allow_none=True)
     reverse = fields.Boolean(allow_none=True)
 
+
 class RecordDetailsSchema(Schema):
     source_id = fields.UUID(required=True)
-    start_date = fields.String()
-    end_date = fields.String()
+    sampling_start_date = fields.String()
+    sampling_end_date = fields.String()
 
 
 class StudyCountSchema(Schema):
@@ -58,6 +62,5 @@ class StudyCountSchema(Schema):
                                                     "specimen_type", "estimate_grade"])),
         values=fields.List(fields.String())
     )
-    start_date = fields.String()
-    end_date = fields.String()
-
+    sampling_start_date = fields.String()
+    sampling_end_date = fields.String()
