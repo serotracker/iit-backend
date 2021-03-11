@@ -3,6 +3,7 @@ import logging
 import pandas as pd
 from marshmallow import ValidationError, INCLUDE
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import or_
 
 from app.utils.notifications_sender import send_schema_validation_slack_notif, send_slack_message
 from app.serotracker_sqlalchemy import db_session, DashboardSource, ResearchSource, Country, City, State, \
@@ -73,9 +74,9 @@ def drop_table_entries(current_time, drop_old=True):
         with db_session() as session:
             if drop_old:
                 # Drop old records if type is old
-                session.query(table).filter(table.created_at != current_time).delete()
+                session.query(table).filter(or_(table.created_at != current_time, table.created_at.is_(None))).delete()
             else:
                 # Drop new records if type is new
-                session.query(table).filter(table.created_at == current_time).delete()
+                session.query(table).filter(or_(table.created_at == current_time, table.created_at.is_(None))).delete()
             session.commit()
     return
