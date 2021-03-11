@@ -26,10 +26,10 @@ def StanModel_cache(model_code, model_name = 'anon_model', **kwargs):
     cache_fn = f'stanmodelcache-{model_name}-{code_hash}.pkl'
     
     try:
-        stanmodel = pickle.load(open(cache_fn, 'rb'))
+        sm = pickle.load(open(cache_fn, 'rb'))
         print(f"Using cached StanModel at filepath {cache_fn}")
     except:
-        stanmodel = pystan.StanModel(model_code = model_code,
+        sm = pystan.StanModel(model_code = model_code,
                                      model_name = model_name, 
                                      **kwargs)
         with open(cache_fn, 'wb') as f:
