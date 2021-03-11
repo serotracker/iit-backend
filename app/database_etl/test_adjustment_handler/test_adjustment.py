@@ -6,6 +6,10 @@ from statsmodels.stats.proportion import proportion_confint
 import pandas as pd
 import pystan
 import arviz
+
+import pickle
+from hashlib import md5
+
 from app.utils import get_filtered_records
 from app.namespaces.data_provider.data_provider_service import jitter_pins
 from app.database_etl.test_adjustment_handler import bastos_estimates, testadj_model_code
@@ -13,7 +17,28 @@ from app.database_etl.test_adjustment_handler import bastos_estimates, testadj_m
 from marshmallow import Schema, fields, ValidationError
 import multiprocessing
 
-TESTADJ_MODEL = pystan.StanModel(model_code=testadj_model_code)
+# make sure to gitignore model caches, because the model needs to be compiled separately
+# on each machine - it is system-specific C++ code 
+def StanModel_cache(model_code, model_name = 'anon_model', **kwargs):
+    """Use just as you would `pystan.StanModel`"""
+    
+    code_hash = md5(model_code.encode('ascii')).hexdigest()
+    cache_fn = f'stanmodelcache-{model_name}-{code_hash}.pkl'
+    
+    try:
+        stanmodel = pickle.load(open(cache_fn, 'rb'))
+        print(f"Using cached StanModel at filepath {cache_fn}")
+    except:
+        stanmodel = pystan.StanModel(model_code = model_code,
+                                     model_name = model_name, 
+                                     **kwargs)
+        with open(cache_fn, 'wb') as f:
+            pickle.dump(sm, f)
+            
+    return sm
+
+TESTADJ_MODEL = StanModel_cache(model_code = testadj_model_code,
+                                model_name = 'testadj_binomial_se_sp')
 
 def validate_against_schema(input_payload, schema):
     try:
