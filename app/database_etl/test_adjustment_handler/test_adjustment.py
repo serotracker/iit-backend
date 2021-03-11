@@ -48,9 +48,9 @@ def fit_one_pystan_model(model_params, n_iter, n_chains):
 
     diagnostics = pystan.diagnostics.check_hmc_diagnostics(fit)
 
-    satisfactory_model = all(diagnostics.values())
+    satisfactory_model_found = all(diagnostics.values())
 
-    return summary_df_parsed, satisfactory_model
+    return summary_df_parsed, satisfactory_model_found
 
 def pystan_adjust(model_params, execution_params={}):
     # Parse execution options
@@ -83,7 +83,7 @@ def pystan_adjust(model_params, execution_params={}):
 
             while not satisfactory_model_found:
                 # Attempt to fit a model
-                summary_df_parsed, satisfactory_model = fit_one_pystan_model(model_params, n_iter, n_chains)
+                summary_df_parsed, satisfactory_model_found = fit_one_pystan_model(model_params, n_iter, n_chains)
                 # If number of attempts exceeded, return Nones
                 n_trials += 1
                 if n_trials >= trials_lim:
@@ -100,7 +100,7 @@ def pystan_adjust(model_params, execution_params={}):
         consistent_results_found = model_medians.between(0.9 * median, 1.1 * median).all()
         median_run = satisfactory_models_df[satisfactory_models_df['50%'] == median].iloc[0]
 
-        lower, upper = arviz.hpd(median_run['samples'], credible_interval_size)
+        lower, upper = arviz.hdi(median_run['samples'], credible_interval_size)
         best_fit = median_run['fit']
 
         try:
@@ -133,9 +133,8 @@ def get_adjusted_estimate(estimate, n_iter=2000, n_chains=4):
         if pd.notna(estimate['ind_se']) and pd.notna(estimate['ind_sp']):
             adj_type = 'FINDDx / MUHC independent evaluation'
             # Also note these must be divided by 100
-            # TODO: Change ETL to insert these as decimals to keep consistent with 'sensitivity' and 'specificity' cols
-            se = estimate['ind_se']/100
-            sp = estimate['ind_sp']/100
+            se = estimate['ind_se'] / 100
+            sp = estimate['ind_sp'] / 100
             # Note: for some reason ind_se_n and ind_sp_n are floats in the DB
             # See line 51 in airtable_records_formatter.py to see where the conversion is happening in the ETL
             # Test adjustment expects them to be integers so we gotta convert back
@@ -166,7 +165,7 @@ def get_adjusted_estimate(estimate, n_iter=2000, n_chains=4):
             # if there is no matched adjusted estimate available:
             found_test_type = False
             for test_type in ['LFIA', 'CLIA', 'ELISA']:
-                if estimate['test_type'] and test_type in estimate['test_type']:
+                if estimate['test_type'] and test_type == estimate['test_type']:
                     se = bastos_estimates[test_type]['se']['50']
                     sp = bastos_estimates[test_type]['sp']['50']
                     se_n = bastos_estimates[test_type]['se']['n']
@@ -213,6 +212,34 @@ def get_adjusted_estimate(estimate, n_iter=2000, n_chains=4):
 
     return adj_prev, se, sp, adj_type, lower, upper
 
+def test_code():
+    # use santa clara and denmark findings as sample data
+    bendavid_data = {
+        'n_prev_obs': 3330,
+        'y_prev_obs': 50,
+        'n_se': 122,
+        'y_se': 103,
+        'n_sp': 401,
+        'y_sp': 399
+    }
+
+    denmark_data_1 = {
+        'n_prev_obs': 20640,
+        'y_prev_obs': 413,
+        'n_se': 59,
+        'y_se': 40,
+        'n_sp': 14,
+        'y_sp': 9
+    }
+
+    execution_params = dict(
+        n_iter=2000,
+        n_chains=4
+    )
+
+    print(pystan_adjust(bendavid_data, execution_params))
+    print(pystan_adjust(denmark_data_1, execution_params))
+
 
 if __name__ == '__main__':
     # To resolve error when running multiple chains at once:
@@ -221,7 +248,7 @@ if __name__ == '__main__':
 
     # Get records
     records = get_filtered_records(research_fields=True, filters=None, columns=None, start_date=None,
-                                   end_date=None, prioritize_estimates=False)
+                                   end_date=None, prioritize_estimates=False)[:10]
     records = jitter_pins(records)
     records_df = pd.DataFrame(records)
 
