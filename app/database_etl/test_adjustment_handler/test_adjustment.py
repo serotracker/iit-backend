@@ -6,6 +6,10 @@ from statsmodels.stats.proportion import proportion_confint
 import pandas as pd
 import pystan
 import arviz
+
+import pickle
+from hashlib import md5
+
 from app.utils import get_filtered_records
 from app.namespaces.data_provider.data_provider_service import jitter_pins
 from app.database_etl.test_adjustment_handler import bastos_estimates, testadj_model_code
@@ -13,7 +17,28 @@ from app.database_etl.test_adjustment_handler import bastos_estimates, testadj_m
 from marshmallow import Schema, fields, ValidationError
 import multiprocessing
 
-TESTADJ_MODEL = pystan.StanModel(model_code=testadj_model_code)
+# make sure to gitignore model caches, because the model needs to be compiled separately
+# on each machine - it is system-specific C++ code 
+def StanModel_cache(model_code, model_name = 'anon_model', **kwargs):
+    """Use just as you would `pystan.StanModel`"""
+    
+    code_hash = md5(model_code.encode('ascii')).hexdigest()
+    cache_fn = f'stanmodelcache-{model_name}-{code_hash}.pkl'
+    
+    try:
+        sm = pickle.load(open(cache_fn, 'rb'))
+        print(f"Using cached StanModel at filepath {cache_fn}")
+    except:
+        sm = pystan.StanModel(model_code = model_code,
+                                     model_name = model_name, 
+                                     **kwargs)
+        with open(cache_fn, 'wb') as f:
+            pickle.dump(sm, f)
+            
+    return sm
+
+TESTADJ_MODEL = StanModel_cache(model_code = testadj_model_code,
+                                model_name = 'testadj_binomial_se_sp')
 
 def validate_against_schema(input_payload, schema):
     try:
@@ -223,7 +248,7 @@ def test_code():
         'y_sp': 399
     }
 
-    denmark_data_1 = {
+    denmark_data = {
         'n_prev_obs': 20640,
         'y_prev_obs': 413,
         'n_se': 59,
@@ -238,7 +263,7 @@ def test_code():
     )
 
     print(pystan_adjust(bendavid_data, execution_params))
-    print(pystan_adjust(denmark_data_1, execution_params))
+    print(pystan_adjust(denmark_data, execution_params))
 
 
 if __name__ == '__main__':
@@ -246,6 +271,9 @@ if __name__ == '__main__':
     # https://discourse.mc-stan.org/t/new-to-pystan-always-get-this-error-when-attempting-to-sample-modulenotfounderror-no-module-named-stanfit4anon-model/19288/3
     multiprocessing.set_start_method("fork")
 
+    test_code()
+
+    """
     # Get records
     records = get_filtered_records(research_fields=True, filters=None, columns=None, start_date=None,
                                    end_date=None, prioritize_estimates=False)[:10]
@@ -269,3 +297,4 @@ if __name__ == '__main__':
 
     records_df.to_csv("test_adj.csv")
     print("COMPLETED")
+    """
