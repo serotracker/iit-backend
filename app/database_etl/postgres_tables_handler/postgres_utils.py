@@ -45,6 +45,7 @@ def get_filter_static_options() -> Dict[str, List[str]]:
             "Patients seeking care for non-COVID-19 reasons",
             "Household and community samples",
             "Health care workers and caregivers",
+            "Family of essential workers"
         ],
         "sex": [
             "Female",

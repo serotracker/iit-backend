@@ -110,6 +110,7 @@ class ResearchSource(db.Model):
     lmic_hic = Column(String())
     genpop = Column(String())
     sampling_type = Column(String())
+    airtable_record_id = Column(String())
     created_at = Column(DateTime)
 
 
