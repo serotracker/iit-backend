@@ -248,7 +248,7 @@ def test_code():
         'y_sp': 399
     }
 
-    denmark_data_1 = {
+    denmark_data = {
         'n_prev_obs': 20640,
         'y_prev_obs': 413,
         'n_se': 59,
@@ -263,7 +263,7 @@ def test_code():
     )
 
     print(pystan_adjust(bendavid_data, execution_params))
-    print(pystan_adjust(denmark_data_1, execution_params))
+    print(pystan_adjust(denmark_data, execution_params))
 
 
 if __name__ == '__main__':
@@ -271,6 +271,9 @@ if __name__ == '__main__':
     # https://discourse.mc-stan.org/t/new-to-pystan-always-get-this-error-when-attempting-to-sample-modulenotfounderror-no-module-named-stanfit4anon-model/19288/3
     multiprocessing.set_start_method("fork")
 
+    test_code()
+
+    """
     # Get records
     records = get_filtered_records(research_fields=True, filters=None, columns=None, start_date=None,
                                    end_date=None, prioritize_estimates=False)[:10]
@@ -294,3 +297,4 @@ if __name__ == '__main__':
 
     records_df.to_csv("test_adj.csv")
     print("COMPLETED")
+    """
