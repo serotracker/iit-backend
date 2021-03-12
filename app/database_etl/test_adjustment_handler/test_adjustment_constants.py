@@ -181,9 +181,9 @@ model {
     real prev_obs;
     real logit_prev_obs;
     
-    logit_prev ~ normal(0, 1.5);
-    logit_sens ~ normal(0, 1.5);
-    logit_spec ~ normal(0, 1.5);    
+    logit_prev ~ normal(0, 4);
+    logit_sens ~ normal(0, 4);
+    logit_spec ~ normal(0, 4);    
     
     prev_obs = prev * sens + (1 - prev) * (1 - spec);
     logit_prev_obs = logit(prev_obs);
@@ -218,7 +218,7 @@ model {
     real prev_obs;
     real logit_prev_obs;
     
-    logit_prev ~ normal(0, 1.5);   
+    logit_prev ~ normal(0, 4);   
     
     prev_obs = prev * sens + (1 - prev) * (1 - spec);
     logit_prev_obs = logit(prev_obs);
