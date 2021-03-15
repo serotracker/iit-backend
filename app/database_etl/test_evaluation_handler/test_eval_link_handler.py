@@ -16,14 +16,23 @@ test_eval_df['Target'] = test_eval_df.apply(lambda x: get_isotype_list(x['Target
 
 def apply_link(row):
     if row['ind_eval_link'] or not row['test_manufacturer'] or not row['isotypes']: return None
-    test_name, manufacturer_name, target_isotypes = row['test_name'], set(row['test_manufacturer']), set(row['isotypes'])
+    test_name, manufacturers, target_isotypes = row['test_name'], row['test_manufacturer'], row['isotypes']
 
-    matches = test_eval_df[test_eval_df['TestName'] == test_name]
-    if matches.empty(): return None
-    matches = matches[set(matches['Manufacturer']) == manufacturer_name]
-    if matches.empty(): return None
-    matches = matches[set(matches['Target']) == manufacturer_name]
-    return matches
+    matches = test_eval_df[test_eval_df['TestName'] == test_name]  # Get all rows matching test name
+    if matches.empty: return None
+    ret = pd.DataFrame()
+
+    # Get all rows matching any name in manufacturer list
+    for manufacturer in manufacturers:
+        df = matches[matches['Manufacturer'].str.contains(manufacturer)]  # Deal with uppercase/lowercase
+        ret = ret.append(df)
+
+    # Check that targets are exact match
+    for i, r in ret.iterrows():
+        if not set(r['Target']) == set(target_isotypes):
+            ret.drop(i)
+
+    return ret if not ret.empty else None
 
 
 def apply_test_eval_links(df):
