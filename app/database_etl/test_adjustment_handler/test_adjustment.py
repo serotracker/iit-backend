@@ -282,8 +282,9 @@ if __name__ == '__main__':
     multiprocessing.set_start_method("fork")
 
     # Get records
-    records = get_filtered_records(research_fields=True, filters=None, columns=None, start_date=None,
-                                   end_date=None, prioritize_estimates=False)[:10]
+    records = get_filtered_records(research_fields=True, filters=None, columns=None,
+                                   sampling_start_date=None, sampling_end_date=None,
+                                   prioritize_estimates=False)
     records_df = pd.DataFrame(records)
 
     # Turn lists into comma sep strings
