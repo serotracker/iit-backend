@@ -84,8 +84,10 @@ def get_all_filter_options() -> Dict[str, Any]:
         # sort countries in alpha order
         options["country"] = sorted(results)
 
-        options["max_date"] = session.query(func.max(DashboardSource.sampling_end_date))[0][0].isoformat()
-        options["min_date"] = session.query(func.min(DashboardSource.sampling_end_date))[0][0].isoformat()
+        options["max_sampling_end_date"] = session.query(func.max(DashboardSource.sampling_end_date))[0][0].isoformat()
+        options["min_sampling_end_date"] = session.query(func.min(DashboardSource.sampling_end_date))[0][0].isoformat()
+        options["max_publication_end_date"] = session.query(func.max(DashboardSource.publication_date))[0][0].isoformat()
+        options["min_publication_end_date"] = session.query(func.min(DashboardSource.publication_date))[0][0].isoformat()
         options["updated_at"] = session.query(func.max(DashboardSource.publication_date))[0][0].isoformat()
 
         return options

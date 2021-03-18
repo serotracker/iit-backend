@@ -5,12 +5,14 @@ class RecordsSchema(Schema):
     sorting_key = fields.String(validate=validate.OneOf(["serum_pos_prevalence", "denominator_value",
                                                          "overall_risk_of_bias", "source_name",
                                                          "source_id", "sampling_end_date"]))
-    # TODO: Deprecreate page_index, sorting_key, per_page, reverse from RecordsSchema once we update the frontend to not make requests to /records
+    # TODO: Deprecate page_index, sorting_key, per_page, reverse from RecordsSchema once we update the frontend to not make requests to /records
     page_index = fields.Integer(allow_none=True)
     per_page = fields.Integer(allow_none=True)
     reverse = fields.Boolean(allow_none=True)
     research_fields = fields.Boolean(allow_none=True)
     prioritize_estimates = fields.Boolean(allow_none=True)
+    prioritize_estimates_mode = fields.String(validate=validate.OneOf(['analysis_dynamic', 'analysis_static']),
+                                              allow_none=True)
     filters = fields.Dict(
         keys=fields.String(validate=validate.OneOf(["country", "source_type", "overall_risk_of_bias",
                                                     "source_name", "population_group",
