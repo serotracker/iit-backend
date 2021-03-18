@@ -45,11 +45,12 @@ class DashboardSource(db.Model):
     test_adj = Column(Boolean)
     pop_adj = Column(Boolean)
     created_at = Column(DateTime)
-    case_count = Column(Float)
-    test_count = Column(Float)
-    death_count = Column(Float)
-    vaccination_count = Column(Float)
-    full_vaccination_count = Column(Float)
+    cases_per_hundred = Column(Float)
+    tests_per_hundred = Column(Float)
+    deaths_per_hundred = Column(Float)
+    vaccinations_per_hundred = Column(Float)
+    full_vaccinations_per_hundred = Column(Float)
+    geo_exact_match = Column(Boolean)
 
 
 # Research table for all additional research fields
@@ -67,6 +68,7 @@ class ResearchSource(db.Model):
     case_count_neg14 = Column(Integer)
     case_count_neg9 = Column(Integer)
     case_count_0 = Column(Integer)
+    date_created = Column(DateTime)
     death_count_plus11 = Column(Integer)
     death_count_plus4 = Column(Integer)
     ind_eval_lab = Column(String())
@@ -84,6 +86,7 @@ class ResearchSource(db.Model):
     jbi_7 = Column(String())
     jbi_8 = Column(String())
     jbi_9 = Column(String())
+    last_modified_time = Column(DateTime)
     measure_of_age = Column(String())
     sample_frame_info = Column(String())
     number_of_females = Column(Integer)
@@ -107,6 +110,7 @@ class ResearchSource(db.Model):
     lmic_hic = Column(String())
     genpop = Column(String())
     sampling_type = Column(String())
+    airtable_record_id = Column(String())
     created_at = Column(DateTime)
 
 

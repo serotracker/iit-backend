@@ -12,8 +12,8 @@ load_dotenv()
 
 def upload_analyze_csv():
     # Get records
-    records = get_filtered_records(research_fields=True, filters=None, columns=None, start_date=None,
-                                   end_date=None, prioritize_estimates=False)
+    records = get_filtered_records(research_fields=True, filters=None, columns=None, sampling_start_date=None,
+                                   sampling_end_date=None, prioritize_estimates=False)
     records = jitter_pins(records)
     records_df = pd.DataFrame(records)
 
