@@ -11,8 +11,9 @@ class RecordsSchema(Schema):
     reverse = fields.Boolean(allow_none=True)
     research_fields = fields.Boolean(allow_none=True)
     prioritize_estimates = fields.Boolean(allow_none=True)
-    prioritize_estimates_mode = fields.String(validate=validate.OneOf(['analysis_dynamic', 'analysis_static']),
-                                              allow_none=True)
+    prioritize_estimates_mode = fields.String(validate=validate.OneOf(['analysis_dynamic',
+                                                                       'analysis_static',
+                                                                       'dashboard']), allow_none=True)
     filters = fields.Dict(
         keys=fields.String(validate=validate.OneOf(["country", "source_type", "overall_risk_of_bias",
                                                     "source_name", "population_group",

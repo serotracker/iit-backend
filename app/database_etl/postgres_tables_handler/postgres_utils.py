@@ -49,7 +49,8 @@ def get_filter_static_options() -> Dict[str, List[str]]:
         ],
         "prioritize_estimates_mode": [
             "analysis_dynamic",
-            "analysis_static"],
+            "analysis_static",
+            "dashboard"],
         "sex": [
             "Female",
             "Male",
