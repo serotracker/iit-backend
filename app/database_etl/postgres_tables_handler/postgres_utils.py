@@ -47,6 +47,9 @@ def get_filter_static_options() -> Dict[str, List[str]]:
             "Health care workers and caregivers",
             "Family of essential workers"
         ],
+        "prioritize_estimates_mode": [
+            "analysis_dynamic",
+            "analysis_static"],
         "sex": [
             "Female",
             "Male",
