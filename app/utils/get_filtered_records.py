@@ -127,7 +127,8 @@ Output: set of records represented by dicts
 
 def get_filtered_records(research_fields=False, filters=None, columns=None,
                          sampling_start_date=None, sampling_end_date=None,
-                         publication_start_date=None, publication_end_date=None, prioritize_estimates=True):
+                         publication_start_date=None, publication_end_date=None, prioritize_estimates=True,
+                         prioritize_estimates_mode=None):
     query_dicts = get_all_records(research_fields)
     if query_dicts is None or len(query_dicts) == 0:
         return []
@@ -188,7 +189,7 @@ def get_filtered_records(research_fields=False, filters=None, columns=None,
     # or keep everything in dataframes (don't want to have this conversion here long term)
     if prioritize_estimates:
         result_df = pd.DataFrame(result)
-        prioritized_records = get_prioritized_estimates(result_df, mode="dashboard")
+        prioritized_records = get_prioritized_estimates(result_df, mode=prioritize_estimates_mode)
         if not prioritized_records.empty:
             # Filling all NaN values with None: https://stackoverflow.com/questions/46283312/how-to-proceed-with-none-value-in-pandas-fillna
             prioritized_records = prioritized_records.fillna(np.nan).replace({np.nan: None})
