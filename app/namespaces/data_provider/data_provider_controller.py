@@ -40,6 +40,8 @@ class Records(Resource):
         columns = data.get('columns')
         research_fields = data.get('research_fields')
         prioritize_estimates = data.get('prioritize_estimates', True)
+        prioritize_estimates_mode = data.get('prioritize_estimates_mode', None)
+
         sampling_start_date, sampling_end_date = convert_start_end_dates(data, use_sampling_date=True)
         publication_start_date, publication_end_date = convert_start_end_dates(data, use_sampling_date=False)
 
@@ -50,7 +52,8 @@ class Records(Resource):
                                       sampling_end_date=sampling_end_date,
                                       publication_start_date=publication_start_date,
                                       publication_end_date=publication_end_date,
-                                      prioritize_estimates=prioritize_estimates)
+                                      prioritize_estimates=prioritize_estimates,
+                                      prioritize_estimates_mode=prioritize_estimates_mode)
         if not columns or ("pin_latitude" in columns and "pin_longitude" in columns):
             result = jitter_pins(result)
         return jsonify(result)
@@ -89,11 +92,13 @@ class PaginatedRecords(Resource):
         columns = data.get('columns')
         research_fields = data.get('research_fields')
         prioritize_estimates = data.get('prioritize_estimates', True)
+        prioritize_estimates_mode = data.get('prioritize_estimates_mode', None)
         sampling_start_date, sampling_end_date = convert_start_end_dates(data, use_sampling_date=True)
 
         result = get_filtered_records(research_fields, filters, columns, sampling_start_date=sampling_start_date,
                                       sampling_end_date=sampling_end_date,
-                                      prioritize_estimates=prioritize_estimates)
+                                      prioritize_estimates=prioritize_estimates,
+                                      prioritize_estimates_mode=prioritize_estimates_mode)
         if not columns or ("pin_latitude" in columns and "pin_longitude" in columns):
             result = jitter_pins(result)
 

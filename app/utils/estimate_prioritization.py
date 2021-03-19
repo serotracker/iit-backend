@@ -100,10 +100,7 @@ def get_pooled_estimate(estimates):
         return pooled  
 
 
-def get_prioritized_estimates(estimates, 
-                              filters = None, 
-                              mode = 'analysis_dynamic'): 
-    
+def get_prioritized_estimates(estimates, filters=None, mode=None):
     if filters is not None:
         estimates = estimates[filters]
     if estimates.shape[0] == 0:
