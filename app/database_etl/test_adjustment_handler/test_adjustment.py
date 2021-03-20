@@ -31,6 +31,7 @@ class ModelParamsSchema(Schema):
     n_sp = fields.Integer()
     y_sp = fields.Float()
 
+
 class TestAdjHandler:
     def __init__(self, model_code=testadj_model_code, model_name='testadj_binomial_se_sp',
                  execution_params={}):
@@ -52,18 +53,19 @@ class TestAdjHandler:
 
         code_hash = md5(model_code.encode('ascii')).hexdigest()
         cache_fn = f'stanmodelcache-{model_name}-{code_hash}.pkl'
+        # try:
+        #     sm = pickle.load(open(cache_fn, 'rb'))
+        #     print(f"Using cached StanModel at filepath {cache_fn}")
+        # except:
+        #     sm = pystan.StanModel(model_code = model_code,
+        #                                  model_name = model_name,
+        #                                  **kwargs)
+        #     with open(cache_fn, 'wb') as f:
+        #         pickle.dump(sm, f)
 
-        try:
-            sm = pickle.load(open(cache_fn, 'rb'))
-            print(f"Using cached StanModel at filepath {cache_fn}")
-        except:
-            sm = pystan.StanModel(model_code = model_code,
+        return pystan.StanModel(model_code = model_code,
                                          model_name = model_name,
                                          **kwargs)
-            with open(cache_fn, 'wb') as f:
-                pickle.dump(sm, f)
-
-        return sm
 
     def fit_one_pystan_model(self, model_params):
         fit = self.TESTADJ_MODEL.sampling(data=model_params,
