@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 import pandas as pd
 from sqlalchemy import create_engine
-from app.serotracker_sqlalchemy import DashboardSourceSchema, ResearchSourceSchema
+from app.serotracker_sqlalchemy import DashboardSourceSchema, ResearchSourceSchema, db_session, ResearchSource
 from app.database_etl.postgres_tables_handler import create_dashboard_source_df, create_bridge_tables,\
     create_multi_select_tables, create_country_df, create_research_source_df, format_dashboard_source,\
     add_mapped_variables, validate_records, load_postgres_tables, drop_table_entries, check_filter_options
@@ -32,19 +32,40 @@ def main():
 
     # Get all records with airtable API request and load into dataframe
     json = get_all_records()
-    data = pd.DataFrame(json)
+    airtable_master_data = pd.DataFrame(json)
+
+    # Query record ids in our database
+    with db_session() as session:
+        results = session.query(ResearchSource.last_modified_time, ResearchSource.airtable_record_id).all()
+        results = [q._asdict() for q in results]
+        results = pd.DataFrame(data=results)
+
+    # Convert last_modified_time to string to compare to string coming from airtable
+    results['last_modified_time'] = \
+        results['last_modified_time'].apply(lambda x: x.strftime('%Y-%m-%d') if x is not None else x)
+
+    # Get all rows in data that are not in results based on last_modified_time and airtable_record_id
+    diff = pd.concat([airtable_master_data, results]).drop_duplicates(subset=['last_modified_time',
+                                                                              'airtable_record_id'], keep=False)
+
+    # Get all unique airtable_record_ids that are new/have been modified
+    new_record_ids = diff['airtable_record_id'].unique()
+
+    # Get all rows from airtable data that need to be test adjusted, and ones that don't
+    new_test_adj_records = airtable_master_data[airtable_master_data['airtable_record_id'].isin(new_record_ids)]
+    old_test_adj_records = airtable_master_data[~airtable_master_data['airtable_record_id'].isin(new_record_ids)]
 
     # Clean raw airtable records to standardize data formats
-    data = standardize_airtable_data(data)
+    airtable_master_data = standardize_airtable_data(airtable_master_data)
 
     # Apply min risk of bias to all study estimates
-    data = apply_min_risk_of_bias(data)
+    airtable_master_data = apply_min_risk_of_bias(airtable_master_data)
 
     # Apply study max estimate grade to all estimates in study
-    data = apply_study_max_estimate_grade(data)
+    airtable_master_data = apply_study_max_estimate_grade(airtable_master_data)
 
     # Create dashboard source df
-    dashboard_source = create_dashboard_source_df(data, current_time=CURR_TIME)
+    dashboard_source = create_dashboard_source_df(airtable_master_data, current_time=CURR_TIME)
 
     # Create country table df
     country_df = create_country_df(dashboard_source, current_time=CURR_TIME)
@@ -57,7 +78,7 @@ def main():
     dashboard_source['country_id'] = dashboard_source['country'].map(lambda a: country_dict[a])
 
     # Create dictionary to store multi select tables
-    multi_select_tables_dict = create_multi_select_tables(data, current_time=CURR_TIME)
+    multi_select_tables_dict = create_multi_select_tables(airtable_master_data, current_time=CURR_TIME)
 
     # Create dictionary to store bridge tables
     bridge_tables_dict = create_bridge_tables(dashboard_source, multi_select_tables_dict, current_time=CURR_TIME)
