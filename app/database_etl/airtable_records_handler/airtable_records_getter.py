@@ -55,6 +55,7 @@ def get_all_records():
     # Get airtable API URL and add fields to be scraped to URL in HTML format
     url = AIRTABLE_REQUEST_URL.format(AIRTABLE_BASE_ID)
     url = _add_fields_to_url(url)
+    url += '&filterByFormula={ETL Included}=1'
     headers = {'Authorization': 'Bearer {}'.format(AIRTABLE_API_KEY)}
 
     # Make request and retrieve records in json format
