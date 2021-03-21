@@ -1,6 +1,6 @@
 import pandas as pd
 
-TEST_EVAL_CSV_LOCATION = 'add'
+TEST_EVAL_CSV_LOCATION = 'test_evaluation_handler/test_evaluations.csv'
 
 
 def get_isotype_list(isotype_str):
@@ -23,7 +23,7 @@ manufacturer_mapping = {
 
 def get_eval_UID_and_DOI(row):
     if not row['test_manufacturer'] or not row['isotypes']: return [None]*2
-    if row['ind_eval_link']: return [row['test_linked_uid'], row['ind_eval_link']]
+    if row['ind_eval_link'] or row['test_linked_uid']: return [row['test_linked_uid'], row['ind_eval_link']]
     test_name, manufacturers, target_isotypes = row['test_name'], row['test_manufacturer'], row['isotypes']
 
     # CRITERIA A – test name, manufacturer, and target isotype
@@ -69,13 +69,13 @@ def get_eval_UID_and_DOI(row):
         if pd.isna(ev['ReferenceSampleType']):
             if top_matches.empty or min_rank == 20:
                 min_rank = 20
-                top_matches.append(ev)
+                top_matches = top_matches.append(ev)
                 continue
         reference_specimen_types = ev['ReferenceSampleType'].split('; ')
         for ref in reference_specimen_types:
             rank = rankings[ref]
             if rank > min_rank: continue
-            if rank == min_rank: top_matches.append(ev)  # Same rank, so append
+            if rank == min_rank: top_matches = top_matches.append(ev)  # Same rank, so append
             else:  # rank < min_rank
                 min_rank, top_matches = rank, ev.to_frame().T
 
