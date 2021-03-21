@@ -54,32 +54,35 @@ def main():
     new_airtable_record_ids = diff['airtable_record_id'].unique()
 
     # Get all rows from airtable data that need to be test adjusted, and ones that don't
-    new_airatble_test_adj_records = \
-        airtable_master_data[airtable_master_data['airtable_record_id'].isin(new_airtable_record_ids)].reset_index()
+    new_airtable_test_adj_records =\
+        airtable_master_data[airtable_master_data['airtable_record_id'].isin(new_airtable_record_ids)].reset_index(
+            drop=True)
+
     old_airtable_test_adj_records = \
-        airtable_master_data[~airtable_master_data['airtable_record_id'].isin(new_airtable_record_ids)].reset_index()
+        airtable_master_data[~airtable_master_data['airtable_record_id'].isin(new_airtable_record_ids)].reset_index(
+            drop=True)
 
     # Apply test adjustment to the new_test_adj_records and add 6 new columns
-    # new_test_adj_records['adj_prevalence'], \
-    # new_test_adj_records['adj_sensitivity'], \
-    # new_test_adj_records['adj_specificity'], \
-    # new_test_adj_records['ind_eval_type'], \
-    # new_test_adj_records['adj_prev_ci_lower'], \
-    # new_test_adj_records['adj_prev_ci_upper'] = \
-    #     zip(*new_test_adj_records.apply(lambda x: TestAdjHandler().get_adjusted_estimate(x), axis=1))
-    new_airatble_test_adj_records['adj_prevalence'] = [2.0] * len(new_airtable_record_ids)
-    new_airatble_test_adj_records['adj_sensitivity'] = [2.0] * len(new_airtable_record_ids)
-    new_airatble_test_adj_records['adj_specificity'] = [2.0] * len(new_airtable_record_ids)
-    new_airatble_test_adj_records['ind_eval_type'] = ['second test type'] * len(new_airtable_record_ids)
-    new_airatble_test_adj_records['adj_prev_ci_lower'] = [2.0] * len(new_airtable_record_ids)
-    new_airatble_test_adj_records['adj_prev_ci_upper'] = [2.0] * len(new_airtable_record_ids)
+    # new_airtable_test_adj_records['adj_prevalence'], \
+    # new_airtable_test_adj_records['adj_sensitivity'], \
+    # new_airtable_test_adj_records['adj_specificity'], \
+    # new_airtable_test_adj_records['ind_eval_type'], \
+    # new_airtable_test_adj_records['adj_prev_ci_lower'], \
+    # new_airtable_test_adj_records['adj_prev_ci_upper'] = \
+    #     zip(*new_airtable_test_adj_records.apply(lambda x: TestAdjHandler().get_adjusted_estimate(x), axis=1))
+    new_airtable_test_adj_records['adj_prevalence'] = [2.0] * len(new_airtable_record_ids)
+    new_airtable_test_adj_records['adj_sensitivity'] = [2.0] * len(new_airtable_record_ids)
+    new_airtable_test_adj_records['adj_specificity'] = [2.0] * len(new_airtable_record_ids)
+    new_airtable_test_adj_records['ind_eval_type'] = 'second test type'
+    new_airtable_test_adj_records['adj_prev_ci_lower'] = [2.0] * len(new_airtable_record_ids)
+    new_airtable_test_adj_records['adj_prev_ci_upper'] = [2.0] * len(new_airtable_record_ids)
 
     # Add test adjustment data to old_test_adj_records from database
     old_airtable_record_ids = old_airtable_test_adj_records['airtable_record_id'].unique()
 
     # Query record ids in our database
     with db_session() as session:
-        old_db_adjusted_records = session.query(DashboardSource.adj_prevalence,
+        old_db_test_adj_records = session.query(DashboardSource.adj_prevalence,
                                                 DashboardSource.adj_prev_ci_lower,
                                                 DashboardSource.adj_prev_ci_upper,
                                                 ResearchSource.adj_sensitivity,
@@ -88,24 +91,16 @@ def main():
                                                 ResearchSource.airtable_record_id) \
             .join(ResearchSource, ResearchSource.source_id == DashboardSource.source_id, isouter=True) \
             .filter(ResearchSource.airtable_record_id.in_(old_airtable_record_ids)).all()
-        old_db_adjusted_records = [q._asdict() for q in old_db_adjusted_records]
-        old_db_adjusted_records = pd.DataFrame(data=old_db_adjusted_records)
+        old_db_test_adj_records = [q._asdict() for q in old_db_test_adj_records]
+        old_db_test_adj_records = pd.DataFrame(data=old_db_test_adj_records)
 
-    # Convert last_modified_time to string again
-    # old_db_adjusted_records['last_modified_time'] = \
-    #     old_db_adjusted_records['last_modified_time'].apply(lambda x: x.strftime('%Y-%m-%d') if x is not None else x)
-    print(old_airtable_test_adj_records)
-    print(old_airtable_test_adj_records.columns)
-
-    print(old_db_adjusted_records)
-    print(old_db_adjusted_records.columns)
     # Join old_airtable_test_adj_records with old_db_adjusted_records
-    old_airtable_test_adj_records =\
-        old_airtable_test_adj_records.join(old_db_adjusted_records.set_index('airtable_record_id'),
+    old_airtable_test_adj_records = \
+        old_airtable_test_adj_records.join(old_db_test_adj_records.set_index('airtable_record_id'),
                                            on='airtable_record_id')
-    print(old_airtable_test_adj_records)
-    print(old_airtable_test_adj_records.columns)
-    exit()
+
+    # Concat the old and new airtable test adj records
+    airtable_master_data = pd.concat([new_airtable_test_adj_records, old_airtable_test_adj_records])
 
     # Clean raw airtable records to standardize data formats
     airtable_master_data = standardize_airtable_data(airtable_master_data)

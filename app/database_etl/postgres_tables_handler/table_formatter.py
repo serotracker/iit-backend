@@ -84,4 +84,3 @@ def format_dashboard_source(dashboard_source_df, research_cols):
     # Remove any null string characters from research source or dashboard source dfs
     dashboard_source = dashboard_source.apply(lambda col: col.apply(lambda val: replace_null_string(val)))
     return dashboard_source
-

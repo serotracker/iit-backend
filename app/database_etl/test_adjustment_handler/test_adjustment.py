@@ -15,6 +15,7 @@ from app.database_etl.test_adjustment_handler import bastos_estimates, testadj_m
 from marshmallow import Schema, fields, ValidationError
 import multiprocessing
 
+
 def validate_against_schema(input_payload, schema):
     try:
         payload = schema.load(input_payload)
@@ -53,15 +54,15 @@ class TestAdjHandler:
 
         code_hash = md5(model_code.encode('ascii')).hexdigest()
         cache_fn = f'stanmodelcache-{model_name}-{code_hash}.pkl'
-        # try:
-        #     sm = pickle.load(open(cache_fn, 'rb'))
-        #     print(f"Using cached StanModel at filepath {cache_fn}")
-        # except:
-        #     sm = pystan.StanModel(model_code = model_code,
-        #                                  model_name = model_name,
-        #                                  **kwargs)
-        #     with open(cache_fn, 'wb') as f:
-        #         pickle.dump(sm, f)
+        try:
+            sm = pickle.load(open(cache_fn, 'rb'))
+            print(f"Using cached StanModel at filepath {cache_fn}")
+        except:
+            sm = pystan.StanModel(model_code = model_code,
+                                         model_name = model_name,
+                                         **kwargs)
+            with open(cache_fn, 'wb') as f:
+                pickle.dump(sm, f)
 
         return pystan.StanModel(model_code = model_code,
                                          model_name = model_name,
@@ -152,8 +153,8 @@ class TestAdjHandler:
         else:
             return lower, median, upper
 
-
     def get_adjusted_estimate(self, estimate):
+        multiprocessing.set_start_method("fork")
         # initialize adj_type
         adj_type = None
 
@@ -208,11 +209,11 @@ class TestAdjHandler:
                     adj_type = 'No data altogether'
 
             if adj_type == 'No data altogether':
-                adj_prev = nan
-                se = nan
-                sp = nan
-                lower = nan
-                upper = nan
+                adj_prev = None
+                se = None
+                sp = None
+                lower = None
+                upper = None
             else:
                 print(f'ADJUSTING ESTIMATE AT INDEX {estimate.name}', adj_type)
                 model_params = dict(
@@ -236,8 +237,9 @@ class TestAdjHandler:
 
             lower, upper = proportion_confint(int(estimate['denominator_value'] * estimate['serum_pos_prevalence']),
                                               estimate['denominator_value'], alpha=0.1, method='jeffreys')
-
+        print(adj_prev, se, sp, adj_type, lower, upper)
         return adj_prev, se, sp, adj_type, lower, upper
+
 
 def test_code(model_code=testadj_model_code,
               model_name='testadj_binomial_se_sp'):
@@ -259,16 +261,14 @@ def test_code(model_code=testadj_model_code,
         'n_sp': 14,
         'y_sp': 9
     }
-
     testadjHandler = TestAdjHandler(model_code=model_code, model_name=model_name)
-
     return {
         "bendavid_data": testadjHandler.pystan_adjust(bendavid_data),
         "denmark_data": testadjHandler.pystan_adjust(denmark_data)
     }
 
-def run_on_test_set(model_code=testadj_model_code,
-              model_name='testadj_binomial_se_sp'):
+
+def run_on_test_set(model_code=testadj_model_code, model_name='testadj_binomial_se_sp'):
     records_df = pd.read_csv('test_adj_test_set.csv')
     testadjHandler = TestAdjHandler(model_code=model_code, model_name=model_name)
     # Write to csv
@@ -277,6 +277,7 @@ def run_on_test_set(model_code=testadj_model_code,
         zip(*records_df.apply(lambda row: testadjHandler.get_adjusted_estimate(row), axis=1))
 
     return records_df
+
 
 if __name__ == '__main__':
     # To resolve error when running multiple chains at once:
@@ -304,5 +305,4 @@ if __name__ == '__main__':
     records_df['adj_prevalence'], records_df['adj_sensitivity'], records_df['adj_specificity'], \
     records_df['ind_eval_type'], records_df['adj_prev_ci_lower'], records_df['adj_prev_ci_upper'] = \
         zip(*records_df.apply(lambda row: testadjHandler.get_adjusted_estimate(row), axis=1))
-
     print("COMPLETED")

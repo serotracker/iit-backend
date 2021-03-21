@@ -43,7 +43,7 @@ dashboard_source_cols = ['source_name', 'source_type', 'study_name', 'denominato
                          'tests_per_hundred', 'deaths_per_hundred', 'vaccinations_per_hundred',
                          'full_vaccinations_per_hundred', 'publication_date', 'geo_exact_match',
                          'sensitivity', 'specificity', 'summary', 'study_type', 'source_publisher', 'lead_organization',
-                         'first_author']
+                         'first_author', 'adj_prevalence', 'adj_prev_ci_lower', 'adj_prev_ci_upper']
 
 research_source_cols = ['case_population', 'deaths_population', 'age_max', 'age_min', 'age_variation',
                         'age_variation_measure', 'average_age', 'case_count_neg14', 'case_count_neg9',
@@ -55,4 +55,4 @@ research_source_cols = ['case_population', 'deaths_population', 'age_max', 'age_
                         'seroprev_95_ci_upper', 'sp_n', 'subgroup_var', 'subgroup_cat', 'superceded',
                         'test_linked_uid', 'test_name', 'test_validation', 'gbd_region', 'gbd_subregion',
                         'lmic_hic', 'genpop', 'sampling_type', 'subgroup_specific_category', 'last_modified_time',
-                        'date_created']
+                        'date_created', 'adj_sensitivity', 'adj_specificity', 'ind_eval_type']
