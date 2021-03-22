@@ -43,7 +43,8 @@ class SummaryReport:
     def send_summary_report(self):
         body = f"Summary report for ETL run at {self.get_human_readable_time(self.start_time)}:\n\n"
         body += f"Total runtime: {self.get_elapsed_time()} seconds\n"
-        body += f"Number of airtable records queried: {self.num_airtable_records}\n"
+        if hasattr(self, 'num_airtable_records'):
+            body += f"Number of airtable records queried: {self.num_airtable_records}\n"
         body += f"Table counts before: " + f"```{json.dumps(self.table_counts_before, indent=4)}```\n"
         if hasattr(self, 'table_counts_after'):
             body += f"Table counts after: " + f"```{json.dumps(self.table_counts_after, indent=4)}```\n"
@@ -51,6 +52,13 @@ class SummaryReport:
         else:
             body += f"Status: FAIL"
         send_slack_message(body, channel="#dev-logging-etl")
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exception_type, exception_value, traceback):
+        self.get_elapsed_time()
+        self.send_summary_report()
 
 
 
