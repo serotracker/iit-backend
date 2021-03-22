@@ -12,6 +12,7 @@ from app.database_etl.postgres_tables_handler import create_dashboard_source_df,
 from app.database_etl.airtable_records_handler import get_all_records, apply_study_max_estimate_grade,\
     apply_min_risk_of_bias, standardize_airtable_data
 from app.database_etl.tableau_data_connector import upload_analyze_csv
+from app.database_etl.summary_report_generator import SummaryReport
 
 
 load_dotenv()
@@ -30,8 +31,12 @@ def main():
         password=os.getenv('DATABASE_PASSWORD'),
         host_address=os.getenv('DATABASE_HOST_ADDRESS')))
 
+    # Instantiate summary report object
+    etl_report = SummaryReport()
+
     # Get all records with airtable API request and load into dataframe
     json = get_all_records()
+    etl_report.get_num_airtable_records(len(json))
     data = pd.DataFrame(json)
 
     # Clean raw airtable records to standardize data formats
@@ -92,6 +97,7 @@ def main():
     # If all tables were successfully loaded, drop old entries
     if load_status:
         drop_table_entries(current_time=CURR_TIME, drop_old=True)
+        etl_report.get_table_counts_after()
     # Otherwise drop entries from current ETL run
     else:
         drop_table_entries(current_time=CURR_TIME, drop_old=False)
@@ -101,6 +107,10 @@ def main():
 
     # Upload tableau csv to google sheets
     upload_analyze_csv()
+
+    # Send ETL summary report
+    etl_report.get_elapsed_time()
+    etl_report.send_summary_report()
     return
 
 
