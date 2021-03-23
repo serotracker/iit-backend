@@ -7,7 +7,7 @@ def get_isotype_list(isotype_str):
     if pd.isna(isotype_str): return []
     if isotype_str == "Total Ig": return ["IgM", "IgG", "IgA"]
     isotypes = isotype_str.split('; ')
-    return set(isotypes)
+    return isotypes
 
 
 test_eval_df = pd.read_csv(TEST_EVAL_CSV_LOCATION)
