@@ -11,7 +11,7 @@ def get_isotype_list(isotype_str):
 
 
 test_eval_df = pd.read_csv(TEST_EVAL_CSV_LOCATION)
-test_eval_df['Target'] = test_eval_df.apply(lambda x: get_isotype_list(x['Target']), axis=1)
+test_eval_df['Target'] = test_eval_df.apply(lambda x: get_isotype_list(x['Target']), axis=1)  # 'Target' refers to antibodies (IgM, IgG, IgA)
 manufacturer_mapping = {
     'Vircell Microbiologists': 'Vircell S.L.',
     'SNIBE – Shenzhen New Industries Biomedical Engineering Co.': 'Snibe Co., Ltd',
@@ -21,10 +21,10 @@ manufacturer_mapping = {
 }
 
 
-def get_eval_UID_and_DOI(row):
-    if not row['test_manufacturer'] or not row['isotypes']: return [None]*2
-    if row['ind_eval_link'] or row['test_linked_uid']: return [row['test_linked_uid'], row['ind_eval_link']]
-    test_name, manufacturers, target_isotypes = row['test_name'], row['test_manufacturer'], row['isotypes']
+def get_eval_UID_and_DOI(estimate):
+    if not estimate['test_manufacturer'] or not estimate['isotypes']: return [None] * 2
+    if estimate['ind_eval_link'] or estimate['test_linked_uid']: return [estimate['test_linked_uid'], estimate['ind_eval_link']]
+    test_name, manufacturers, target_isotypes = estimate['test_name'], estimate['test_manufacturer'], estimate['isotypes']
 
     # CRITERIA A – test name, manufacturer, and target isotype
     # Get all rows matching test name
@@ -51,7 +51,7 @@ def get_eval_UID_and_DOI(row):
     if matches.shape[0] == 1: return [matches.iloc[0]['unique_id'], matches.iloc[0]['DOI']]
 
     # CRITERIA B – sample specimen type
-    specimen_type = row['specimen_type']
+    specimen_type = estimate['specimen_type']
     new_matches = matches[matches['IndexSampleType'] == specimen_type]
 
     if not new_matches.empty:
