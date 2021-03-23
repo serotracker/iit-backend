@@ -105,6 +105,9 @@ def check_filter_options(dashboard_source: pd.DataFrame) -> None:
     changed_filter_options = {}
 
     for filter_type in curr_filter_options:
+        # Skip over prioritize_estimates_mode because it is hard-coded and not in the database
+        if filter_type == 'prioritize_estimates_mode': continue
+        
         # Get new options for each filter type
         new_options = set(dashboard_source[filter_type].unique())
         # Remove options that are unused (e.g. "All", "Multiple groups", etc)
