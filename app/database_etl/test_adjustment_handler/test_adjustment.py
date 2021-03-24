@@ -13,7 +13,6 @@ from hashlib import md5
 from app.utils import get_filtered_records
 from app.database_etl.test_adjustment_handler import bastos_estimates, testadj_model_code
 from marshmallow import Schema, fields, ValidationError
-import multiprocessing
 
 
 def validate_against_schema(input_payload, schema):
@@ -154,7 +153,6 @@ class TestAdjHandler:
             return lower, median, upper
 
     def get_adjusted_estimate(self, estimate):
-        multiprocessing.set_start_method("fork")
         # initialize adj_type
         adj_type = None
 
@@ -165,13 +163,13 @@ class TestAdjHandler:
             if pd.notna(estimate['ind_se']) and pd.notna(estimate['ind_sp']):
                 adj_type = 'FINDDx / MUHC independent evaluation'
                 # Also note these must be divided by 100
-                se = estimate['ind_se'] / 100
-                sp = estimate['ind_sp'] / 100
+                se = float(estimate['ind_se'][0]) / 100
+                sp = float(estimate['ind_sp'][0]) / 100
                 # Note: for some reason ind_se_n and ind_sp_n are floats in the DB
                 # See line 51 in airtable_records_formatter.py to see where the conversion is happening in the ETL
                 # Test adjustment expects them to be integers so we gotta convert back
-                se_n = estimate['ind_se_n']*100 if pd.notna(estimate['ind_se_n']) else 30
-                sp_n = estimate['ind_sp_n']*100 if pd.notna(estimate['ind_sp_n']) else 80
+                se_n = float(estimate['ind_se_n'][0])*100 if pd.notna(estimate['ind_se_n'][0]) else 30
+                sp_n = float(estimate['ind_sp_n'][0])*100 if pd.notna(estimate['ind_sp_n'][0]) else 80
 
             # Author evaluation is available
             elif pd.notna(estimate['se_n']) and pd.notna(estimate['sp_n']) and \
@@ -237,7 +235,6 @@ class TestAdjHandler:
 
             lower, upper = proportion_confint(int(estimate['denominator_value'] * estimate['serum_pos_prevalence']),
                                               estimate['denominator_value'], alpha=0.1, method='jeffreys')
-        print(adj_prev, se, sp, adj_type, lower, upper)
         return adj_prev, se, sp, adj_type, lower, upper
 
 
