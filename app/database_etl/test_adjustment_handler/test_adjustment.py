@@ -1,6 +1,5 @@
 # monte-carlo version of RG estimator,
 # accounting for uncertainty in se and sp estimates
-from numpy import nan
 from math import log
 from statsmodels.stats.proportion import proportion_confint
 import pandas as pd
@@ -163,13 +162,10 @@ class TestAdjHandler:
             if pd.notna(estimate['ind_se']) and pd.notna(estimate['ind_sp']):
                 adj_type = 'FINDDx / MUHC independent evaluation'
                 # Also note these must be divided by 100
-                se = float(estimate['ind_se'][0]) / 100
-                sp = float(estimate['ind_sp'][0]) / 100
-                # Note: for some reason ind_se_n and ind_sp_n are floats in the DB
-                # See line 51 in airtable_records_formatter.py to see where the conversion is happening in the ETL
-                # Test adjustment expects them to be integers so we gotta convert back
-                se_n = float(estimate['ind_se_n'][0])*100 if pd.notna(estimate['ind_se_n'][0]) else 30
-                sp_n = float(estimate['ind_sp_n'][0])*100 if pd.notna(estimate['ind_sp_n'][0]) else 80
+                se = (estimate['ind_se']) / 100
+                sp = (estimate['ind_sp']) / 100
+                se_n = float(estimate['ind_se_n'][0])*100 if estimate['ind_se_n'] is not None else 30
+                sp_n = float(estimate['ind_sp_n'][0])*100 if estimate['ind_sp_n'] is not None else 80
 
             # Author evaluation is available
             elif pd.notna(estimate['se_n']) and pd.notna(estimate['sp_n']) and \
@@ -279,7 +275,6 @@ def run_on_test_set(model_code=testadj_model_code, model_name='testadj_binomial_
 if __name__ == '__main__':
     # To resolve error when running multiple chains at once:
     # https://discourse.mc-stan.org/t/new-to-pystan-always-get-this-error-when-attempting-to-sample-modulenotfounderror-no-module-named-stanfit4anon-model/19288/3
-    multiprocessing.set_start_method("fork")
 
     # Get records
     records = get_filtered_records(research_fields=True, filters=None, columns=None,

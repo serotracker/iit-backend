@@ -33,10 +33,11 @@ def main():
     json = get_all_records()
     airtable_master_data = pd.DataFrame(json)
 
-    airtable_master_data = add_test_adjustments(airtable_master_data)
-
     # Clean raw airtable records to standardize data formats
     airtable_master_data = standardize_airtable_data(airtable_master_data)
+
+    # Add test adjustment data
+    airtable_master_data = add_test_adjustments(airtable_master_data)
 
     # Apply min risk of bias to all study estimates
     airtable_master_data = apply_min_risk_of_bias(airtable_master_data)

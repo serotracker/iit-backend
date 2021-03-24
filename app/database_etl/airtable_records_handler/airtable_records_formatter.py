@@ -132,19 +132,14 @@ def add_test_adjustments(df):
 
     # Apply test adjustment to the new_test_adj_records and add 6 new columns
     multiprocessing.set_start_method("fork")
+    test_adj_handler = TestAdjHandler()
     new_airtable_test_adj_records['adj_prevalence'], \
     new_airtable_test_adj_records['adj_sensitivity'], \
     new_airtable_test_adj_records['adj_specificity'], \
     new_airtable_test_adj_records['ind_eval_type'], \
     new_airtable_test_adj_records['adj_prev_ci_lower'], \
     new_airtable_test_adj_records['adj_prev_ci_upper'] = \
-        zip(*new_airtable_test_adj_records.apply(lambda x: TestAdjHandler().get_adjusted_estimate(x), axis=1))
-    # new_airtable_test_adj_records['adj_prevalence'] = [2.0] * len(new_airtable_record_ids)
-    # new_airtable_test_adj_records['adj_sensitivity'] = [2.0] * len(new_airtable_record_ids)
-    # new_airtable_test_adj_records['adj_specificity'] = [2.0] * len(new_airtable_record_ids)
-    # new_airtable_test_adj_records['ind_eval_type'] = 'second test type'
-    # new_airtable_test_adj_records['adj_prev_ci_lower'] = [2.0] * len(new_airtable_record_ids)
-    # new_airtable_test_adj_records['adj_prev_ci_upper'] = [2.0] * len(new_airtable_record_ids)
+        zip(*new_airtable_test_adj_records.apply(lambda x: test_adj_handler.get_adjusted_estimate(x), axis=1))
 
     # Add test adjustment data to old_test_adj_records from database
     old_airtable_record_ids = old_airtable_test_adj_records['airtable_record_id'].unique()
