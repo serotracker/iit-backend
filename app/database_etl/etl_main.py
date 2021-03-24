@@ -36,7 +36,7 @@ def main():
 
         # Get all records with airtable API request and load into dataframe
         json = get_all_records()
-        etl_report.get_num_airtable_records(len(json))
+        etl_report.set_num_airtable_records(len(json))
         data = pd.DataFrame(json)
 
         # Clean raw airtable records to standardize data formats
@@ -97,7 +97,7 @@ def main():
         # If all tables were successfully loaded, drop old entries
         if load_status:
             drop_table_entries(current_time=CURR_TIME, drop_old=True)
-            etl_report.get_table_counts_after()
+            etl_report.set_table_counts_after()
         # Otherwise drop entries from current ETL run
         else:
             drop_table_entries(current_time=CURR_TIME, drop_old=False)

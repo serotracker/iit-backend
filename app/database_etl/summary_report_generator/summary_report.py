@@ -10,12 +10,12 @@ import datetime
 class SummaryReport:
     def __init__(self):
         self.start_time = time()
-        self.get_table_counts_before()
+        self.set_table_counts_before()
 
     def get_elapsed_time(self):
         return time() - self.start_time
 
-    def get_num_airtable_records(self, num_records: int):
+    def set_num_airtable_records(self, num_records: int):
         self.num_airtable_records = num_records
 
     def get_table_counts(self):
@@ -30,10 +30,10 @@ class SummaryReport:
                 table_counts[table.__tablename__] = session.query(func.count(getattr(table, pk))).scalar()
         return table_counts
 
-    def get_table_counts_before(self):
+    def set_table_counts_before(self):
         self.table_counts_before = self.get_table_counts()
 
-    def get_table_counts_after(self):
+    def set_table_counts_after(self):
         self.table_counts_after = self.get_table_counts()
 
     def get_human_readable_time(self, timestamp: float):
@@ -57,7 +57,6 @@ class SummaryReport:
         return self
 
     def __exit__(self, exception_type, exception_value, traceback):
-        self.get_elapsed_time()
         self.send_summary_report()
 
 
