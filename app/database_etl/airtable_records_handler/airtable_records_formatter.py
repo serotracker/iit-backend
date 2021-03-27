@@ -45,7 +45,7 @@ def get_most_recent_publication_info(row: Dict) -> Dict:
     return row
 
 
-def standardize_airtable_data(df):
+def standardize_airtable_data(df: pd.DataFrame) -> pd.DataFrame:
     # List of columns that are lookup fields and therefore only have one element in the list
     single_element_list_cols = ['included', 'source_name', 'url', 'source_publisher', 'summary',
                                 'study_type', 'country', 'lead_organization', 'overall_risk_of_bias',
@@ -79,7 +79,7 @@ def standardize_airtable_data(df):
     return df
 
 
-def apply_min_risk_of_bias(df):
+def apply_min_risk_of_bias(df: pd.DataFrame) -> pd.DataFrame:
     bias_hierarchy = ['Low', 'Moderate', 'High', 'Unclear']
     for name, subset in df.groupby('study_name'):
         if (subset['overall_risk_of_bias']).isnull().all():
@@ -92,7 +92,7 @@ def apply_min_risk_of_bias(df):
     return df
 
 
-def apply_study_max_estimate_grade(df):
+def apply_study_max_estimate_grade(df: pd.DataFrame) -> pd.DataFrame:
     grade_hierarchy = ['National', 'Regional', 'Local', 'Sublocal']
     for name, subset in df.groupby('study_name'):
         for level in grade_hierarchy:
@@ -102,7 +102,7 @@ def apply_study_max_estimate_grade(df):
     return df
 
 
-def add_test_adjustments(df):
+def add_test_adjustments(df: pd.DataFrame) -> pd.DataFrame:
     # Query record ids in our database
     with db_session() as session:
         total_db_records = session.query(ResearchSource.last_modified_time, ResearchSource.airtable_record_id).all()
