@@ -127,34 +127,6 @@ model {
 }
 """
 
-# uniform_sens_spec_model_code = """
-# data {
-#     int<lower = 0> n_prev_obs;
-#     int<lower = 0> y_prev_obs;
-#     int<lower = 0> n_se;
-#     int<lower = 0> y_se;
-#     int<lower = 0> n_sp;
-#     int<lower = 0> y_sp;
-# }
-# transformed data {
-#     real sens_reported = y_se * 1.0 / n_se;
-#     real spec_reported = y_sp * 1.0 / n_sp;
-# }
-# parameters {
-#     real<lower = 0, upper = 1> prev;
-#     real<lower = 0, upper = 1> sens;
-#     real<lower = 0, upper = 1> spec;
-# }
-# model {
-#     real prev_obs;
-#
-#     prev_obs = prev * sens + (1 - prev) * (1 - spec);
-#     y_prev_obs ~ binomial(n_prev_obs, prev_obs);
-#     sens ~ uniform(sens_reported - 0.01, sens_reported + 0.01);
-#     spec ~ uniform(spec_reported - 0.01, spec_reported + 0.01);
-# }
-# """
-
 jeffries_fixed_sens_spec_model_code = """
 data {
     int<lower = 0> n_prev_obs;
