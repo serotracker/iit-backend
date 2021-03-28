@@ -105,18 +105,38 @@ def apply_study_max_estimate_grade(df: pd.DataFrame) -> pd.DataFrame:
 def add_test_adjustments(df: pd.DataFrame) -> pd.DataFrame:
     # Query record ids in our database
     with db_session() as session:
-        total_db_records = session.query(ResearchSource.last_modified_time, ResearchSource.airtable_record_id).all()
+        total_db_records = session.query(DashboardSource.serum_pos_prevalence,
+                                         DashboardSource.test_adj,
+                                         DashboardSource.sensitivity,
+                                         DashboardSource.specificity,
+                                         DashboardSource.test_type,
+                                         DashboardSource.denominator_value,
+                                         ResearchSource.ind_se,
+                                         ResearchSource.ind_sp,
+                                         ResearchSource.ind_se_n,
+                                         ResearchSource.ind_sp_n,
+                                         ResearchSource.se_n,
+                                         ResearchSource.sp_n,
+                                         ResearchSource.test_validation,
+                                         ResearchSource.airtable_record_id) \
+            .join(ResearchSource, ResearchSource.source_id == DashboardSource.source_id, isouter=True).all()
         total_db_records = [q._asdict() for q in total_db_records]
         total_db_records = pd.DataFrame(data=total_db_records)
 
-    # Convert last_modified_time to string to compare to string coming from airtable
-    total_db_records['last_modified_time'] = \
-        total_db_records['last_modified_time'].apply(lambda x: x.strftime('%Y-%m-%d') if x is not None else x)
+    # Concat old and new records and fillna with 0 (NaN and None become 0 so it is standardized)
+    diff = pd.concat([df, total_db_records])
+    diff.fillna(0, inplace=True)
 
-    # Get all rows in data that are not in results based on last_modified_time and airtable_record_id
-    diff = pd.concat([df, total_db_records]).drop_duplicates(subset=['last_modified_time',
-                                                                     'airtable_record_id'],
-                                                             keep=False)
+    # Convert numeric cols to float (some of these come out of airtable as strings so need to standardize types)
+    float_cols = ['ind_se', 'ind_sp', 'ind_se_n', 'ind_sp_n', 'se_n', 'sp_n', 'sensitivity', 'specificity',
+                  'denominator_value', 'serum_pos_prevalence']
+    diff[float_cols] = diff[float_cols].astype(float)
+
+    # Drop duplicates based on these cols
+    duplicate_cols = ['airtable_record_id', 'test_adj', 'ind_se', 'ind_sp', 'ind_se_n', 'ind_sp_n',
+                      'se_n', 'sp_n', 'sensitivity', 'specificity', 'test_validation', 'test_type', 'denominator_value',
+                      'serum_pos_prevalence']
+    diff = diff.drop_duplicates(subset=duplicate_cols, keep=False)
 
     # Get all unique airtable_record_ids that are new/have been modified
     new_airtable_record_ids = diff['airtable_record_id'].unique()
