@@ -1,4 +1,5 @@
 from collections import namedtuple
+import pandas as pd
 
 # we will need to 'pool' estimates, collapsing values from multiple estimates to one
 # here are functions that do that for each variable

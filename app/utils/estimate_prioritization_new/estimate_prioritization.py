@@ -35,15 +35,16 @@ def get_pooled_estimate(estimates):
         # pool all values that can be pooled
         for (summary_type, cols_to_summarize, summary_function) in pooling_function_maps:
             if summary_function is not None:
-                valid_cols_to_summarize = set.intersection(cols_to_summarize, estimates.columns) 
+                valid_cols_to_summarize = set(cols_to_summarize) & set(estimates.columns)
 
                 for col in valid_cols_to_summarize:
                     pooled.at[col] = summary_function(estimates, col)
 
         # generate new values as necessary
         pooled.at['numerator_value'] = int(pooled.at['serum_pos_prevalence'] * pooled.at['denominator_value'])
-        pooled.at['estimate_name'] += '_pooled'
-        pooled.loc[['seroprev_95_ci_lower', 'seroprev_95_ci_upper']] = proportion_confint(count = pooled.at['numerator_value'], 
+        if 'estimate_name' in pooled.index:
+            pooled.at['estimate_name'] += '_pooled'
+        pooled.at['seroprev_95_ci_lower'], pooled.at['seroprev_95_ci_upper'] = proportion_confint(count = pooled.at['numerator_value'],
                                                                                           nobs = pooled.at['denominator_value'],
                                                                                           alpha = 0.05,
                                                                                           method = 'jeffreys')
@@ -103,8 +104,8 @@ def get_prioritized_estimates(estimates,
             # if a prioritization criterion yields multiple estimates, continue applying criteria 
 
         # select a criterion
-        print(prioritization_criteria)
         for criterion_name, criterion in prioritization_criteria.items():
+            print(study_estimates['estimate_grade'])
             # go through the levels of that criterion, from highest to lowest
             for level in criterion:
                 study_estimates_at_level = study_estimates[study_estimates.apply(level, axis = 1)]
@@ -198,9 +199,9 @@ if __name__ == '__main__':
             'test_adj': True,
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
-            'test_type': ['ELISA'], 
-            'specimen_type': ['Dried Blood'],
-            'age': ['All'],
+            'test_type': 'ELISA',
+            'specimen_type': 'Dried Blood',
+            'age': 'All',
             'sex': 'ALL'
         },
         {
@@ -215,9 +216,9 @@ if __name__ == '__main__':
             'test_adj': True,
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
-            'test_type': ['ELISA'], 
-            'specimen_type': ['Dried Blood'],
-            'age': ['All'],
+            'test_type': 'ELISA',
+            'specimen_type': 'Dried Blood',
+            'age': 'All',
             'sex': 'ALL'
         },
         {
@@ -232,9 +233,9 @@ if __name__ == '__main__':
             'test_adj': True,
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
-            'test_type': ['ELISA'], 
-            'specimen_type': ['Dried Blood'],
-            'age': ['All'],
+            'test_type': 'ELISA',
+            'specimen_type': 'Dried Blood',
+            'age': 'All',
             'sex': 'ALL'
         },
         {
@@ -249,9 +250,9 @@ if __name__ == '__main__':
             'test_adj': True,
             'isotypes_reported': ['IgG'],
             'isotype_comb': 'OR',
-            'test_type': ['ELISA'], 
-            'specimen_type': ['Dried Blood'],
-            'age': ['All'],
+            'test_type': 'ELISA',
+            'specimen_type': 'Dried Blood',
+            'age': 'All',
             'sex': 'ALL'
         },
         {
@@ -266,9 +267,9 @@ if __name__ == '__main__':
             'test_adj': True,
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
-            'test_type': ['ELISA'], 
-            'specimen_type': ['Dried Blood'],
-            'age': ['All'],
+            'test_type': 'ELISA',
+            'specimen_type': 'Dried Blood',
+            'age': 'All',
             'sex': 'ALL'
         },
         {
@@ -283,9 +284,9 @@ if __name__ == '__main__':
             'test_adj': True,
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'AND',
-            'test_type': ['ELISA'], 
-            'specimen_type': ['Dried Blood'],
-            'age': ['All'],
+            'test_type': 'ELISA',
+            'specimen_type': 'Dried Blood',
+            'age': 'All',
             'sex': 'ALL'
         },
         {
@@ -300,9 +301,9 @@ if __name__ == '__main__':
             'test_adj': True,
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
-            'test_type': ['ELISA'], 
-            'specimen_type': ['Dried Blood'],
-            'age': ['All'],
+            'test_type': 'ELISA',
+            'specimen_type': 'Dried Blood',
+            'age': 'All',
             'sex': 'ALL'
         },
         {
@@ -317,9 +318,9 @@ if __name__ == '__main__':
             'test_adj': True,
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
-            'test_type': ['LFIA'], 
-            'specimen_type': ['Dried Blood'],
-            'age': ['All'],
+            'test_type': 'LFIA',
+            'specimen_type': 'Dried Blood',
+            'age': 'All',
             'sex': 'ALL'
         },
         {
@@ -334,9 +335,9 @@ if __name__ == '__main__':
             'test_adj': True,
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
-            'test_type': ['ELISA'], 
-            'specimen_type': ['Dried Blood'],
-            'age': ['All'],
+            'test_type': 'ELISA',
+            'specimen_type': 'Dried Blood',
+            'age': 'All',
             'sex': 'ALL',
             'TEST_INFO_AVAIL': False
         },
@@ -352,9 +353,9 @@ if __name__ == '__main__':
             'test_adj': True,
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
-            'test_type': ['ELISA'], 
-            'specimen_type': ['Not Dried Blood'],
-            'age': ['All'],
+            'test_type': 'ELISA',
+            'specimen_type': 'Not Dried Blood',
+            'age': 'All',
             'sex': 'ALL',
             'TEST_INFO_AVAIL': False
         },
@@ -370,9 +371,9 @@ if __name__ == '__main__':
             'test_adj': True,
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
-            'test_type': ['ELISA'], 
-            'specimen_type': ['Dried Blood'],
-            'age': ['All'],
+            'test_type': 'ELISA',
+            'specimen_type': 'Dried Blood',
+            'age': 'All',
             'sex': 'ALL',
             'TEST_INFO_AVAIL': False
         },
@@ -388,9 +389,9 @@ if __name__ == '__main__':
             'test_adj': False,
             'isotypes_reported': ['IgG', 'IgM'],
             'isotype_comb': 'OR',
-            'test_type': ['ELISA'], 
-            'specimen_type': ['Not Dried Blood'],
-            'age': ['All'],
+            'test_type': 'ELISA',
+            'specimen_type': 'Not Dried Blood',
+            'age': 'All',
             'sex': 'ALL',
             'TEST_INFO_AVAIL': False
         },
@@ -398,9 +399,10 @@ if __name__ == '__main__':
 
     # Adding these hardcoded values for now to make tests pass
     for estimate in sample_estimates:
-        estimate['population_group'] = ["General Population"]
+        estimate['population_group'] = "General Population"
         estimate['state'] = ["Texas"]
         estimate['city'] = ["Dallas"]
+        estimate['estimate_grade'] = 'National'
 
     sample_df = pd.DataFrame(sample_estimates)
     # Adding these hardcoded values for now to make tests pass
