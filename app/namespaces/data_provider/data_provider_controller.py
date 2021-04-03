@@ -40,7 +40,7 @@ class Records(Resource):
         columns = data.get('columns')
         research_fields = data.get('research_fields')
         prioritize_estimates = data.get('prioritize_estimates', True)
-        prioritize_estimates_mode = data.get('prioritize_estimates_mode', None)
+        prioritize_estimates_mode = data.get('prioritize_estimates_mode', 'dashboard')
 
         sampling_start_date, sampling_end_date = convert_start_end_dates(data, use_sampling_date=True)
         publication_start_date, publication_end_date = convert_start_end_dates(data, use_sampling_date=False)
@@ -94,7 +94,7 @@ class PaginatedRecords(Resource):
         columns = data.get('columns')
         research_fields = data.get('research_fields')
         prioritize_estimates = data.get('prioritize_estimates', True)
-        prioritize_estimates_mode = data.get('prioritize_estimates_mode', None)
+        prioritize_estimates_mode = data.get('prioritize_estimates_mode', 'dashboard')
         sampling_start_date, sampling_end_date = convert_start_end_dates(data, use_sampling_date=True)
         include_in_srma = data.get('include_in_srma', False)
 
