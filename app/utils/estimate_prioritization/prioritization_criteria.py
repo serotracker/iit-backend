@@ -57,7 +57,7 @@ prioritization_criteria_full = {
         lambda estimate: estimate['test_type'] == 'ELISA'
     ],
     'specimen': [
-        lambda estimate: 'Dried Blood' not in estimate['specimen_type']
+        lambda estimate: estimate['specimen_type'] != 'Dried Blood'
     ]
 }
 

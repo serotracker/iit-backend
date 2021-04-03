@@ -1,6 +1,7 @@
-from app.utils.estimate_prioritization_new import get_prioritized_estimates
+from app.utils.estimate_prioritization import get_prioritized_estimates
 import datetime
 import pandas as pd
+import json
 
 # test estimate prioritization code on that minimum set
 def estimate_prioritization_test(estimates,
@@ -16,11 +17,13 @@ def estimate_prioritization_test(estimates,
         try:
             assert expected == actual
         except Exception as e:
-            print(f"Failed test: {test_name}. Expected {expected}, actual {actual}")
-            raise e
+            # Need to catch this case because nan != nan
+            if not pd.isna(expected) and pd.isna(actual):
+                print(f"Failed test: {test_name}. Expected {expected}, actual {actual}")
+                raise e
 
-if __name__ == '__main__':
-
+# Test using the mock estimates that were used when originally building estimate prio
+def test_mock_estimates():
     # create minimum set of data needed to test behavior of estimate prioritization code
     sample_estimates = [
         {
@@ -301,12 +304,6 @@ if __name__ == '__main__':
     sample_df['sampling_end_date'] = datetime.datetime.now()
 
     estimate_prioritization_test(sample_df,
-                                (sample_df['study_name'] == 'Study 1'),
-                                mode = 'analysis_static',
-                                test_name = 'PRIMARY ESTIMATE SELECTION',
-                                IDENTIFIER = 0)
-
-    estimate_prioritization_test(sample_df,
                                 (sample_df['subgroup_var'] != 'Primary Estimate') & \
                                 (sample_df['study_name'] == 'Study 1'),
                                 mode = 'analysis_static',
@@ -358,4 +355,42 @@ if __name__ == '__main__':
                                 IDENTIFIER = 0,
                                 test_name = 'DYNAMIC ADJUSTMENT')
 
+# Test with real estimates queried via our endpoint
+def test_real_estimates():
+    # Load test estimates (from 6 studies conducted in Colombia)
+    with open('test_estimates.json', 'r') as f:
+        sample_estimates = json.loads(f.read())
+
+    sample_df = pd.DataFrame(sample_estimates)
+
+    # Check that 6 estimates are produced
+    assert get_prioritized_estimates(sample_df).shape[0] == 6
+
+    # This study has one dashboard primary estimate
+    # so estimate prioritization should return it
+    est = sample_df[(sample_df['study_name'] == '201030_Colombia_UniversidadIndustrialdeSantander')
+                    & (sample_df['dashboard_primary_estimate'] == True)].to_dict('records')[0]
+    estimate_prioritization_test(sample_df,
+                                 (sample_df['study_name'] == '201030_Colombia_UniversidadIndustrialdeSantander'),
+                                 mode='dashboard',
+                                 **est)
+
+    t = sample_df[(sample_df['study_name'] == '200918_Bogota_PontificiaUniversidadJaveriana')].to_dict('records')
+    # Create set of estimates such that the whole set will be pooled
+    bogota_study_df = sample_df[(sample_df['study_name'] == '200918_Bogota_PontificiaUniversidadJaveriana')
+                                & (sample_df['dashboard_primary_estimate'] != True)
+                                & (sample_df['academic_primary_estimate'] != True)
+                                & (sample_df['sex'] != 'All')]
+    # Test pooling
+    # Note, the study df has estimate with sex = 'Male' and sex = 'Female'
+    # want to ensure that the combined df has "All"
+    estimate_prioritization_test(bogota_study_df,
+                                 mode='dashboard',
+                                 denominator_value=bogota_study_df['denominator_value'].sum(),
+                                 sex='All')
+
+if __name__ == '__main__':
+    test_real_estimates()
+    test_mock_estimates()
+    # If no errors raised, we've passed!
     print("All tests passed!")

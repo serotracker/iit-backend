@@ -5,7 +5,7 @@ from sqlalchemy import distinct, func
 from app.serotracker_sqlalchemy import db_session, DashboardSource, \
     Country, ResearchSource
 from app.utils.notifications_sender import send_slack_message
-from app.utils.estimate_prioritization_new import get_columns_with_pooling_functions
+from app.utils.estimate_prioritization import get_columns_with_pooling_functions
 import pandas as pd
 from typing import Dict, List, Any
 

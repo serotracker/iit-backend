@@ -4,7 +4,7 @@ from app.serotracker_sqlalchemy import db_session, DashboardSource, ResearchSour
     db_model_config, Country, State, City, dashboard_source_cols, research_source_cols
 import pandas as pd
 import numpy as np
-from app.utils.estimate_prioritization_new import get_prioritized_estimates
+from app.utils.estimate_prioritization import get_prioritized_estimates
 from statistics import mean
 from typing import List, Dict, Any
 

@@ -1,6 +1,6 @@
 import pandas as pd
 from statsmodels.stats.proportion import proportion_confint
-from app.utils.estimate_prioritization_new import prioritization_criteria_testunadj, \
+from app.utils.estimate_prioritization import prioritization_criteria_testunadj, \
     prioritization_criteria_testadj, pooling_function_maps
 
 '''
