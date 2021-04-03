@@ -93,7 +93,7 @@ pooling_function_maps = [
                  summary_function = lambda estimates, col: '; '.join(estimates[col].unique())),
     PoolingFnMap(summary_type = 'identity_from_max_denominator',
                  column_names = ['test_manufacturer',
-                                 'sensitivity'
+                                 'sensitivity',
                                  'specificity',
                                  'ind_se',
                                  'ind_sp',
@@ -102,7 +102,7 @@ pooling_function_maps = [
                                  'ind_se_n',
                                  'ind_sp_n',
                                  'se_n',
-                                 'sp_n'
+                                 'sp_n',
                                  'age_variation',
                                  'average_age',
                                  'ind_eval_lab',
@@ -112,7 +112,7 @@ pooling_function_maps = [
                                  'first_author',
                                  'lead_organization',
                                  'source_publisher',
-                                 'summary'
+                                 'summary',
                                  'jbi_1', 'jbi_2', 'jbi_3',
                                  'jbi_4', 'jbi_5', 'jbi_6',
                                  'jbi_7', 'jbi_8', 'jbi_9',
@@ -135,3 +135,18 @@ pooling_function_maps = [
                                  'tests_per_hundred'],
                  summary_function = lambda estimates, col: (estimates[col] * estimates['denominator_value']).sum() / estimates['denominator_value'].sum()),
 ]
+
+# Helper function to help with validating that all columns
+# in the database are accounted for during the pooling process
+# (will be done in the ETL)
+def get_columns_with_pooling_functions():
+    columns_with_pooling_functions = set.union(*[set(pooling_function_map.column_names)
+                                                 for pooling_function_map
+                                                 in pooling_function_maps])
+    # account for columns calculated otherwise
+    columns_with_pooling_functions = set.union(columns_with_pooling_functions, \
+                                     {'seroprev_95_ci_lower',
+                                    'seroprev_95_ci_upper',
+                                    'numerator_value',
+                                    'estimate_name'})
+    return columns_with_pooling_functions
