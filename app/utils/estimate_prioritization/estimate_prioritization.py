@@ -28,9 +28,14 @@ def get_pooled_estimate(estimates):
                                                                                           nobs = pooled.at['denominator_value'],
                                                                                           alpha = 0.05,
                                                                                           method = 'jeffreys')
-
-        # TODO: once test adjustment is in, we'll need to add a parallel set of code to the above
-        # for adjusted numerator, denominator, 95% CIs
+        
+        try:
+            pooled.at['adj_prev_ci_lower'], pooled.at['adj_prev_ci_upper'] = proportion_confint(count = int(pooled.at['adj_prevalence'] * pooled.at['denominator_value']),
+                                                                                                nobs = pooled.at['denominator_value'],
+                                                                                                alpha = 0.05,
+                                                                                                method = 'jeffreys')
+        except KeyError as e: 
+            pass
 
     return pooled
 
