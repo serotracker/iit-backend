@@ -29,8 +29,8 @@ def get_filter_static_options() -> Dict[str, List[str]]:
             "Unclear"
         ],
         "population_group": [
-            "Blood donors",
             "Household and community samples",
+            "Blood donors",
             "Residual sera",
             "Assisted living and long-term care facilities",
             "Students and Daycares",
@@ -75,28 +75,6 @@ def get_filter_static_options() -> Dict[str, List[str]]:
             "LFIA",
             "Other"
         ],
-        "genpop": [
-            'Study examining general population seroprevalence',
-            'Study examining special population seroprevalence',
-        ],
-        "subgroup_var": [
-           'Geographical area', 'Health care worker exposure', 'Population',
-           'Primary Estimate', 'Comorbidities', 'Sex/Gender',
-           'Type of health care worker', 'Age', 'Exposure level',
-           'Occupation', 'Time frame', 'Race', 'Health care setting',
-           'Analysis', 'Patient group', 'Employment status', 'BMI',
-           'Test Used', 'Blood type', 'Medications',
-           'Exposure level granular', 'Isotype', 'Asymptomatic',
-           'Antibody target', 'Alcohol Intake', 'Household size', 'Symptoms',
-           'Non-COVID therapy', 'Dwelling', 'Education', 'Ethnicity',
-           'Nationality', 'Income', 'Smoking status', 'Travel',
-           'Population size/density ', 'Institution', 'SES',
-           'Serostatus timing', 'Vaccination Status', 'Recruitment method'
-        ],
-        "subgroup_cat": {
-            'Various options depending on subgroup var',
-            'See Airtable or data dictionary for full list'
-        }
     }
 
 
@@ -109,6 +87,21 @@ def get_all_filter_options() -> Dict[str, Any]:
         results = [q[0] for q in query if q[0] is not None]
         # sort countries in alpha order
         options["country"] = sorted(results)
+        
+        # Get genpop
+        query = session.query(distinct(ResearchSource.genpop))
+        results = [q[0] for q in query if q[0] is not None]
+        options["genpop"] = sorted(results)
+        
+        # Get subgroup_var
+        query = session.query(distinct(ResearchSource.subgroup_var))
+        results = [q[0] for q in query if q[0] is not None]
+        options["subgroup_var"] = sorted(results)
+        
+        # Get subgroup_cat
+        query = session.query(distinct(ResearchSource.subgroup_cat))
+        results = [q[0] for q in query if q[0] is not None]
+        options["subgroup_cat"] = sorted(results)
 
         options["max_sampling_end_date"] = session.query(func.max(DashboardSource.sampling_end_date))[0][0].isoformat()
         options["min_sampling_end_date"] = session.query(func.min(DashboardSource.sampling_end_date))[0][0].isoformat()
