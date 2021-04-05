@@ -16,9 +16,10 @@ class RecordsSchema(Schema):
                                                                        'dashboard']), allow_none=True)
     filters = fields.Dict(
         keys=fields.String(validate=validate.OneOf(["country", "source_type", "overall_risk_of_bias",
-                                                    "source_name", "population_group",
+                                                    "source_name", "population_group", "genpop",
                                                     "sex", "age", "isotypes_reported", "test_type",
-                                                    "specimen_type", "estimate_grade"])),
+                                                    "specimen_type", "estimate_grade",
+                                                    "subgroup_var", "subgroup_cat"])),
         values=fields.List(fields.String())
     )
     columns = fields.List(fields.String(validate=validate.OneOf(["age", "city", "state", "population_group",
@@ -60,9 +61,10 @@ class RecordDetailsSchema(Schema):
 class StudyCountSchema(Schema):
     filters = fields.Dict(
         keys=fields.String(validate=validate.OneOf(["country", "source_type", "overall_risk_of_bias",
-                                                    "source_name", "population_group",
+                                                    "source_name", "population_group", "genpop",
                                                     "sex", "age", "isotypes_reported", "test_type",
-                                                    "specimen_type", "estimate_grade"])),
+                                                    "specimen_type", "estimate_grade",
+                                                    "subgroup_var", "subgroup_cat"])),
         values=fields.List(fields.String())
     )
     sampling_start_date = fields.String()

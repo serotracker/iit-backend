@@ -29,8 +29,8 @@ def get_filter_static_options() -> Dict[str, List[str]]:
             "Unclear"
         ],
         "population_group": [
-            "Blood donors",
             "Household and community samples",
+            "Blood donors",
             "Residual sera",
             "Assisted living and long-term care facilities",
             "Students and Daycares",
@@ -74,7 +74,7 @@ def get_filter_static_options() -> Dict[str, List[str]]:
             "ELISA",
             "LFIA",
             "Other"
-        ]
+        ],
     }
 
 
@@ -87,6 +87,21 @@ def get_all_filter_options() -> Dict[str, Any]:
         results = [q[0] for q in query if q[0] is not None]
         # sort countries in alpha order
         options["country"] = sorted(results)
+        
+        # Get genpop
+        query = session.query(distinct(ResearchSource.genpop))
+        results = [q[0] for q in query if q[0] is not None]
+        options["genpop"] = sorted(results)
+        
+        # Get subgroup_var
+        query = session.query(distinct(ResearchSource.subgroup_var))
+        results = [q[0] for q in query if q[0] is not None]
+        options["subgroup_var"] = sorted(results)
+        
+        # Get subgroup_cat
+        query = session.query(distinct(ResearchSource.subgroup_cat))
+        results = [q[0] for q in query if q[0] is not None]
+        options["subgroup_cat"] = sorted(results)
 
         options["max_sampling_end_date"] = session.query(func.max(DashboardSource.sampling_end_date))[0][0].isoformat()
         options["min_sampling_end_date"] = session.query(func.min(DashboardSource.sampling_end_date))[0][0].isoformat()
