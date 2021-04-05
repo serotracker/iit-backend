@@ -78,7 +78,7 @@ def get_filter_static_options() -> Dict[str, List[str]]:
         "genpop": [
             'Study examining general population seroprevalence',
             'Study examining special population seroprevalence',
-        ]
+        ],
         "subgroup_var": [
            'Geographical area', 'Health care worker exposure', 'Population',
            'Primary Estimate', 'Comorbidities', 'Sex/Gender',
