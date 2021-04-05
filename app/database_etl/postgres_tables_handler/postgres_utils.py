@@ -74,7 +74,25 @@ def get_filter_static_options() -> Dict[str, List[str]]:
             "ELISA",
             "LFIA",
             "Other"
-        ]
+        ],
+        "subgroup_var": [
+           'Geographical area', 'Health care worker exposure', 'Population',
+           'Primary Estimate', 'Comorbidities', 'Sex/Gender',
+           'Type of health care worker', 'Age', 'Exposure level',
+           'Occupation', 'Time frame', 'Race', 'Health care setting',
+           'Analysis', 'Patient group', 'Employment status', 'BMI',
+           'Test Used', 'Blood type', 'Medications',
+           'Exposure level granular', 'Isotype', 'Asymptomatic',
+           'Antibody target', 'Alcohol Intake', 'Household size', 'Symptoms',
+           'Non-COVID therapy', 'Dwelling', 'Education', 'Ethnicity',
+           'Nationality', 'Income', 'Smoking status', 'Travel',
+           'Population size/density ', 'Institution', 'SES',
+           'Serostatus timing', 'Vaccination Status', 'Recruitment method'
+        ],
+        "subgroup_cat": {
+            'Various options depending on subgroup var',
+            'See Airtable or data dictionary for full list'
+        }
     }
 
 
