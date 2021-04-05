@@ -163,8 +163,10 @@ def validate_pooling_function_columns(tables_dict: Dict) -> None:
     missing_in_db = columns_with_pooling_functions - columns_in_db
 
     if missing_in_pooling:
-        print(f"The following columns are in the DB, but are missing pooling functions: {missing_in_pooling}")
+        msg = f"The following columns are in the DB, but are missing pooling functions: {missing_in_pooling}"
+        send_slack_message(message=msg, channel='#dev-logging-etl')
     if missing_in_db:
-        print(f"The following columns have pooling functions, but are missing in the DB: {missing_in_db}")
+        msg = f"The following columns have pooling functions, but are missing in the DB: {missing_in_db}"
+        send_slack_message(message=msg, channel='#dev-logging-etl')
 
     return
