@@ -63,7 +63,8 @@ pooling_function_maps = [
                                  'gbd_subregion',
                                  'lmic_hic',
                                  'subgroup_var',
-                                 'subgroup_cat'],
+                                 'subgroup_cat',
+                                 'ind_eval_type'],
                  summary_function = lambda estimates, col: get_unique_value(estimates[col], pd.NA)),
     PoolingFnMap(summary_type = 'unique_value_population_group',
                  column_names = ['population_group'],
@@ -95,6 +96,8 @@ pooling_function_maps = [
                  column_names = ['test_manufacturer',
                                  'sensitivity',
                                  'specificity',
+                                 'adj_sensitivity', 
+                                 'adj_specificity',
                                  'ind_se',
                                  'ind_sp',
                                  'number_of_females',
@@ -128,6 +131,7 @@ pooling_function_maps = [
                  summary_function = None),
     PoolingFnMap(summary_type = 'weighted_average_by_denominator',
                  column_names = ['serum_pos_prevalence',
+                                 'adj_prevalence',
                                  'cases_per_hundred',
                                  'deaths_per_hundred',
                                  'full_vaccinations_per_hundred',
@@ -146,7 +150,9 @@ def get_columns_with_pooling_functions():
     # account for columns calculated otherwise
     columns_with_pooling_functions = set.union(columns_with_pooling_functions, \
                                      {'seroprev_95_ci_lower',
-                                    'seroprev_95_ci_upper',
-                                    'numerator_value',
-                                    'estimate_name'})
+                                      'seroprev_95_ci_upper',
+                                      'adj_prev_ci_lower',
+                                      'adj_prev_ci_upper',
+                                      'numerator_value',
+                                      'estimate_name'})
     return columns_with_pooling_functions
