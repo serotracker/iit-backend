@@ -3,22 +3,6 @@ from statsmodels.stats.proportion import proportion_confint
 from app.utils.estimate_prioritization import prioritization_criteria_testunadj, \
     prioritization_criteria_testadj, pooling_function_maps
 
-'''
-# write some code in order to take the union of the colnames
-columns_in_database = set() # PLACEHOLDER 
-columns_with_pooling_functions = set.union(*[set(pooling_function_map.column_names) 
-                                           for pooling_function_map
-                                           in pooling_function_maps])
-columns_calculated_otherwise = {'seroprev_95_ci_lower',
-                                'seroprev_95_ci_upper'
-                                'numerator_value',
-                                'estimate_name'}
-columns_missing_intersection_functions = columns_in_database - columns_with_pooling_functions - columns_calculated_otherwise
-if columns_missing_intersection_functions:
-    # OUTPUT TO SLACK
-    print(f'pooling functions missing for columns {columns_missing_intersection_functions} in file INSERT_FINAL_FILENAME_HERE.py')
-'''
-
 
 def get_pooled_estimate(estimates):
 
