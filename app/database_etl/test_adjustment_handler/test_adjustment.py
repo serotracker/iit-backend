@@ -231,7 +231,7 @@ class TestAdjHandler:
             sp = estimate['specificity']
 
             lower, upper = proportion_confint(int(estimate['denominator_value'] * estimate['serum_pos_prevalence']),
-                                              estimate['denominator_value'], alpha=0.1, method='jeffreys')
+                                              estimate['denominator_value'], alpha=0.05, method='jeffreys')
         return adj_prev, se, sp, adj_type, lower, upper
 
 
