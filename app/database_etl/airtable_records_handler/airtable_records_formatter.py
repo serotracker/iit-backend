@@ -1,8 +1,12 @@
-import numpy as np
+import multiprocessing
 
+import numpy as np
 from typing import Dict
+import pandas as pd
 
 from ..location_utils import get_city
+from app.serotracker_sqlalchemy import db_session, ResearchSource, DashboardSource
+from app.database_etl.test_adjustment_handler import TestAdjHandler
 
 
 def get_most_recent_publication_info(row: Dict) -> Dict:
@@ -41,7 +45,7 @@ def get_most_recent_publication_info(row: Dict) -> Dict:
     return row
 
 
-def standardize_airtable_data(df):
+def standardize_airtable_data(df: pd.DataFrame) -> pd.DataFrame:
     # List of columns that are lookup fields and therefore only have one element in the list
     single_element_list_cols = ['included', 'source_name', 'url', 'source_publisher', 'summary',
                                 'study_type', 'country', 'lead_organization', 'overall_risk_of_bias',
@@ -75,7 +79,7 @@ def standardize_airtable_data(df):
     return df
 
 
-def apply_min_risk_of_bias(df):
+def apply_min_risk_of_bias(df: pd.DataFrame) -> pd.DataFrame:
     bias_hierarchy = ['Low', 'Moderate', 'High', 'Unclear']
     for name, subset in df.groupby('study_name'):
         if (subset['overall_risk_of_bias']).isnull().all():
@@ -88,7 +92,7 @@ def apply_min_risk_of_bias(df):
     return df
 
 
-def apply_study_max_estimate_grade(df):
+def apply_study_max_estimate_grade(df: pd.DataFrame) -> pd.DataFrame:
     grade_hierarchy = ['National', 'Regional', 'Local', 'Sublocal']
     for name, subset in df.groupby('study_name'):
         for level in grade_hierarchy:
@@ -96,3 +100,89 @@ def apply_study_max_estimate_grade(df):
                 subset['estimate_grade'] = level
                 continue
     return df
+
+
+def add_test_adjustments(df: pd.DataFrame) -> pd.DataFrame:
+    # Query record ids in our database
+    with db_session() as session:
+        total_db_records = session.query(DashboardSource.serum_pos_prevalence,
+                                         DashboardSource.test_adj,
+                                         DashboardSource.sensitivity,
+                                         DashboardSource.specificity,
+                                         DashboardSource.test_type,
+                                         DashboardSource.denominator_value,
+                                         ResearchSource.ind_se,
+                                         ResearchSource.ind_sp,
+                                         ResearchSource.ind_se_n,
+                                         ResearchSource.ind_sp_n,
+                                         ResearchSource.se_n,
+                                         ResearchSource.sp_n,
+                                         ResearchSource.test_validation,
+                                         ResearchSource.airtable_record_id) \
+            .join(ResearchSource, ResearchSource.source_id == DashboardSource.source_id, isouter=True).all()
+        total_db_records = [q._asdict() for q in total_db_records]
+        total_db_records = pd.DataFrame(data=total_db_records)
+
+    # Concat old and new records and fillna with 0 (NaN and None become 0 so it is standardized)
+    diff = pd.concat([df, total_db_records])
+    diff.fillna(0, inplace=True)
+
+    # Convert numeric cols to float (some of these come out of airtable as strings so need to standardize types)
+    float_cols = ['ind_se', 'ind_sp', 'ind_se_n', 'ind_sp_n', 'se_n', 'sp_n', 'sensitivity', 'specificity',
+                  'denominator_value', 'serum_pos_prevalence']
+    diff[float_cols] = diff[float_cols].astype(float)
+
+    # Drop duplicates based on these cols
+    duplicate_cols = ['airtable_record_id', 'test_adj', 'ind_se', 'ind_sp', 'ind_se_n', 'ind_sp_n',
+                      'se_n', 'sp_n', 'sensitivity', 'specificity', 'test_validation', 'test_type', 'denominator_value',
+                      'serum_pos_prevalence']
+    diff = diff.drop_duplicates(subset=duplicate_cols, keep=False)
+
+    # Get all unique airtable_record_ids that are new/have been modified
+    new_airtable_record_ids = diff['airtable_record_id'].unique()
+
+    # Get all rows from airtable data that need to be test adjusted, and ones that don't
+    new_airtable_test_adj_records = \
+        df[df['airtable_record_id'].isin(new_airtable_record_ids)].reset_index(
+            drop=True)
+
+    old_airtable_test_adj_records = \
+        df[~df['airtable_record_id'].isin(new_airtable_record_ids)].reset_index(
+            drop=True)
+
+    # Apply test adjustment to the new_test_adj_records and add 6 new columns
+    multiprocessing.set_start_method("fork")
+    test_adj_handler = TestAdjHandler()
+    new_airtable_test_adj_records['adj_prevalence'], \
+    new_airtable_test_adj_records['adj_sensitivity'], \
+    new_airtable_test_adj_records['adj_specificity'], \
+    new_airtable_test_adj_records['ind_eval_type'], \
+    new_airtable_test_adj_records['adj_prev_ci_lower'], \
+    new_airtable_test_adj_records['adj_prev_ci_upper'] = \
+        zip(*new_airtable_test_adj_records.apply(lambda x: test_adj_handler.get_adjusted_estimate(x), axis=1))
+
+    # Add test adjustment data to old_test_adj_records from database
+    old_airtable_record_ids = old_airtable_test_adj_records['airtable_record_id'].unique()
+
+    # Query record ids in our database
+    with db_session() as session:
+        old_db_test_adj_records = session.query(DashboardSource.adj_prevalence,
+                                                DashboardSource.adj_prev_ci_lower,
+                                                DashboardSource.adj_prev_ci_upper,
+                                                ResearchSource.adj_sensitivity,
+                                                ResearchSource.adj_specificity,
+                                                ResearchSource.ind_eval_type,
+                                                ResearchSource.airtable_record_id) \
+            .join(ResearchSource, ResearchSource.source_id == DashboardSource.source_id, isouter=True) \
+            .filter(ResearchSource.airtable_record_id.in_(old_airtable_record_ids)).all()
+        old_db_test_adj_records = [q._asdict() for q in old_db_test_adj_records]
+        old_db_test_adj_records = pd.DataFrame(data=old_db_test_adj_records)
+
+    # Join old_airtable_test_adj_records with old_db_adjusted_records
+    old_airtable_test_adj_records = \
+        old_airtable_test_adj_records.join(old_db_test_adj_records.set_index('airtable_record_id'),
+                                           on='airtable_record_id')
+
+    # Concat the old and new airtable test adj records
+    airtable_master_data = pd.concat([new_airtable_test_adj_records, old_airtable_test_adj_records])
+    return airtable_master_data

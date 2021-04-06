@@ -51,7 +51,9 @@ class DashboardSource(db.Model):
     vaccinations_per_hundred = Column(Float)
     full_vaccinations_per_hundred = Column(Float)
     geo_exact_match = Column(Boolean)
-
+    adj_prevalence = Column(Float)
+    adj_prev_ci_lower = Column(Float)
+    adj_prev_ci_upper = Column(Float)
 
 # Research table for all additional research fields
 class ResearchSource(db.Model):
@@ -111,6 +113,9 @@ class ResearchSource(db.Model):
     genpop = Column(String())
     sampling_type = Column(String())
     airtable_record_id = Column(String())
+    adj_sensitivity = Column(Float)
+    adj_specificity = Column(Float)
+    ind_eval_type = Column(String)
     created_at = Column(DateTime)
 
 

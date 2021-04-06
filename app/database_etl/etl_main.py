@@ -6,14 +6,13 @@ from dotenv import load_dotenv
 import pandas as pd
 from sqlalchemy import create_engine
 from app.serotracker_sqlalchemy import DashboardSourceSchema, ResearchSourceSchema
-from app.database_etl.postgres_tables_handler import create_dashboard_source_df, create_bridge_tables,\
-    create_multi_select_tables, create_country_df, create_research_source_df, format_dashboard_source,\
+from app.database_etl.postgres_tables_handler import create_dashboard_source_df, create_bridge_tables, \
+    create_multi_select_tables, create_country_df, create_research_source_df, format_dashboard_source, \
     add_mapped_variables, validate_records, load_postgres_tables, drop_table_entries, check_filter_options
-from app.database_etl.airtable_records_handler import get_all_records, apply_study_max_estimate_grade,\
-    apply_min_risk_of_bias, standardize_airtable_data
+from app.database_etl.airtable_records_handler import get_all_records, apply_study_max_estimate_grade, \
+    apply_min_risk_of_bias, standardize_airtable_data, add_test_adjustments
 from app.database_etl.tableau_data_connector import upload_analyze_csv
 from app.database_etl.summary_report_generator import SummaryReport
-
 
 load_dotenv()
 
@@ -37,19 +36,22 @@ def main():
         # Get all records with airtable API request and load into dataframe
         json = get_all_records()
         etl_report.set_num_airtable_records(len(json))
-        data = pd.DataFrame(json)
+        airtable_master_data = pd.DataFrame(json)
 
         # Clean raw airtable records to standardize data formats
-        data = standardize_airtable_data(data)
+        airtable_master_data = standardize_airtable_data(airtable_master_data)
+
+        # Add test adjustment data
+        airtable_master_data = add_test_adjustments(airtable_master_data)
 
         # Apply min risk of bias to all study estimates
-        data = apply_min_risk_of_bias(data)
+        airtable_master_data = apply_min_risk_of_bias(airtable_master_data)
 
         # Apply study max estimate grade to all estimates in study
-        data = apply_study_max_estimate_grade(data)
+        airtable_master_data = apply_study_max_estimate_grade(airtable_master_data)
 
         # Create dashboard source df
-        dashboard_source = create_dashboard_source_df(data, current_time=CURR_TIME)
+        dashboard_source = create_dashboard_source_df(airtable_master_data, current_time=CURR_TIME)
 
         # Create country table df
         country_df = create_country_df(dashboard_source, current_time=CURR_TIME)
@@ -62,7 +64,7 @@ def main():
         dashboard_source['country_id'] = dashboard_source['country'].map(lambda a: country_dict[a])
 
         # Create dictionary to store multi select tables
-        multi_select_tables_dict = create_multi_select_tables(data, current_time=CURR_TIME)
+        multi_select_tables_dict = create_multi_select_tables(airtable_master_data, current_time=CURR_TIME)
 
         # Create dictionary to store bridge tables
         bridge_tables_dict = create_bridge_tables(dashboard_source, multi_select_tables_dict, current_time=CURR_TIME)
