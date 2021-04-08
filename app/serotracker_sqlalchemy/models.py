@@ -103,7 +103,6 @@ class ResearchSource(db.Model):
     subgroup_var = Column(String())
     subgroup_cat = Column(String())
     subgroup_specific_category = Column(String())
-    superceded = Column(Boolean)
     test_linked_uid = Column(String())
     test_name = Column(String())
     test_validation = Column(String())
