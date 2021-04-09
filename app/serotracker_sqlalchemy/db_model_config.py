@@ -52,7 +52,7 @@ research_source_cols = ['case_population', 'deaths_population', 'age_max', 'age_
                         'jbi_3', 'jbi_4', 'jbi_5', 'jbi_6', 'jbi_7', 'jbi_8', 'jbi_9', 'measure_of_age',
                         'sample_frame_info', 'number_of_females', 'number_of_males', 'numerator_value',
                         'estimate_name', 'test_not_linked_reason', 'se_n', 'seroprev_95_ci_lower',
-                        'seroprev_95_ci_upper', 'sp_n', 'subgroup_var', 'subgroup_cat', 'superceded',
+                        'seroprev_95_ci_upper', 'sp_n', 'subgroup_var', 'subgroup_cat',
                         'test_linked_uid', 'test_name', 'test_validation', 'gbd_region', 'gbd_subregion',
                         'lmic_hic', 'genpop', 'sampling_type', 'subgroup_specific_category', 'last_modified_time',
                         'date_created', 'adj_sensitivity', 'adj_specificity', 'ind_eval_type']

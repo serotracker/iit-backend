@@ -52,7 +52,7 @@ def standardize_airtable_data(df: pd.DataFrame) -> pd.DataFrame:
                                 'age_variation', 'age_variation_measure', 'ind_eval_lab', 'ind_eval_link',
                                 'ind_se', 'ind_se_n', 'ind_sp', 'ind_sp_n', 'jbi_1', 'jbi_2', 'jbi_3', 'jbi_4',
                                 'jbi_5', 'jbi_6', 'jbi_7', 'jbi_8', 'jbi_9', 'measure_of_age', 'number_of_females',
-                                'number_of_males', 'superceded', 'test_linked_uid', 'average_age',
+                                'number_of_males', 'test_linked_uid', 'average_age',
                                 'test_not_linked_reason']
 
     # Remove lists from single select columns
@@ -65,9 +65,6 @@ def standardize_airtable_data(df: pd.DataFrame) -> pd.DataFrame:
 
     # Replace columns that should be floats with NaN from None and rescale to percentage
     df[['ind_sp', 'ind_se']] = df[['ind_sp', 'ind_se']].replace({None: np.nan}) / 100
-
-    # Convert superceded to True/False values
-    df['superceded'] = df['superceded'].apply(lambda x: True if x else False)
 
     # Get index of most recent publication date
     df = df.apply(lambda row: get_most_recent_publication_info(row), axis=1)
@@ -142,24 +139,26 @@ def add_test_adjustments(df: pd.DataFrame) -> pd.DataFrame:
     new_airtable_record_ids = diff['airtable_record_id'].unique()
 
     # Get all rows from airtable data that need to be test adjusted, and ones that don't
-    new_airtable_test_adj_records = \
-        df[df['airtable_record_id'].isin(new_airtable_record_ids)].reset_index(
-            drop=True)
-
     old_airtable_test_adj_records = \
         df[~df['airtable_record_id'].isin(new_airtable_record_ids)].reset_index(
             drop=True)
 
-    # Apply test adjustment to the new_test_adj_records and add 6 new columns
-    multiprocessing.set_start_method("fork")
-    test_adj_handler = TestAdjHandler()
-    new_airtable_test_adj_records['adj_prevalence'], \
-    new_airtable_test_adj_records['adj_sensitivity'], \
-    new_airtable_test_adj_records['adj_specificity'], \
-    new_airtable_test_adj_records['ind_eval_type'], \
-    new_airtable_test_adj_records['adj_prev_ci_lower'], \
-    new_airtable_test_adj_records['adj_prev_ci_upper'] = \
-        zip(*new_airtable_test_adj_records.apply(lambda x: test_adj_handler.get_adjusted_estimate(x), axis=1))
+    new_airtable_test_adj_records = \
+        df[df['airtable_record_id'].isin(new_airtable_record_ids)].reset_index(
+            drop=True)
+
+    # Only proceed with test adjustment if there are new unadjusted records
+    if not new_airtable_test_adj_records.empty:
+        # Apply test adjustment to the new_test_adj_records and add 6 new columns
+        multiprocessing.set_start_method("fork")
+        test_adj_handler = TestAdjHandler()
+        new_airtable_test_adj_records['adj_prevalence'], \
+        new_airtable_test_adj_records['adj_sensitivity'], \
+        new_airtable_test_adj_records['adj_specificity'], \
+        new_airtable_test_adj_records['ind_eval_type'], \
+        new_airtable_test_adj_records['adj_prev_ci_lower'], \
+        new_airtable_test_adj_records['adj_prev_ci_upper'] = \
+            zip(*new_airtable_test_adj_records.apply(lambda x: test_adj_handler.get_adjusted_estimate(x), axis=1))
 
     # Add test adjustment data to old_test_adj_records from database
     old_airtable_record_ids = old_airtable_test_adj_records['airtable_record_id'].unique()
