@@ -128,7 +128,7 @@ Output: set of records represented by dicts
 def get_filtered_records(research_fields=False, filters=None, columns=None,
                          sampling_start_date=None, sampling_end_date=None,
                          publication_start_date=None, publication_end_date=None, prioritize_estimates=True,
-                         prioritize_estimates_mode=None):
+                         prioritize_estimates_mode=None, include_in_srma=False):
     query_dicts = get_all_records(research_fields)
     if query_dicts is None or len(query_dicts) == 0:
         return []
@@ -194,6 +194,11 @@ def get_filtered_records(research_fields=False, filters=None, columns=None,
             # Filling all NaN values with None: https://stackoverflow.com/questions/46283312/how-to-proceed-with-none-value-in-pandas-fillna
             prioritized_records = prioritized_records.fillna(np.nan).replace({np.nan: None})
         result = prioritized_records.to_dict('records')
+
+    # Need to check if 'research_fields' is applied
+    # because the include_in_srma field is in the ResearchSource table
+    if include_in_srma and research_fields:
+        result = [estimate for estimate in result if estimate['include_in_srma']]
 
     for record in result:
         # Get the latitude and longitude to use for estimate pin
