@@ -55,4 +55,4 @@ research_source_cols = ['case_population', 'deaths_population', 'age_max', 'age_
                         'seroprev_95_ci_upper', 'sp_n', 'subgroup_var', 'subgroup_cat',
                         'test_linked_uid', 'test_name', 'test_validation', 'gbd_region', 'gbd_subregion',
                         'lmic_hic', 'genpop', 'sampling_type', 'subgroup_specific_category', 'last_modified_time',
-                        'date_created', 'adj_sensitivity', 'adj_specificity', 'ind_eval_type']
+                        'date_created', 'adj_sensitivity', 'adj_specificity', 'ind_eval_type', 'include_in_srma']

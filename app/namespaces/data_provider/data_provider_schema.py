@@ -40,6 +40,7 @@ class RecordsSchema(Schema):
     sampling_end_date = fields.String()
     publication_start_date = fields.String()
     publication_end_date = fields.String()
+    include_in_srma = fields.Boolean(allow_none=True)
 
 
 class PaginatedRecordsSchema(RecordsSchema):

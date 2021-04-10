@@ -56,6 +56,7 @@ class ResearchSourceSchema(Schema):
     case_count_0 = fields.Float(allow_none=True, allow_nan=True)
     death_count_plus11 = fields.Float(allow_none=True, allow_nan=True)
     death_count_plus4 = fields.Float(allow_none=True, allow_nan=True)
+    include_in_srma = fields.Boolean(allow_none=True)
     ind_eval_lab = fields.Str(allow_none=True)
     ind_eval_link = fields.Str(allow_none=True)
     ind_se = fields.Float(allow_none=True, allow_nan=True)

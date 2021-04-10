@@ -19,7 +19,7 @@ research_fields = ['2020 Population Count - Case', '2020 Population Count - Mort
                    'Prevalence Estimate Name', 'Reason for no test link', 'Sensitivity Denominator',
                    'Serum pos prevalence, 95pct CI Lower', 'Serum pos prevalence, 95pct CI Upper',
                    'Specificity Denominator', 'Sub-grouping Variable', 'Subgroup category for analysis',
-                   'Test Link Unique ID', 'Test Name', 'Test Validation',
+                   'Test Link Unique ID', 'Test Name', 'Test Validation', 'included in SRMA (mar 2021)',
                    'Sub-group specific category (clean)', 'Date Created', 'Last modified time', 'Record ID']
 
 full_airtable_fields = {'2020 Population Count - Case': 'case_population',
@@ -45,6 +45,7 @@ full_airtable_fields = {'2020 Population Count - Case': 'case_population',
                         'First Author Full Name': 'first_author',
                         'Grade of Estimate Scope': 'estimate_grade',
                         'Included?': 'included',
+                        'included in SRMA (mar 2021)': 'include_in_srma',
                         'Independent Eval Lab': 'ind_eval_lab',
                         'Independent Eval Link': 'ind_eval_link',
                         'Independent Se': 'ind_se',
