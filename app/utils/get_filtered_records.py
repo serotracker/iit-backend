@@ -1,13 +1,47 @@
-from itertools import groupby
-from functools import reduce
 from app.serotracker_sqlalchemy import db_session, DashboardSource, ResearchSource, \
     db_model_config, Country, State, City, dashboard_source_cols, research_source_cols
+from sqlalchemy.dialects.postgresql import array
+from sqlalchemy import func, cast, case, and_, Float, String, ARRAY
 import pandas as pd
 import numpy as np
 from app.utils.estimate_prioritization import get_prioritized_estimates
 from statistics import mean
 from typing import List, Dict, Any
 
+def _get_isotype_col_expression(label="isotypes"):
+    expression = case(
+                [
+                    (and_(DashboardSource.isotype_igg == 'true',
+                          DashboardSource.isotype_igm == 'true',
+                          DashboardSource.isotype_iga == 'true'), 'IgG, IgM, IgA'),
+                    (and_(DashboardSource.isotype_igg == 'true',
+                          DashboardSource.isotype_igm == 'false',
+                          DashboardSource.isotype_iga == 'true'), 'IgG, IgA'),
+                    (and_(DashboardSource.isotype_igg == 'true',
+                          DashboardSource.isotype_igm == 'true',
+                          DashboardSource.isotype_iga == 'false'), 'IgG, IgM'),
+                    (and_(DashboardSource.isotype_igg == 'false',
+                          DashboardSource.isotype_igm == 'true',
+                          DashboardSource.isotype_iga == 'true'), 'IgM, IgA'),
+                    (and_(DashboardSource.isotype_igg == 'true',
+                          DashboardSource.isotype_igm == 'false',
+                          DashboardSource.isotype_iga == 'false'), 'IgG'),
+                    (and_(DashboardSource.isotype_igg == 'false',
+                          DashboardSource.isotype_igm == 'false',
+                          DashboardSource.isotype_iga == 'true'), 'IgA'),
+                    (and_(DashboardSource.isotype_igg == 'false',
+                          DashboardSource.isotype_igm == 'true',
+                          DashboardSource.isotype_iga == 'false'), 'IgM')
+                ],
+                else_='').label(label)
+    return expression
+
+# Query to aggregate multiple multi select options into a single array
+# Note: case statement is used so that we show [] instead of [None]
+def _apply_agg_query(exp, label, type=String):
+    return case([(func.array_agg(exp).filter(exp.isnot(None)).isnot(None),
+                  cast(func.array_agg(exp).filter(exp.isnot(None)), ARRAY(type)))],
+                else_=cast(array([]), ARRAY(type))).label(label)
 
 def get_all_records(research_fields=False):
     with db_session() as session:
@@ -29,12 +63,6 @@ def get_all_records(research_fields=False):
             for col in research_source_cols:
                 fields_list.append(getattr(ResearchSource, col))
 
-        for table_info in table_infos:
-            # The label method returns an alias for the column being queried
-            # Use case: We want to get fields from the bridge table without the _name suffix
-            fields_list.append(getattr(table_info["main_table"], f"{table_info['entity']}_name").label(
-                table_info['entity']))
-
         # Alias for country name and iso3 code
         fields_list.append(Country.country_name.label("country"))
         fields_list.append(Country.country_iso3.label("country_iso3"))
@@ -42,12 +70,23 @@ def get_all_records(research_fields=False):
         # Aliases for lat lngs
         fields_list.append(Country.latitude.label("country_latitude"))
         fields_list.append(Country.longitude.label("country_longitude"))
-        fields_list.append(State.latitude.label("state_latitude"))
-        fields_list.append(State.longitude.label("state_longitude"))
-        fields_list.append(City.latitude.label("city_latitude"))
-        fields_list.append(City.longitude.label("city_longitude"))
 
-        query = session.query(*fields_list)
+        # Will need to group by every field that isn't array aggregated
+        # using copy here since python assigns list variables by ref instead of by value
+        groupby_fields = fields_list.copy()
+
+        for table_info in table_infos:
+            # The label method returns an alias for the column being queried
+            # Use case: We want to get fields from the bridge table without the _name suffix
+            fields_list.append(_apply_agg_query(getattr(table_info["main_table"], f"{table_info['entity']}_name"),
+                                               table_info['entity']))
+
+        fields_list.append(_apply_agg_query(State.latitude, "state_latitude", type=Float))
+        fields_list.append(_apply_agg_query(State.longitude, "state_longitude", type=Float))
+        fields_list.append(_apply_agg_query(City.latitude, "city_latitude", type=Float))
+        fields_list.append(_apply_agg_query(City.longitude, "city_longitude", type=Float))
+
+        query = session.query(*fields_list, _get_isotype_col_expression(label="isotypes_reported"))
 
         # There are entries that have multiple field values for a certain entity
         # e.g., an entry may be associated with two different age groups, "Youth (13-17)" and "Children (0-12)"
@@ -70,49 +109,14 @@ def get_all_records(research_fields=False):
         if research_fields:
             query = query.join(ResearchSource, ResearchSource.source_id == DashboardSource.source_id)
 
+        # Need to apply group by so that array_agg works as expected
+        query = query.group_by(*groupby_fields)
+
         query = query.all()
-        query_dict = [q._asdict() for q in query]
+        # Convert from sqlalchemy object to dict
+        query_dict = [ q._asdict() for q in query]
 
-        # Merge entities of the same entry into a single set of entity values
-        # e.g., ["Youth (13-17)", "Children (0-12)"]
-        def reduce_entities(a, b):
-            for entity in entity_names:
-                if not a[entity]:
-                    a[entity] = []
-                elif isinstance(a[entity], str) or isinstance(a[entity], float):
-                    a[entity] = [a[entity]]
-                if b[entity] is not None and b[entity] not in a[entity]:
-                    a[entity].append(b[entity])
-            return a
-
-        # Reduce entities for every entity_name key that we selected
-        def process_record(record_list):
-            if len(record_list) == 1:
-                record = record_list[0]
-                if entity_names:
-                    for entity in entity_names:
-                        record[entity] = [record[entity]] if record[entity] is not None else []
-                processed_record = record
-            else:
-                processed_record = reduce(reduce_entities, record_list)
-
-            # Format isotypes reported column
-            processed_record['isotypes_reported'] = []
-            isotype_mapping = {'isotype_igm': 'IgM', 'isotype_iga': 'IgA', 'isotype_igg': 'IgG'}
-
-            for k, v in isotype_mapping.items():
-                # Need to check if true here, not "not None"
-                if processed_record.get(k, None):
-                    processed_record['isotypes_reported'].append(v)
-                processed_record.pop(k, None)
-
-            return processed_record
-
-        # `query_dicts` is a list of rows (represented as dicts) with unique source_id and lists of
-        # their associated entities 
-        query_dicts = [process_record(list(group)) for _, group in groupby(query_dict, key=lambda x: x["source_id"])]
-        return query_dicts
-
+        return query_dict
 
 '''
 Filter are in the following format: 
@@ -215,24 +219,19 @@ def get_filtered_records(research_fields=False, filters=None, columns=None,
         # If there are multiple coordinates for a given geographic level, use the average
         # Note this needs to happen after prioritization of estimates
         # because the prioritization function may group multiple estimates from the same study into 1
-        region_types = ['country', 'state', 'city']
-        for region_type in region_types:
-            if len(record[f'{region_type}_latitude']) == 0:
-                # Edge case for when there isn't even a country level coordinate
-                if 'pin_latitude' not in record:
-                    record['pin_latitude'] = None
-                    record['pin_longitude'] = None
-                    record['pin_region_type'] = ''
-                break
-            # If we find multiple coordinates for a given geographic level
+        record['pin_latitude'] = record['country_latitude']
+        record['pin_longitude'] = record['country_longitude']
+        record['pin_region_type'] = 'country' if record['country_latitude'] is not None else ''
+        for region_type in ['state', 'city']:
+            # If we find coordinates for a given geographic level
             # Average them and use that average to render the pin
-            else:
+            if len(record[f'{region_type}_latitude']) > 0:
                 record['pin_latitude'] = mean(record[f'{region_type}_latitude'])
                 record['pin_longitude'] = mean(record[f'{region_type}_longitude'])
                 record['pin_region_type'] = region_type
 
         # Delete lng/lat columns that are now unnecessary
-        for region_type in region_types:
+        for region_type in ['country', 'state', 'city']:
             record.pop(f'{region_type}_latitude')
             record.pop(f'{region_type}_longitude')
 
