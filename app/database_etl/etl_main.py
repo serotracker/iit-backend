@@ -25,38 +25,6 @@ CURR_TIME = datetime.now()
 
 
 def main():
-    # import matplotlib.pyplot as plt
-    # import pandas as pd
-    # from matplotlib.font_manager import FontProperties
-    # series1 = pd.Series(data=[1, 2, 3],
-    #                     index=['cat', 'dog', 'rat'],
-    #                     name='first table')
-    #
-    # series2 = pd.Series(data=[3, 4, 5],
-    #                     index=['cat', 'dog', 'rat'],
-    #                     name='second table')
-    #
-    # df = pd.concat([series1, series2], axis=1)
-    # fig, ax = plt.subplots()
-    # ax.set_axis_off()
-    # table = ax.table(
-    #     cellText=df.values,
-    #     rowLabels=df.index,
-    #     colLabels=df.columns,
-    #     rowColours=["powderblue"] * (len(list(df.columns)) + 1),
-    #     colColours=["powderblue"] * (len(list(df.index)) + 1),
-    #     cellLoc='center',
-    #     loc='center')
-    # for (row, col), cell in table.get_celld().items():
-    #     if (row == 0) or (col == -1):
-    #         cell.set_text_props(fontproperties=FontProperties(weight='bold'))
-    # table.set_fontsize(16)
-    # table.scale(0.75, 3)
-    # plt.savefig('test.png')
-    # upload_slack_file(filename='test.png')
-    # exit()
-
-
     # etl_report.__exit__() will run whether or not this block is successfully completed
     # see https://www.geeksforgeeks.org/with-statement-in-python/
     with SummaryReport() as etl_report:
