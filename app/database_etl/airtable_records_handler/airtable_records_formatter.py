@@ -142,10 +142,12 @@ def add_test_adjustments(df: pd.DataFrame) -> pd.DataFrame:
     old_airtable_test_adj_records = \
         df[~df['airtable_record_id'].isin(new_airtable_record_ids)].reset_index(
             drop=True)
-
     new_airtable_test_adj_records = \
         df[df['airtable_record_id'].isin(new_airtable_record_ids)].reset_index(
             drop=True)
+    # Add temporary boolean column if record will be test adjusted or not
+    old_airtable_test_adj_records['test_adjusted_record'] = False
+    new_airtable_test_adj_records['test_adjusted_record'] = True
 
     # Only proceed with test adjustment if there are new unadjusted records
     if not new_airtable_test_adj_records.empty:

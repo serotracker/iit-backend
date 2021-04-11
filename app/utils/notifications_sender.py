@@ -47,3 +47,14 @@ def send_slack_message(message, channel='#dev-logging-backend'):
     client = WebClient(bot_token)
     client.chat_postMessage(channel=channel, text=message)
     return
+
+
+def upload_slack_file(filename, caption="Here's my file :smile:", channel='#dev-logging-etl'):
+    bot_token = os.getenv('SLACKBOT_TOKEN')
+    client = WebClient(bot_token)
+    client.files_upload(
+        channels=channel,
+        initial_comment=caption,
+        file=filename,
+    )
+    return

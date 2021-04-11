@@ -13,6 +13,7 @@ from app.database_etl.airtable_records_handler import get_all_records, apply_stu
     apply_min_risk_of_bias, standardize_airtable_data, add_test_adjustments
 from app.database_etl.tableau_data_connector import upload_analyze_csv
 from app.database_etl.summary_report_generator import SummaryReport
+from app.utils.notifications_sender import upload_slack_file, send_slack_message
 
 load_dotenv()
 
@@ -24,6 +25,38 @@ CURR_TIME = datetime.now()
 
 
 def main():
+    # import matplotlib.pyplot as plt
+    # import pandas as pd
+    # from matplotlib.font_manager import FontProperties
+    # series1 = pd.Series(data=[1, 2, 3],
+    #                     index=['cat', 'dog', 'rat'],
+    #                     name='first table')
+    #
+    # series2 = pd.Series(data=[3, 4, 5],
+    #                     index=['cat', 'dog', 'rat'],
+    #                     name='second table')
+    #
+    # df = pd.concat([series1, series2], axis=1)
+    # fig, ax = plt.subplots()
+    # ax.set_axis_off()
+    # table = ax.table(
+    #     cellText=df.values,
+    #     rowLabels=df.index,
+    #     colLabels=df.columns,
+    #     rowColours=["powderblue"] * (len(list(df.columns)) + 1),
+    #     colColours=["powderblue"] * (len(list(df.index)) + 1),
+    #     cellLoc='center',
+    #     loc='center')
+    # for (row, col), cell in table.get_celld().items():
+    #     if (row == 0) or (col == -1):
+    #         cell.set_text_props(fontproperties=FontProperties(weight='bold'))
+    # table.set_fontsize(16)
+    # table.scale(0.75, 3)
+    # plt.savefig('test.png')
+    # upload_slack_file(filename='test.png')
+    # exit()
+
+
     # etl_report.__exit__() will run whether or not this block is successfully completed
     # see https://www.geeksforgeeks.org/with-statement-in-python/
     with SummaryReport() as etl_report:
@@ -43,6 +76,14 @@ def main():
 
         # Add test adjustment data
         airtable_master_data = add_test_adjustments(airtable_master_data)
+
+        # Record number of records test adjusted and number of divergent estimates
+        test_adjusted_records = airtable_master_data[airtable_master_data['test_adjusted_record'] == True].shape[0]
+        etl_report.set_num_test_adjusted_records(test_adjusted_records)
+        divergent_estimates = airtable_master_data[(airtable_master_data['test_adjusted_record'] == True)
+                                                   & (pd.isna(airtable_master_data['adj_prevalence']))].shape[0]
+        etl_report.set_num_divergent_estimates(divergent_estimates)
+        airtable_master_data.drop(columns=['test_adjusted_record'], inplace=True)
 
         # Apply min risk of bias to all study estimates
         airtable_master_data = apply_min_risk_of_bias(airtable_master_data)
