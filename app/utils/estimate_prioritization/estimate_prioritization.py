@@ -2,9 +2,10 @@ import pandas as pd
 from statsmodels.stats.proportion import proportion_confint
 from app.utils.estimate_prioritization import prioritization_criteria_testunadj, \
     prioritization_criteria_testadj, pooling_function_maps
+from typing import Union
 
 
-def get_pooled_estimate(estimates):
+def get_pooled_estimate(estimates: pd.DataFrame) -> pd.DataFrame:
     
     # if only one estimate provided, no pooling necessary - return that estimate 
     if estimates.shape[0] == 1:
@@ -37,10 +38,9 @@ def get_pooled_estimate(estimates):
         # try/except ensures that this doesn't break if we are prioritizing estimates from dashboard source only
         #i.e., where pooled.at['adj_prevalence'] will throw a KeyError
         try:
-            pooled.at['adj_prev_ci_lower'], pooled.at['adj_prev_ci_upper'] = proportion_confint(count = int(pooled.at['adj_prevalence'] * pooled.at['denominator_value']),
-                                                                                                nobs = pooled.at['denominator_value'],
-                                                                                                alpha = 0.05,
-                                                                                                method = 'jeffreys')
+            pooled.at['adj_prev_ci_lower'], pooled.at['adj_prev_ci_upper'] = \
+                proportion_confint(count = int(pooled.at['adj_prevalence'] * pooled.at['denominator_value']),
+                                   nobs = pooled.at['denominator_value'], alpha = 0.05, method = 'jeffreys')
         except KeyError as e: 
             pass
 
@@ -48,12 +48,12 @@ def get_pooled_estimate(estimates):
 
 # pass in a filtered set of estimates - or estimates and filters
 # and get out a subset, which have an estimate prioritized from among them 
-def get_prioritized_estimates(estimates, 
-                              filters = None, 
-                              mode = 'dashboard',
-                              pool = True): 
+def get_prioritized_estimates(estimates: pd.DataFrame,
+                              filters: Union[tuple, None] = None,
+                              mode: str = 'dashboard',
+                              pool: bool = True) -> pd.DataFrame:
     
-    if estimates.shape[0] == 0:
+    if estimates.empty:
         return None 
     if filters is not None:
         estimates = estimates[filters]
@@ -102,7 +102,7 @@ def get_prioritized_estimates(estimates,
                 study_estimates_at_level = study_estimates[study_estimates.apply(level, axis = 1)]
 
                 # if any estimates meet the top level, pass those on; if not, continue
-                if study_estimates_at_level.shape[0] > 0:
+                if not study_estimates_at_level.empty:
                     study_estimates = study_estimates_at_level
                     break 
 

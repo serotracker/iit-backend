@@ -148,6 +148,8 @@ def check_filter_options(dashboard_source: pd.DataFrame) -> None:
 # during the pooling process (in estimate prioritization)
 def validate_pooling_function_columns(tables_dict: Dict) -> None:
     columns_with_pooling_functions = get_columns_with_pooling_functions()
+    # Documentation for set.union() https://www.w3schools.com/python/ref_set_union.asp
+    # Note that * in this case means unpacking a list
     columns_in_db = set.union(*[set(table.columns) for table in tables_dict.values()])
     # remove row uuid's and created at timestamps from consideration
     # as they don't need to be accounted for during pooling
