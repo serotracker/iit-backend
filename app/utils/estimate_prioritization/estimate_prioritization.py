@@ -5,22 +5,27 @@ from app.utils.estimate_prioritization import prioritization_criteria_testunadj,
 
 
 def get_pooled_estimate(estimates):
-
+    
+    # if only one estimate provided, no pooling necessary - return that estimate 
     if estimates.shape[0] == 1:
         pooled = estimates.iloc[0]
     else:
-        # use the estimate with the max denominator as the 'base' for the pooled estimate
+        # use the estimate with the max denominator to provide series names and default values for the pooled estimate
+        # this serves as a "base estimate" that can be subsequently modified 
         pooled = estimates.loc[estimates['denominator_value'].idxmax(axis = 1)] 
 
-        # pool all values that can be pooled
+        # for each variable that we have a defined pooling function for
+        # attempt to generate a pooled value for this variable by applying the pooling function to the input data
         for (summary_type, cols_to_summarize, summary_function) in pooling_function_maps:
             if summary_function is not None:
+                # check to ensure that the value to be pooled is in the data input provided 
                 valid_cols_to_summarize = set(cols_to_summarize) & set(estimates.columns)
 
                 for col in valid_cols_to_summarize:
                     pooled.at[col] = summary_function(estimates, col)
 
-        # generate new values as necessary
+        # once all pooled variables have been calculated, generate necessary pooled variables based on those calculated variables
+        # including numerator, estimate name, and confidence intervals for proportions
         pooled.at['numerator_value'] = int(pooled.at['serum_pos_prevalence'] * pooled.at['denominator_value'])
         if 'estimate_name' in pooled.index:
             pooled.at['estimate_name'] += '_pooled'
@@ -29,6 +34,8 @@ def get_pooled_estimate(estimates):
                                                                                           alpha = 0.05,
                                                                                           method = 'jeffreys')
         
+        # try/except ensures that this doesn't break if we are prioritizing estimates from dashboard source only
+        #i.e., where pooled.at['adj_prevalence'] will throw a KeyError
         try:
             pooled.at['adj_prev_ci_lower'], pooled.at['adj_prev_ci_upper'] = proportion_confint(count = int(pooled.at['adj_prevalence'] * pooled.at['denominator_value']),
                                                                                                 nobs = pooled.at['denominator_value'],
