@@ -32,7 +32,8 @@ pooling_function_maps = [
                                  'city',
                                  'antibody_target',
                                  'test_manufacturer'],
-                 summary_function = lambda estimates, col: estimates[col].explode().dropna().unique()),
+                 # Note need to return standard python list instead of ndarray
+                 summary_function = lambda estimates, col: estimates[col].explode().dropna().unique().tolist()),
     PoolingFnMap(summary_type = 'min',
                  column_names = ['sampling_start_date',
                                 'age_min'],

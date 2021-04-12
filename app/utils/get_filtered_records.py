@@ -190,7 +190,15 @@ def get_filtered_records(research_fields=False, filters=None, columns=None,
     if prioritize_estimates:
         result_df = pd.DataFrame(result)
         prioritized_records = get_prioritized_estimates(result_df, mode=prioritize_estimates_mode)
+        # If records exist, clean dataframe
         if not prioritized_records.empty:
+            # Convert from True/None to True/False
+            # TODO: maybe this is something we enforce in the ETL moving fwd
+            bool_fields = ['academic_primary_estimate', 'dashboard_primary_estimate', 'test_adj', 'pop_adj', 'geo_exact_match']
+            if research_fields:
+                bool_fields += ['include_in_srma']
+            for field in bool_fields:
+                prioritized_records[field] = prioritized_records[field].fillna(False)
             # Filling all NaN values with None: https://stackoverflow.com/questions/46283312/how-to-proceed-with-none-value-in-pandas-fillna
             prioritized_records = prioritized_records.fillna(np.nan).replace({np.nan: None})
         result = prioritized_records.to_dict('records')
