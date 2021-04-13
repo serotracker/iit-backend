@@ -4,7 +4,7 @@ from app.serotracker_sqlalchemy import db_session, DashboardSource, ResearchSour
     db_model_config, Country, State, City, dashboard_source_cols, research_source_cols
 import pandas as pd
 import numpy as np
-from .estimate_prioritization import get_prioritized_estimates
+from app.utils.estimate_prioritization import get_prioritized_estimates
 from statistics import mean
 from typing import List, Dict, Any
 
@@ -128,7 +128,7 @@ Output: set of records represented by dicts
 def get_filtered_records(research_fields=False, filters=None, columns=None,
                          sampling_start_date=None, sampling_end_date=None,
                          publication_start_date=None, publication_end_date=None, prioritize_estimates=True,
-                         prioritize_estimates_mode=None, include_in_srma=False):
+                         prioritize_estimates_mode='dashboard', include_in_srma=False):
     query_dicts = get_all_records(research_fields)
     if query_dicts is None or len(query_dicts) == 0:
         return []
@@ -190,7 +190,16 @@ def get_filtered_records(research_fields=False, filters=None, columns=None,
     if prioritize_estimates:
         result_df = pd.DataFrame(result)
         prioritized_records = get_prioritized_estimates(result_df, mode=prioritize_estimates_mode)
+        # If records exist, clean dataframe
         if not prioritized_records.empty:
+            # Convert from True/None to True/False
+            # TODO: maybe this is something we enforce in the ETL moving fwd
+            for col in prioritized_records.columns:
+                # Note purpose of this line is to check if the col in question is a boolean col
+                # Can't simply check the dtype because cols with True/None instead of
+                # True/False have dtype="object" instead of "bool"
+                if True in prioritized_records[col].values:
+                    prioritized_records[col] = prioritized_records[col].fillna(False)
             # Filling all NaN values with None: https://stackoverflow.com/questions/46283312/how-to-proceed-with-none-value-in-pandas-fillna
             prioritized_records = prioritized_records.fillna(np.nan).replace({np.nan: None})
         result = prioritized_records.to_dict('records')
