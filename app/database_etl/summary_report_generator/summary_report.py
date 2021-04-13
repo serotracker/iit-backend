@@ -25,7 +25,7 @@ class SummaryReport:
     def set_num_airtable_records(self, num_records: int):
         self.num_airtable_records = num_records
 
-    def set_test_adjusted_time(self, test_adj_time: int):
+    def set_test_adjusted_time(self, test_adj_time: float):
         self.test_adjusted_time = test_adj_time
 
     def get_table_counts(self):
