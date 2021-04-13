@@ -106,7 +106,7 @@ class SummaryReport:
         if hasattr(self, 'num_test_adjusted_records'):
             body += f"Number of estimates test adjusted: {self.num_test_adjusted_records}\n"
         if hasattr(self, 'test_adjusted_time'):
-            body += f"Time to run test adjustment: {self.test_adjusted_time}\n"
+            body += f"Time to run test adjustment: {self.test_adjusted_time} minutes\n"
         if hasattr(self, 'num_divergent_estimates'):
             body += f"Number of divergent test adjusted estimates: {self.num_divergent_estimates}\n"
         if hasattr(self, 'table_counts_after'):
