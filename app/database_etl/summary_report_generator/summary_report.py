@@ -50,16 +50,26 @@ class SummaryReport:
         dt = datetime.datetime.fromtimestamp(timestamp)
         return dt.strftime('%Y-%m-%d %H:%M:%S')
 
-    def get_table_counts_diff(self, before_counts, after_counts):
+    def get_table_counts_summary_df(self, before_counts, after_counts=None):
+        # Get row counts of tables before
         before_series = pd.Series(data=before_counts,
                                   index=before_counts.keys(),
                                   name='Table counts before')
 
+        # If ETL failed, just return dataframe of table counts before
+        if after_counts is None:
+            return before_series.to_frame()
+
+        # If ETL passed, add columns for row counts after and difference
         after_series = pd.Series(data=after_counts,
                                  index=after_counts.keys(),
                                  name='Table counts after')
         df = pd.concat([before_series, after_series], axis=1)
+        df['Difference'] = df['Table counts after'] - df['Table counts before']
+        return df
 
+    def send_summary_table_image(self, df, body):
+        # Create matplotlib table object based on df
         fig, ax = plt.subplots(figsize=(22, 11))
         ax.set_axis_off()
         table = ax.table(
@@ -69,6 +79,7 @@ class SummaryReport:
             cellLoc='center',
             loc='center right')
 
+        # Bold the column and row labels and highlight blue
         for (row, col), cell in table.get_celld().items():
             if (row == 0) or (col == -1):
                 cell.set_text_props(fontproperties=FontProperties(weight='bold'))
@@ -77,7 +88,11 @@ class SummaryReport:
         table.set_fontsize(32)
         table.scale(1, 4)
         plt.tight_layout()
+
+        # Save file locally, upload to slack, then remove file
         plt.savefig('etl_summary_report.png')
+        upload_slack_file(filename='etl_summary_report.png', caption=body)
+        os.remove('etl_summary_report.png')
         return
 
     def send_summary_report(self):
@@ -91,13 +106,12 @@ class SummaryReport:
             body += f"Number of divergent test adjusted estimates: {self.num_divergent_estimates}\n"
         if hasattr(self, 'table_counts_after'):
             body += f"Status: SUCCESS"
-            self.get_table_counts_diff(self.table_counts_before, self.table_counts_after)
-            upload_slack_file(filename='etl_summary_report.png', caption=body)
-            os.remove('etl_summary_report.png')
+            summary_df = self.get_table_counts_summary_df(self.table_counts_before, self.table_counts_after)
+            self.send_summary_table_image(summary_df, body)
         else:
             body += f"Status: FAIL\n"
-            body += f"Table counts before: " + f"```{json.dumps(self.table_counts_before, indent=4)}```\n"
-            send_slack_message(body, channel="#dev-logging-etl")
+            summary_df = self.get_table_counts_summary_df(self.table_counts_before)
+            self.send_summary_table_image(summary_df, body)
         return
 
     def __enter__(self):
