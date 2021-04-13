@@ -6,41 +6,48 @@ import pandas as pd
 import numpy as np
 from app.utils.estimate_prioritization import get_prioritized_estimates
 from statistics import mean
+
+# For typing purposes
+from sqlalchemy.sql.visitors import VisitableType as SQLalchemyType
+from sqlalchemy.orm.attributes import InstrumentedAttribute as SQLalchemyExpression
+from sqlalchemy.sql.elements import Label as SQLAlchemyLabelExpression
 from typing import List, Dict, Any
 
-def _get_isotype_col_expression(label="isotypes"):
+def _get_isotype_col_expression(label:str = "isotypes"):
     expression = case(
                 [
                     (and_(DashboardSource.isotype_igg == 'true',
                           DashboardSource.isotype_igm == 'true',
-                          DashboardSource.isotype_iga == 'true'), 'IgG, IgM, IgA'),
+                          DashboardSource.isotype_iga == 'true'), array(['IgG, IgM, IgA'])),
                     (and_(DashboardSource.isotype_igg == 'true',
                           DashboardSource.isotype_igm == 'false',
-                          DashboardSource.isotype_iga == 'true'), 'IgG, IgA'),
+                          DashboardSource.isotype_iga == 'true'), array(['IgG, IgA'])),
                     (and_(DashboardSource.isotype_igg == 'true',
                           DashboardSource.isotype_igm == 'true',
-                          DashboardSource.isotype_iga == 'false'), 'IgG, IgM'),
+                          DashboardSource.isotype_iga == 'false'), array(['IgG, IgM'])),
                     (and_(DashboardSource.isotype_igg == 'false',
                           DashboardSource.isotype_igm == 'true',
-                          DashboardSource.isotype_iga == 'true'), 'IgM, IgA'),
+                          DashboardSource.isotype_iga == 'true'), array(['IgM, IgA'])),
                     (and_(DashboardSource.isotype_igg == 'true',
                           DashboardSource.isotype_igm == 'false',
-                          DashboardSource.isotype_iga == 'false'), 'IgG'),
+                          DashboardSource.isotype_iga == 'false'), array(['IgG'])),
                     (and_(DashboardSource.isotype_igg == 'false',
                           DashboardSource.isotype_igm == 'false',
-                          DashboardSource.isotype_iga == 'true'), 'IgA'),
+                          DashboardSource.isotype_iga == 'true'), array(['IgA'])),
                     (and_(DashboardSource.isotype_igg == 'false',
                           DashboardSource.isotype_igm == 'true',
-                          DashboardSource.isotype_iga == 'false'), 'IgM')
+                          DashboardSource.isotype_iga == 'false'), array(['IgM']))
                 ],
-                else_='').label(label)
+                else_=cast(array([]), ARRAY(String))).label(label)
     return expression
 
 # Query to aggregate multiple multi select options into a single array
 # Note: case statement is used so that we show [] instead of [None]
-def _apply_agg_query(exp, label, type=String):
-    return case([(func.array_agg(exp).filter(exp.isnot(None)).isnot(None),
-                  cast(func.array_agg(exp).filter(exp.isnot(None)), ARRAY(type)))],
+# agg_field_exp --> sqlalchemy expression representing the field you'd like to aggregate (e.g. State.Longitude)
+def _apply_agg_query(agg_field_exp: SQLalchemyExpression, label:str,
+                     type:SQLalchemyType = String) -> SQLAlchemyLabelExpression:
+    return case([(func.array_agg(agg_field_exp).filter(agg_field_exp.isnot(None)).isnot(None),
+                  cast(func.array_agg(agg_field_exp).filter(agg_field_exp.isnot(None)), ARRAY(type)))],
                 else_=cast(array([]), ARRAY(type))).label(label)
 
 def get_all_records(research_fields=False):
