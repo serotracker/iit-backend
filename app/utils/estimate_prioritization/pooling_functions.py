@@ -1,5 +1,6 @@
 from collections import namedtuple
 import pandas as pd
+from typing import Any
 
 # we will need to 'pool' estimates, collapsing values from multiple estimates to one
 # here are functions that do that for each variable
@@ -9,7 +10,7 @@ PoolingFnMap = namedtuple(typename = 'PoolingFnMap',
                                          'summary_function'])
 
 # helper function to use to generate lambdas
-def get_unique_value(series, default = pd.NA):
+def get_unique_value(series: pd.Series, default: Any = pd.NA) -> Any:
     unique_vals = series.unique()
     if len(unique_vals) == 1:
         return unique_vals[0]
@@ -144,7 +145,7 @@ pooling_function_maps = [
 # Helper function to help with validating that all columns
 # in the database are accounted for during the pooling process
 # (will be done in the ETL)
-def get_columns_with_pooling_functions():
+def get_columns_with_pooling_functions() -> set:
     columns_with_pooling_functions = set.union(*[set(pooling_function_map.column_names)
                                                  for pooling_function_map
                                                  in pooling_function_maps])

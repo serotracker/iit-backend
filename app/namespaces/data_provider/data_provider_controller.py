@@ -18,7 +18,6 @@ class Records(Resource):
     def post(self):
         # Convert input payload to json and throw error if it doesn't exist
         data = request.get_json()
-        print(data)
         if not data:
             return {"message": "No input payload provided"}, 400
 

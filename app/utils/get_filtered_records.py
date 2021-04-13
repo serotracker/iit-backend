@@ -194,11 +194,12 @@ def get_filtered_records(research_fields=False, filters=None, columns=None,
         if not prioritized_records.empty:
             # Convert from True/None to True/False
             # TODO: maybe this is something we enforce in the ETL moving fwd
-            bool_fields = ['academic_primary_estimate', 'dashboard_primary_estimate', 'test_adj', 'pop_adj', 'geo_exact_match']
-            if research_fields:
-                bool_fields += ['include_in_srma']
-            for field in bool_fields:
-                prioritized_records[field] = prioritized_records[field].fillna(False)
+            for col in prioritized_records.columns:
+                # Note purpose of this line is to check if the col in question is a boolean col
+                # Can't simply check the dtype because cols with True/None instead of
+                # True/False have dtype="object" instead of "bool"
+                if True in prioritized_records[col].values:
+                    prioritized_records[col] = prioritized_records[col].fillna(False)
             # Filling all NaN values with None: https://stackoverflow.com/questions/46283312/how-to-proceed-with-none-value-in-pandas-fillna
             prioritized_records = prioritized_records.fillna(np.nan).replace({np.nan: None})
         result = prioritized_records.to_dict('records')
