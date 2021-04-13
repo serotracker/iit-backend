@@ -25,6 +25,9 @@ class SummaryReport:
     def set_num_airtable_records(self, num_records: int):
         self.num_airtable_records = num_records
 
+    def set_test_adjusted_time(self, test_adj_time: int):
+        self.test_adjusted_time = test_adj_time
+
     def get_table_counts(self):
         table_counts = {}
         with db_session() as session:
@@ -102,6 +105,8 @@ class SummaryReport:
             body += f"Number of airtable records queried: {self.num_airtable_records}\n"
         if hasattr(self, 'num_test_adjusted_records'):
             body += f"Number of estimates test adjusted: {self.num_test_adjusted_records}\n"
+        if hasattr(self, 'test_adjusted_time'):
+            body += f"Time to run test adjustment: {self.test_adjusted_time}\n"
         if hasattr(self, 'num_divergent_estimates'):
             body += f"Number of divergent test adjusted estimates: {self.num_divergent_estimates}\n"
         if hasattr(self, 'table_counts_after'):

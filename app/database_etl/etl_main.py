@@ -42,7 +42,10 @@ def main():
         airtable_master_data = standardize_airtable_data(airtable_master_data)
 
         # Add test adjustment data
+        test_adj_start_time = time()
         airtable_master_data = add_test_adjustments(airtable_master_data)
+        test_adj_total_time = round((time() - test_adj_start_time) / (60), 2)
+        etl_report.set_test_adjusted_time(test_adj_total_time)
 
         # Record number of records test adjusted and number of divergent estimates
         test_adjusted_records = airtable_master_data[airtable_master_data['test_adjusted_record'] == True].shape[0]
