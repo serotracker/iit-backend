@@ -11,7 +11,7 @@ PoolingFnMap = namedtuple(typename = 'PoolingFnMap',
 
 # helper function to use to generate lambdas
 def get_unique_value(series: pd.Series, default: Any = pd.NA) -> Any:
-    unique_vals = series.unique()
+    unique_vals = series.dropna().unique()
     if len(unique_vals) == 1:
         return unique_vals[0]
     else:
@@ -93,7 +93,7 @@ pooling_function_maps = [
                  column_names = ['sample_frame_info',
                                  'test_name',
                                  'subgroup_specific_category'],
-                 summary_function = lambda estimates, col: '; '.join(estimates[col].unique())),
+                 summary_function = lambda estimates, col: '; '.join(estimates[col].dropna().unique())),
     PoolingFnMap(summary_type = 'identity_from_max_denominator',
                  column_names = ['test_manufacturer',
                                  'sensitivity',
