@@ -54,7 +54,8 @@ def get_prioritized_estimates(estimates: pd.DataFrame,
                               pool: bool = True) -> pd.DataFrame:
     
     if estimates.empty:
-        return None 
+        # return empty DF
+        return pd.DataFrame()
     if filters is not None:
         estimates = estimates[filters]
     
