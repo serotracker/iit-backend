@@ -13,6 +13,16 @@ from marshmallow import Schema, fields, ValidationError
 
 from app.database_etl.test_adjustment_handler import bastos_estimates, testadj_model_code
 
+def logit(p, tol = 1e-3):
+    # logit function; well defined for p in open interval (0,1)
+    
+    # constrain the probability to the range [tol, 1-tol]
+    # to avoid NaNs if p = 0 or p = 1
+    p = max(p, tol)
+    p = min(p, 1 - tol)
+    
+    # return the logit of the constrained probability
+    return log(p / (1 - p))
 
 def validate_against_schema(input_payload, schema):
     try:
@@ -133,8 +143,8 @@ class TestAdjHandler:
 
             try:
                 raw_prev = model_params['y_prev_obs'] / model_params['n_prev_obs']
-                log_delta = log(median + 1e-3, 10) - log(raw_prev + 1e-3, 10)
-                median_is_bounded = abs(log_delta) < 1
+                logit_delta = logit(median) - logit(raw_prev)
+                median_is_bounded = abs(logit_delta) < 1
             except (ZeroDivisionError, ValueError):
                 return None, None, None
 
