@@ -153,3 +153,11 @@ Confirm that the data has indeed been migrated by checking pgAdmin 4.
 3. Click `DOWNLOAD JSON` and save the file as `credentials.json` in the `tableau_data_connector` directory.
 4. Run `table_generator.py` for the first time. Authenticate using `can.serosurveillance.dev@gmail.com` the first time you run this.
 
+# Helpful Code Snippets
+
+- Start Postgres database: `sudo service postgresql start`
+- Open Postgres interactively: `psql -h localhost -d whiteclaw -U USERNAME -w`
+- Export environment variables from `.env` file into current shell: `set -o allexport; source .env; set +o allexport`
+- Add path to this Flask app to your `PYTHONPATH`: `export PYTHONPATH=PATH_TO_REPO/iit-backend:$PYTHONPATH`
+- Run development server: `python3 -m flask run` (without environment variables exported) or `python3 manage.py run` (with or without environment variables exported)
+- Run ETL: `python3 app/database_etl/etl_main.py` (with environment variables exported and Flask app in `PYTHONPATH`
