@@ -3,7 +3,7 @@ import logging
 from sqlalchemy import distinct, func
 
 from app.serotracker_sqlalchemy import db_session, DashboardSource, \
-    Country, ResearchSource
+    Country, ResearchSource, State, City
 from app.utils.notifications_sender import send_slack_message
 from app.utils.estimate_prioritization import get_columns_with_pooling_functions
 import pandas as pd
@@ -105,12 +105,12 @@ def get_all_filter_options() -> Dict[str, Any]:
         options["subgroup_cat"] = sorted(results)
 
         # Get state
-        query = session.query(distinct(DashboardSource.state))
+        query = session.query(distinct(State.state_name))
         results = [q[0] for q in query if q[0] is not None]
         options["state"] = sorted(results)
 
         # Get city
-        query = session.query(distinct(DashboardSource.city))
+        query = session.query(distinct(City.city_name))
         results = [q[0] for q in query if q[0] is not None]
         options["city"] = sorted(results)
 
