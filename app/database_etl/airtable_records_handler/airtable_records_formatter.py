@@ -145,6 +145,27 @@ def add_test_adjustments(df: pd.DataFrame) -> pd.DataFrame:
     new_airtable_test_adj_records = \
         df[df['airtable_record_id'].isin(new_airtable_record_ids)].reset_index(
             drop=True)
+
+    # NOTE: Temporary code to log information about test adj runs to csvs
+    # Log DB versions of the existing records to be test adjusted
+    existing_testadj_records_db = total_db_records[total_db_records['airtable_record_id'].isin(new_airtable_record_ids)]
+    existing_testadj_records_db = existing_testadj_records_db[duplicate_cols]
+    existing_testadj_records_db.to_csv("existing_testadj_records_db.csv")
+    existing_record_ids = existing_testadj_records_db['airtable_record_id'].tolist()
+
+    # Log airtable versions of the existing records to be test adjusted
+    existing_testadj_records_airtable = new_airtable_test_adj_records[new_airtable_test_adj_records['airtable_record_id'].isin(existing_record_ids)][duplicate_cols]
+    existing_testadj_records_airtable.to_csv("existing_testadj_records_airtable.csv")
+
+    # Log the records that have just been added to airtable (and therefore will be test adjusted)
+    new_records = new_airtable_test_adj_records[~new_airtable_test_adj_records['airtable_record_id'].isin(existing_record_ids)][duplicate_cols]
+    new_records.to_csv("new_records.csv")
+
+    print(len(new_records))
+    print(len(existing_testadj_records_airtable), len(existing_testadj_records_db))
+    print("LOGGED")
+    exit()
+
     # Add temporary boolean column if record will be test adjusted or not
     old_airtable_test_adj_records['test_adjusted_record'] = False
     new_airtable_test_adj_records['test_adjusted_record'] = True
