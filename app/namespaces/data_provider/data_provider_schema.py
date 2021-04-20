@@ -19,7 +19,8 @@ class RecordsSchema(Schema):
                                                     "source_name", "population_group", "genpop",
                                                     "sex", "age", "isotypes_reported", "test_type",
                                                     "specimen_type", "estimate_grade",
-                                                    "subgroup_var", "subgroup_cat"])),
+                                                    "subgroup_var", "subgroup_cat",
+                                                    "state", "city"])),
         values=fields.List(fields.String())
     )
     columns = fields.List(fields.String(validate=validate.OneOf(["age", "city", "state", "population_group",
@@ -65,7 +66,8 @@ class StudyCountSchema(Schema):
                                                     "source_name", "population_group", "genpop",
                                                     "sex", "age", "isotypes_reported", "test_type",
                                                     "specimen_type", "estimate_grade",
-                                                    "subgroup_var", "subgroup_cat"])),
+                                                    "subgroup_var", "subgroup_cat",
+                                                    "state", "city"])),
         values=fields.List(fields.String())
     )
     sampling_start_date = fields.String()

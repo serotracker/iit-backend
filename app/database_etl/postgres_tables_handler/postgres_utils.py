@@ -104,6 +104,16 @@ def get_all_filter_options() -> Dict[str, Any]:
         results = [q[0] for q in query if q[0] is not None]
         options["subgroup_cat"] = sorted(results)
 
+        # Get state
+        query = session.query(distinct(DashboardSource.state))
+        results = [q[0] for q in query if q[0] is not None]
+        options["state"] = sorted(results)
+
+        # Get city
+        query = session.query(distinct(DashboardSource.city))
+        results = [q[0] for q in query if q[0] is not None]
+        options["city"] = sorted(results)
+
         options["max_sampling_end_date"] = session.query(func.max(DashboardSource.sampling_end_date))[0][0].isoformat()
         options["min_sampling_end_date"] = session.query(func.min(DashboardSource.sampling_end_date))[0][0].isoformat()
         options["max_publication_end_date"] = session.query(func.max(DashboardSource.publication_date))[0][0].isoformat()
