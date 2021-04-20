@@ -28,3 +28,9 @@ app/database_etl/tableau_data_connector/token.pickle
 
 # cached Stan models
 **/stanmodelcache*
+.vscode
+
+# CSVs folder used to sync dbs
+csvs/
+load-dotenv.sh
+push_csvs.py
