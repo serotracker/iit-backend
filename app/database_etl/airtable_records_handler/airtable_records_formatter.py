@@ -129,6 +129,11 @@ def add_test_adjustments(df: pd.DataFrame) -> pd.DataFrame:
                   'denominator_value', 'serum_pos_prevalence']
     diff[float_cols] = diff[float_cols].astype(float)
 
+    # Round float columns to a consistent number of decimal places to ensure consistent float comparisons
+    # Defines number of decimal places to round each column to
+    decimals = pd.Series([5]*len(float_cols), index=float_cols)
+    diff = diff.round(decimals)
+
     # Drop duplicates based on these cols
     duplicate_cols = ['airtable_record_id', 'test_adj', 'ind_se', 'ind_sp', 'ind_se_n', 'ind_sp_n',
                       'se_n', 'sp_n', 'sensitivity', 'specificity', 'test_validation', 'test_type', 'denominator_value',
