@@ -165,6 +165,10 @@ def add_test_adjustments(df: pd.DataFrame) -> pd.DataFrame:
         new_airtable_test_adj_records['adj_prev_ci_upper'] = \
             zip(*new_airtable_test_adj_records.apply(lambda x: test_adj_handler.get_adjusted_estimate(x), axis=1))
 
+    # If there are no old test adjusted records, just return the new ones
+    if old_airtable_test_adj_records.empty:
+        return new_airtable_test_adj_records
+
     # Add test adjustment data to old_test_adj_records from database
     old_airtable_record_ids = old_airtable_test_adj_records['airtable_record_id'].unique()
 
