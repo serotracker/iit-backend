@@ -13,6 +13,7 @@ from app.database_etl.postgres_tables_handler import create_dashboard_source_df,
 from app.database_etl.airtable_records_handler import get_all_records, apply_study_max_estimate_grade,\
     apply_min_risk_of_bias, standardize_airtable_data, add_test_adjustments
 from app.database_etl.tableau_data_connector import upload_analyze_csv
+from app.database_etl.test_evaluation_handler import apply_test_eval_links
 from app.database_etl.summary_report_generator import SummaryReport
 
 load_dotenv()
@@ -61,6 +62,9 @@ def main():
 
         # Apply study max estimate grade to all estimates in study
         airtable_master_data = apply_study_max_estimate_grade(airtable_master_data)
+
+        # Apply test evaluation link
+        data = apply_test_eval_links(data)
 
         # Create dashboard source df
         dashboard_source = create_dashboard_source_df(airtable_master_data, current_time=CURR_TIME)
