@@ -4,37 +4,7 @@ import math
 from random import uniform
 
 from app.serotracker_sqlalchemy import db_session, DashboardSource, Country, db_model_config, dashboard_source_cols
-from sqlalchemy import case, and_
-
-
-def _get_isotype_col_expression():
-    expression = case(
-                [
-                    (and_(DashboardSource.isotype_igg == 'true',
-                          DashboardSource.isotype_igm == 'true',
-                          DashboardSource.isotype_iga == 'true'), 'IgG, IgM, IgA'),
-                    (and_(DashboardSource.isotype_igg == 'true',
-                          DashboardSource.isotype_igm == 'false',
-                          DashboardSource.isotype_iga == 'true'), 'IgG, IgA'),
-                    (and_(DashboardSource.isotype_igg == 'true',
-                          DashboardSource.isotype_igm == 'true',
-                          DashboardSource.isotype_iga == 'false'), 'IgG, IgM'),
-                    (and_(DashboardSource.isotype_igg == 'false',
-                          DashboardSource.isotype_igm == 'true',
-                          DashboardSource.isotype_iga == 'true'), 'IgM, IgA'),
-                    (and_(DashboardSource.isotype_igg == 'true',
-                          DashboardSource.isotype_igm == 'false',
-                          DashboardSource.isotype_iga == 'false'), 'IgG'),
-                    (and_(DashboardSource.isotype_igg == 'false',
-                          DashboardSource.isotype_igm == 'false',
-                          DashboardSource.isotype_iga == 'true'), 'IgA'),
-                    (and_(DashboardSource.isotype_igg == 'false',
-                          DashboardSource.isotype_igm == 'true',
-                          DashboardSource.isotype_iga == 'false'), 'IgM')
-                ],
-                else_='').label("isotypes")
-    return expression
-
+from app.utils import _get_isotype_col_expression
 
 def _get_parsed_record(results):
     # Store columns that are multi select and that need to be converted to list
