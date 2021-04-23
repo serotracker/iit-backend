@@ -24,6 +24,15 @@ def logit(p, tol = 1e-3):
     # return the logit of the constrained probability
     return log(p / (1 - p))
 
+def result_is_bounded(median_adj_prev, raw_prev, maxsmall = 0.5, minbig = 0.5):
+    logit_delta = logit(median_adj_prev) - logit(raw_prev)
+    adjusted_closeto_raw = abs(logit_delta) < 1
+    
+    both_below_maxsmall = (median_adj_prev <= maxsmall) and (raw_prev <= maxsmall)
+    both_above_minbig = (median_adj_prev >= minbig) and (raw_prev >= minbig)
+    
+    return (adjusted_closeto_raw or both_below_maxsmall or both_above_minbig)
+
 def validate_against_schema(input_payload, schema):
     try:
         payload = schema.load(input_payload)
@@ -143,12 +152,11 @@ class TestAdjHandler:
 
             try:
                 raw_prev = model_params['y_prev_obs'] / model_params['n_prev_obs']
-                logit_delta = logit(median) - logit(raw_prev)
-                median_is_bounded = abs(logit_delta) < 1
+                bounded = result_is_bounded(median, raw_prev)
             except (ZeroDivisionError, ValueError):
                 return None, None, None
 
-            satisfactory_model_set_found = consistent_results_found and median_is_bounded
+            satisfactory_model_set_found = consistent_results_found and bounded
 
             n_modelsets += 1
             if n_modelsets > self.modelsets_lim:
