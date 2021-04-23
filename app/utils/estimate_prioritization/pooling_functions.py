@@ -154,7 +154,7 @@ pooling_function_maps = [
                                  'full_vaccinations_per_hundred',
                                  'vaccinations_per_hundred',
                                  'tests_per_hundred'],
-                 summary_function = lambda estimates, col: weighted_average(estimates, col, 'denominator_value')),
+                 summary_function = lambda estimates, col: weighted_average(estimates, values = col, weights = 'denominator_value')),
 ]
 
 # Helper function to help with validating that all columns
