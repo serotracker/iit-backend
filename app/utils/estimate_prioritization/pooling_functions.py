@@ -1,5 +1,6 @@
 from collections import namedtuple
 import pandas as pd
+import numpy as np
 from typing import Any
 
 # we will need to 'pool' estimates, collapsing values from multiple estimates to one
@@ -25,7 +26,7 @@ def weighted_average(df: pd.DataFrame, values: str, weights: str) -> float:
         return ((df[weights] * df[values]).sum() / 
                 df[weights].sum())
     else:
-        return pd.NA
+        return np.nan
 
 pooling_function_maps = [
     PoolingFnMap(summary_type = 'sum',

@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from statsmodels.stats.proportion import proportion_confint
 from app.utils.estimate_prioritization import prioritization_criteria_testunadj, \
     prioritization_criteria_testadj, pooling_function_maps
@@ -36,14 +37,14 @@ def get_pooled_estimate(estimates: pd.DataFrame) -> pd.DataFrame:
                                                                                           method = 'jeffreys')
         
         # try/except ensures that this doesn't break if we are prioritizing estimates from dashboard source only
-        #i.e., where pooled.at['adj_prevalence'] will throw a KeyError
+        # i.e., where pooled.at['adj_prevalence'] will throw a KeyError
         try:
             if pd.notna(pooled.at['adj_prevalence']) and pd.notna(pooled.at['denominator_value']):
                 pooled.at['adj_prev_ci_lower'], pooled.at['adj_prev_ci_upper'] = \
                     proportion_confint(count = int(pooled.at['adj_prevalence'] * pooled.at['denominator_value']),
                                     nobs = pooled.at['denominator_value'], alpha = 0.05, method = 'jeffreys')
             else:
-                pooled.at['adj_prev_ci_lower'], pooled.at['adj_prev_ci_upper'] = pd.NA, pd.NA
+                pooled.at['adj_prev_ci_lower'], pooled.at['adj_prev_ci_upper'] = np.nan, np.nan
         except KeyError: 
             pass
 
@@ -63,9 +64,9 @@ def apply_prioritization_criteria(estimates: pd.DataFrame,
         for level in criterion:
             estimates_at_level = estimates[estimates.apply(level, axis = 1)]
 
-            # if any estimates meet the top level, pass those on; if not, continue
+            # if any estimates meet that level, pass those on; if not, continue
             if not estimates_at_level.empty:
-                estimates = estimates
+                estimates = estimates_at_level
                 break 
 
         # if this criterion narrowed it down to just one estimate, break; if not, continue 
@@ -121,5 +122,5 @@ def get_prioritized_estimates(estimates: pd.DataFrame,
         else:
             selected_estimates.append(study_estimates)
     
-    selected_estimate_df = pd.concat(selected_estimates, axis = 1).T
+    selected_estimate_df = pd.concat(selected_estimates, axis = 1).T.astype(estimates.dtypes.to_dict())
     return selected_estimate_df
