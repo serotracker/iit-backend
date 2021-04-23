@@ -17,6 +17,13 @@ def get_unique_value(series: pd.Series, default: Any = pd.NA) -> Any:
     else:
         return default
 
+def weighted_average(df: pd.DataFrame, values: str, weights: str) -> float:
+    df = df.dropna(axis = 'index', 
+                   how = 'any', 
+                   subset = [values, weights])
+    return ((df[weights] * df[values]).sum() / 
+             df[weights].sum())
+
 pooling_function_maps = [
     PoolingFnMap(summary_type = 'sum',
                  column_names = ['denominator_value',
@@ -147,7 +154,7 @@ pooling_function_maps = [
                                  'full_vaccinations_per_hundred',
                                  'vaccinations_per_hundred',
                                  'tests_per_hundred'],
-                 summary_function = lambda estimates, col: (estimates[col] * estimates['denominator_value']).sum() / estimates['denominator_value'].sum()),
+                 summary_function = lambda estimates, col: weighted_average(estimates, col, 'denominator_value')),
 ]
 
 # Helper function to help with validating that all columns
