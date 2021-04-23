@@ -21,8 +21,11 @@ def weighted_average(df: pd.DataFrame, values: str, weights: str) -> float:
     df = df.dropna(axis = 'index', 
                    how = 'any', 
                    subset = [values, weights])
-    return ((df[weights] * df[values]).sum() / 
-             df[weights].sum())
+    if not df.empty:
+        return ((df[weights] * df[values]).sum() / 
+                df[weights].sum())
+    else:
+        return pd.NA
 
 pooling_function_maps = [
     PoolingFnMap(summary_type = 'sum',
