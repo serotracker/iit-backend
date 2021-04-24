@@ -18,25 +18,25 @@ def _get_isotype_col_expression(label:str = "isotypes"):
                 [
                     (and_(DashboardSource.isotype_igg == 'true',
                           DashboardSource.isotype_igm == 'true',
-                          DashboardSource.isotype_iga == 'true'), array(['IgG, IgM, IgA'])),
+                          DashboardSource.isotype_iga == 'true'), array(["IgG", "IgM", "IgA"])),
                     (and_(DashboardSource.isotype_igg == 'true',
                           DashboardSource.isotype_igm == 'false',
-                          DashboardSource.isotype_iga == 'true'), array(['IgG, IgA'])),
+                          DashboardSource.isotype_iga == 'true'), array(["IgG", "IgA"])),
                     (and_(DashboardSource.isotype_igg == 'true',
                           DashboardSource.isotype_igm == 'true',
-                          DashboardSource.isotype_iga == 'false'), array(['IgG, IgM'])),
+                          DashboardSource.isotype_iga == 'false'), array(["IgG", "IgM"])),
                     (and_(DashboardSource.isotype_igg == 'false',
                           DashboardSource.isotype_igm == 'true',
-                          DashboardSource.isotype_iga == 'true'), array(['IgM, IgA'])),
+                          DashboardSource.isotype_iga == 'true'), array(["IgM", "IgA"])),
                     (and_(DashboardSource.isotype_igg == 'true',
                           DashboardSource.isotype_igm == 'false',
-                          DashboardSource.isotype_iga == 'false'), array(['IgG'])),
+                          DashboardSource.isotype_iga == 'false'), array(["IgG"])),
                     (and_(DashboardSource.isotype_igg == 'false',
                           DashboardSource.isotype_igm == 'false',
-                          DashboardSource.isotype_iga == 'true'), array(['IgA'])),
+                          DashboardSource.isotype_iga == 'true'), array(["IgA"])),
                     (and_(DashboardSource.isotype_igg == 'false',
                           DashboardSource.isotype_igm == 'true',
-                          DashboardSource.isotype_iga == 'false'), array(['IgM']))
+                          DashboardSource.isotype_iga == 'false'), array(["IgM"]))
                 ],
                 else_=cast(array([]), ARRAY(String))).label(label)
     return expression

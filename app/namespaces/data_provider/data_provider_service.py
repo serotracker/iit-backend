@@ -6,6 +6,7 @@ from random import uniform
 from app.serotracker_sqlalchemy import db_session, DashboardSource, Country, db_model_config, dashboard_source_cols
 from app.utils import _get_isotype_col_expression
 
+
 def _get_parsed_record(results):
     # Store columns that are multi select and that need to be converted to list
     multi_select_cols = db_model_config['multi_select_columns']
@@ -18,14 +19,6 @@ def _get_parsed_record(results):
         if col in multi_select_cols:
             multi_select_vals = [e for e in list(set(getattr(results_df, col).tolist())) if e is not None]
             record_details[col] = multi_select_vals
-
-        # Convert comma sep string of isotypes to list
-        elif col == 'isotypes':
-            isotypes = results_df.iloc[0][col]
-            if isotypes:
-                record_details[col] = isotypes.split(',')
-            else:
-                record_details[col] = []
 
         # Otherwise just return the single value of the column
         else:
