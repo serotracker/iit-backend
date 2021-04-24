@@ -19,7 +19,7 @@ def replace_null_string(x):
 
 def add_mapped_variables(df):
     # Create mapped columns for gbd regions, subregion and lmic/hic countries
-    path = os.path.dirname(os.path.dirname(os.getcwd())) + '/GBD_mapping_country.csv'
+    path = os.path.dirname(os.path.abspath(__file__)) + '/GBD_mapping_country.csv'
     gbd_mapping_country = pd.read_csv(path)
     gbd_region_col = []
     gbd_subregion_col = []
