@@ -11,37 +11,37 @@ class DashboardSource(db.Model):
     source_id = Column(UUID(as_uuid=True), primary_key=True)
     source_name = Column(String())
     publication_date = Column(DateTime)
-    first_author = Column(String())
+    first_author = Column(String(12345))
     url = Column(String())
-    source_type = Column(String())
-    source_publisher = Column(String())
+    source_type = Column(String(12345))
+    source_publisher = Column(String(12345))
     summary = Column(String())
     study_name = Column(String())
-    study_type = Column(String())
+    study_type = Column(String(12345))
     country_id = Column(UUID(as_uuid=True))
-    lead_organization = Column(String())
+    lead_organization = Column(String(12345))
     sampling_start_date = Column(DateTime)
     sampling_end_date = Column(DateTime)
-    age = Column(String())
-    sex = Column(String())
-    population_group = Column(String())
-    sampling_method = Column(String())
+    age = Column(String(12345))
+    sex = Column(String(12345))
+    population_group = Column(String(12345))
+    sampling_method = Column(String(12345))
     sensitivity = Column(Float)
     specificity = Column(Float)
     included = Column(Boolean)
     denominator_value = Column(Integer)
     numerator_definition = Column(String())
     serum_pos_prevalence = Column(Float)
-    overall_risk_of_bias = Column(String())
+    overall_risk_of_bias = Column(String(12345))
     isotype_igg = Column(Boolean)
     isotype_igm = Column(Boolean)
     isotype_iga = Column(Boolean)
-    specimen_type = Column(String())
-    estimate_grade = Column(String())
+    specimen_type = Column(String(12345))
+    estimate_grade = Column(String(12345))
     academic_primary_estimate = Column(Boolean)
     dashboard_primary_estimate = Column(Boolean)
-    isotype_comb = Column(String())
-    test_type = Column(String())
+    isotype_comb = Column(String(12345))
+    test_type = Column(String(12345))
     test_adj = Column(Boolean)
     pop_adj = Column(Boolean)
     created_at = Column(DateTime)
@@ -124,8 +124,8 @@ class Country(db.Model):
     __tablename__ = 'country'
 
     country_id = Column(UUID(as_uuid=True), primary_key=True)
-    country_name = Column(String())
-    country_iso3 = Column(String())
+    country_name = Column(String(12345))
+    country_iso3 = Column(String(12345))
     latitude = Column(Float)
     longitude = Column(Float)
     created_at = Column(DateTime)
@@ -135,8 +135,8 @@ class City(db.Model):
     __tablename__ = 'city'
 
     city_id = Column(UUID(as_uuid=True), primary_key=True)
-    city_name = Column(String())
-    state_name = Column(String())
+    city_name = Column(String(12345))
+    state_name = Column(String(12345))
     latitude = Column(Float)
     longitude = Column(Float)
     created_at = Column(DateTime)
@@ -146,7 +146,7 @@ class State(db.Model):
     __tablename__ = 'state'
 
     state_id = Column(UUID(as_uuid=True), primary_key=True)
-    state_name = Column(String())
+    state_name = Column(String(12345))
     latitude = Column(Float)
     longitude = Column(Float)
     created_at = Column(DateTime)
@@ -156,7 +156,7 @@ class TestManufacturer(db.Model):
     __tablename__ = 'test_manufacturer'
 
     test_manufacturer_id = Column(UUID(as_uuid=True), primary_key=True)
-    test_manufacturer_name = Column(String())
+    test_manufacturer_name = Column(String(12345))
     created_at = Column(DateTime)
 
 
@@ -164,7 +164,7 @@ class AntibodyTarget(db.Model):
     __tablename__ = 'antibody_target'
 
     antibody_target_id = Column(UUID(as_uuid=True), primary_key=True)
-    antibody_target_name = Column(String())
+    antibody_target_name = Column(String(12345))
     created_at = Column(DateTime)
 
 
