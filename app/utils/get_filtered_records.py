@@ -152,17 +152,14 @@ def get_filtered_records(research_fields=False, filters=None, columns=None,
             if len(permitted_values) == 0:
                 # all values for field permitted
                 return True
-            elif (isinstance(record[field], str) and 
-                  record[field] in permitted_values):
+            elif isinstance(record[field], str) and record[field] in permitted_values:
                 return True
-            elif (isinstance(record[field], list) and 
-                  set(record[field]).intersection(set(permitted_values))):
+            elif isinstance(record[field], list) and set(record[field]).intersection(set(permitted_values)):
                 return True
             return False
 
         for field, permitted_values in filters.items():
-            result = list(filter(lambda record: should_be_included(record, field, permitted_values), 
-                                 result))
+            result = list(filter(lambda record: should_be_included(record, field, permitted_values), result))
 
     def date_filter(record, start_date=None, end_date=None, use_sampling_date=True):
         status = True
