@@ -1,5 +1,6 @@
 from collections import namedtuple
 import pandas as pd
+import numpy as np
 from typing import Any
 
 # we will need to 'pool' estimates, collapsing values from multiple estimates to one
@@ -16,6 +17,16 @@ def get_unique_value(series: pd.Series, default: Any = pd.NA) -> Any:
         return unique_vals[0]
     else:
         return default
+
+def weighted_average(input_df: pd.DataFrame, value_col: str, weight_col: str) -> float:
+    df = input_df.dropna(axis = 'index', 
+                         how = 'any', 
+                         subset = [value_col, weight_col])
+    if not df.empty:
+        return ((df[weight_col] * df[value_col]).sum() / 
+                 df[weight_col].sum())
+    else:
+        return np.nan
 
 pooling_function_maps = [
     PoolingFnMap(summary_type = 'sum',
@@ -147,7 +158,7 @@ pooling_function_maps = [
                                  'full_vaccinations_per_hundred',
                                  'vaccinations_per_hundred',
                                  'tests_per_hundred'],
-                 summary_function = lambda estimates, col: (estimates[col] * estimates['denominator_value']).sum() / estimates['denominator_value'].sum()),
+                 summary_function = lambda estimates, col: weighted_average(estimates, value_col = col, weight_col = 'denominator_value')),
 ]
 
 # Helper function to help with validating that all columns

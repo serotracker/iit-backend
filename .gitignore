@@ -18,6 +18,10 @@ __pycache__/
 
 # Virtualenv
 venv/
+bin/
+lib/
+pyvenv.cfg
+share/
 
 # Logfile
 logfile.log

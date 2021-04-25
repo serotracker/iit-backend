@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from statsmodels.stats.proportion import proportion_confint
 from app.utils.estimate_prioritization import prioritization_criteria_testunadj, \
     prioritization_criteria_testadj, pooling_function_maps
@@ -17,7 +18,7 @@ def get_pooled_estimate(estimates: pd.DataFrame) -> pd.DataFrame:
 
         # for each variable that we have a defined pooling function for
         # attempt to generate a pooled value for this variable by applying the pooling function to the input data
-        for (summary_type, cols_to_summarize, summary_function) in pooling_function_maps:
+        for (_, cols_to_summarize, summary_function) in pooling_function_maps:
             if summary_function is not None:
                 # check to ensure that the value to be pooled is in the data input provided 
                 valid_cols_to_summarize = set(cols_to_summarize) & set(estimates.columns)
@@ -36,15 +37,49 @@ def get_pooled_estimate(estimates: pd.DataFrame) -> pd.DataFrame:
                                                                                           method = 'jeffreys')
         
         # try/except ensures that this doesn't break if we are prioritizing estimates from dashboard source only
-        #i.e., where pooled.at['adj_prevalence'] will throw a KeyError
+        # i.e., where pooled.at['adj_prevalence'] will throw a KeyError
         try:
-            pooled.at['adj_prev_ci_lower'], pooled.at['adj_prev_ci_upper'] = \
-                proportion_confint(count = int(pooled.at['adj_prevalence'] * pooled.at['denominator_value']),
-                                   nobs = pooled.at['denominator_value'], alpha = 0.05, method = 'jeffreys')
-        except KeyError as e: 
+            if pd.notna(pooled.at['adj_prevalence']) and pd.notna(pooled.at['denominator_value']):
+                pooled.at['adj_prev_ci_lower'], pooled.at['adj_prev_ci_upper'] = \
+                    proportion_confint(count = int(pooled.at['adj_prevalence'] * pooled.at['denominator_value']),
+                                    nobs = pooled.at['denominator_value'], alpha = 0.05, method = 'jeffreys')
+            else:
+                pooled.at['adj_prev_ci_lower'], pooled.at['adj_prev_ci_upper'] = np.nan, np.nan
+        except KeyError: 
             pass
 
     return pooled
+
+
+def apply_prioritization_criteria(estimates: pd.DataFrame, 
+                                  prioritization_criteria: dict) -> list:
+     # applies prioritization criteria to select estimates
+        # if a prioritization criterion would remove all estimates, do not apply it
+        # if a prioritization criterion would leave you with one estimate, return that estimate
+        # if a prioritization criterion yields multiple estimates, continue applying criteria 
+
+    # select a criterion
+    for _, criterion in prioritization_criteria.items():
+        # go through the levels of that criterion, from highest to lowest
+        for level in criterion:
+            estimates_at_level = estimates[estimates.apply(level, axis = 1)]
+
+            # if any estimates meet that level, pass those on; if not, continue
+            if not estimates_at_level.empty:
+                estimates = estimates_at_level
+                break 
+
+        # if this criterion narrowed it down to just one estimate, break; if not, continue 
+        if estimates.shape[0] == 1: 
+            break
+
+    return estimates
+
+def percent_adjustable(estimates: pd.DataFrame) -> float:
+    # calculate what percentage of estimates in a df of esitmates are adjustable
+    n_estimates = estimates.shape[0]
+    n_estimates_with_adj = estimates['adj_prevalence'].notna().sum()
+    return n_estimates_with_adj / n_estimates
 
 # pass in a filtered set of estimates - or estimates and filters
 # and get out a subset, which have an estimate prioritized from among them 
@@ -54,62 +89,32 @@ def get_prioritized_estimates(estimates: pd.DataFrame,
                               pool: bool = True) -> pd.DataFrame:
     
     if estimates.empty:
-        # return empty DF
         return pd.DataFrame()
     if filters is not None:
         estimates = estimates[filters]
     
-    if mode == 'analysis_static':
-        prioritization_criteria = prioritization_criteria_testunadj
-    elif mode == 'dashboard':
-        prioritization_criteria = prioritization_criteria_testadj
-    elif mode == 'analysis_dynamic':
-        # variables will be dynamically determined for each estimate
-        # based on whether there is an author-adjusted estimate available or not 
-        prioritization_criteria = None
-    
     selected_estimates = []
-    for study_name, study_estimates in estimates.groupby('study_name'):
+    for _, study_estimates in estimates.groupby('study_name'):
             
         # if there is only one estimate, use that
         if study_estimates.shape[0] == 1:
             selected_estimates.append(study_estimates.iloc[0])
-            continue 
+            continue
 
-        # if using dynamically determined criteria, decide which prioritization criteria to use
-        # prioritize author-adjusted values if there is not enough information for us to adjust 
-        # prioritize our own adjusted values otherwise 
-        if mode == 'analysis_dynamic':
+        if mode == 'analysis_static':
+            study_estimates = apply_prioritization_criteria(study_estimates, prioritization_criteria_testunadj)
+        elif mode == 'dashboard':
+            study_estimates = apply_prioritization_criteria(study_estimates, prioritization_criteria_testadj)
+        elif mode == 'analysis_dynamic':
+            serotracker_adjusted = apply_prioritization_criteria(study_estimates, prioritization_criteria_testunadj)
+            author_adjusted = apply_prioritization_criteria(study_estimates, prioritization_criteria_testadj)
 
-            try:
-                frac_test_info_avail = study_estimates['adj_prevalence'].notna().sum() / study_estimates.shape[0]
-            except KeyError as e:
-                frac_test_info_avail = 0
-
-            if frac_test_info_avail >= 0.65:
-                prioritization_criteria = prioritization_criteria_testunadj
+            # if we were able to successfully adjust the seroprevalence estimates ourselves, use our own
+            # else, use the author's 
+            if percent_adjustable(serotracker_adjusted) >= percent_adjustable(author_adjusted):
+                study_estimates = serotracker_adjusted
             else:
-                prioritization_criteria = prioritization_criteria_testadj
-
-        # now, we will apply prioritization criteria to select estimates
-            # if a prioritization criterion would remove all estimates, do not apply it
-            # if a prioritization criterion would leave you with one estimate, return that index
-            # if a prioritization criterion yields multiple estimates, continue applying criteria 
-
-        # select a criterion
-        for criterion_name, criterion in prioritization_criteria.items():
-            # go through the levels of that criterion, from highest to lowest
-            for level in criterion:
-                study_estimates_at_level = study_estimates[study_estimates.apply(level, axis = 1)]
-
-                # if any estimates meet the top level, pass those on; if not, continue
-                if not study_estimates_at_level.empty:
-                    study_estimates = study_estimates_at_level
-                    break 
-
-            # if this criterion narrowed it down to just one estimate, break; if not, continue 
-            if study_estimates.shape[0] == 1: 
-                break
+                study_estimates = author_adjusted
         
         # append the remaining estimate
         if pool:
