@@ -24,12 +24,17 @@ def logit(p, tol = 1e-3):
     # return the logit of the constrained probability
     return log(p / (1 - p))
 
-def result_is_bounded(median_adj_prev, raw_prev, maxsmall = 0.5, minbig = 0.5):
+def result_is_bounded(median_adj_prev, raw_prev):
+    
+    # check whether the adjusted result is close to the raw value
+    # e.g., log odds within 1 
     logit_delta = logit(median_adj_prev) - logit(raw_prev)
     adjusted_closeto_raw = abs(logit_delta) < 1
-    
-    both_below_maxsmall = (median_adj_prev <= maxsmall) and (raw_prev <= maxsmall)
-    both_above_minbig = (median_adj_prev >= minbig) and (raw_prev >= minbig)
+
+    # permit the adjusted result if adjusted and raw are both < 0.5
+    # or if both are > 0.5    
+    both_below_maxsmall = (median_adj_prev <= 0.5) and (raw_prev <= 0.5)
+    both_above_minbig = (median_adj_prev >= 0.5) and (raw_prev >= 0.5)
     
     return (adjusted_closeto_raw or both_below_maxsmall or both_above_minbig)
 
