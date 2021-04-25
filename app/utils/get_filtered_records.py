@@ -144,33 +144,25 @@ def get_filtered_records(research_fields=False, filters=None, columns=None,
     if query_dicts is None or len(query_dicts) == 0:
         return []
 
-    result = []
-
     # Return all records if no filters are passed in
+    result = query_dicts
+
     if filters:
-        def should_include(d, k, v):
-            if len(v) == 0:
+        def should_be_included(record, field, permitted_values):
+            if len(permitted_values) == 0:
+                # all values for field permitted
                 return True
-            elif isinstance(d[k], str) and d[k] in v:
+            elif (isinstance(record[field], str) and 
+                  record[field] in permitted_values):
                 return True
-            elif isinstance(d[k], list) and set(d[k]).intersection(set(v)):
+            elif (isinstance(record[field], list) and 
+                  set(record[field]).intersection(set(permitted_values))):
                 return True
             return False
 
-        applied_filter = False
-        for k, v in filters.items():
-            # Add records passing the first filter
-            if not applied_filter:
-                for d in query_dicts:
-                    if should_include(d, k, v):
-                        result.append(d)
-                applied_filter = True
-                continue
-
-            result = list(filter(lambda x: should_include(x, k, v), result))
-
-    else:
-        result = query_dicts
+        for field, permitted_values in filters.items():
+            result = list(filter(lambda record: should_be_included(record, field, permitted_values), 
+                                 result))
 
     def date_filter(record, start_date=None, end_date=None, use_sampling_date=True):
         status = True
