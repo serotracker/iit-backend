@@ -26,5 +26,22 @@
     "EST": [
         "Republic of Estonia",
         "Estonia"
+    ],
+    "GBR": [
+        "The United Kingdom",
+        "United Kingdom"
+    ],
+    "IRN": [
+        "Iran (Islamic Republic of)",
+        "Iran"
+    ], 
+    "JEY": [
+        "Jersey"
+    ],
+    "GUF": [
+        "French Guiana"
+    ],
+    "FRO": [
+        "Faroe Islands"
     ]
 }
