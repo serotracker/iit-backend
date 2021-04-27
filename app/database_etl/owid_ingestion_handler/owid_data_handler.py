@@ -40,7 +40,10 @@ def _get_alt_name(country_name: str, df: pd.DataFrame):
 
 
 def get_midpoint(start_date: datetime, end_date: datetime):
-    return start_date + (end_date - start_date) / 2
+    try:
+        return start_date + (end_date - start_date) / 2
+    except TypeError:
+        return pd.NaT
 
 
 def get_tests_per_hundred(country_name: str, midpoint_date: datetime):
