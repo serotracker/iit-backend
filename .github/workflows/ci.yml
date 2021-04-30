@@ -16,11 +16,6 @@ jobs:
     - name: Install
       run: |
         pip install -r requirements.txt
-        mkdir data/
-        curl "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/vaccinations.csv" > data/vaccinations.csv
-        curl "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/testing/covid-testing-all-observations.csv" > data/tests.csv
-        curl "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/jhu/total_deaths_per_million.csv" > data/deaths.csv
-        curl "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/jhu/total_cases_per_million.csv" > data/cases.csv
     - name: Test
       run: |
         python manage.py test
