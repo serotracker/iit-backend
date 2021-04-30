@@ -1,7 +1,10 @@
 import os
 import requests
 import json
-
+from arcgis.features import FeatureLayer
+from arcgis.geometry import Point
+from arcgis.geometry.filters import intersects
+import pandas as pd
 
 # Note: this function takes in a relative path
 def read_from_json(path_to_json):
@@ -77,3 +80,27 @@ def get_city(row):
         return cities
     else:
         return row['city']
+
+# Checks whether each row of an input city or state dataframe
+# is in one of the WHO's disputed areas
+def check_if_in_disputed_area(df: pd.DataFrame) -> pd.DataFrame:
+    WHO_FL_URL = "https://services.arcgis.com/5T5nSi527N4F7luB/arcgis/rest/services/DISPUTED_AREAS_mask/FeatureServer/0"
+    # Create feature layer object
+    disputed_areas_fl = FeatureLayer(WHO_FL_URL)
+
+    # Defining this as a closure so that we have access to
+    # disputed_areas_fl
+    def row_in_disputed_area(row: pd.Series) -> bool:
+        # Construct a point at the row's coordinates
+        pin = Point({"x": row['longitude'], "y": row['latitude']})
+        # Add buffer to account for the effect of jittering pins
+        pin = pin.buffer(0.5)
+        # construct a geometry filter to check if each point is in a disputed area
+        pin_filter = intersects(pin)
+        in_disputed_area = len(disputed_areas_fl.query(geometry_filter=pin_filter)
+                               .features) > 0
+        return in_disputed_area
+
+    # apply row_in_disputed_area across the whole df
+    df['in_disputed_area'] = df.apply(lambda row: row_in_disputed_area(row), axis=1)
+    return df

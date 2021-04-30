@@ -4,7 +4,7 @@ from datetime import datetime
 
 from app.utils.notifications_sender import send_slack_message
 from app.utils import airtable_fields_config
-from app.database_etl.location_utils import add_latlng_to_df, get_country_code
+from app.database_etl.location_utils import add_latlng_to_df, get_country_code, check_if_in_disputed_area
 from .table_formatter import replace_null_string
 from app.database_etl.owid_ingestion_handler import get_vaccinations_per_hundred, get_tests_per_hundred, \
     get_deaths_per_hundred, get_cases_per_hundred, get_vaccination_policy, get_midpoint, get_whether_exact_match
@@ -158,6 +158,10 @@ def create_multi_select_tables(original_data, current_time):
     # Get countries for each state
     multi_select_tables_dict["state"] = add_latlng_to_df("region", "state_name", multi_select_tables_dict["state"])
     multi_select_tables_dict["city"] = add_latlng_to_df("place", "city_name", multi_select_tables_dict["city"])
+
+    # Add in_disputed_area column to cities and states
+    multi_select_tables_dict["state"] = check_if_in_disputed_area(multi_select_tables_dict["state"])
+    multi_select_tables_dict["city"] = check_if_in_disputed_area(multi_select_tables_dict["city"])
 
     # Delete country iso2 column, no longer needed
     # Note: only need this temporarily, so fine to drop
