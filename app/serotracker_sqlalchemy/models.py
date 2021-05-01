@@ -55,6 +55,9 @@ class DashboardSource(db.Model):
     adj_prevalence = Column(Float)
     adj_prev_ci_lower = Column(Float)
     adj_prev_ci_upper = Column(Float)
+    pin_latitude = Column(Float)
+    pin_longitude = Column(Float)
+    in_disputed_area = Column(Boolean)
 
 
 # Research table for all additional research fields
@@ -143,7 +146,6 @@ class City(db.Model):
     state_name = Column(String())
     latitude = Column(Float)
     longitude = Column(Float)
-    in_disputed_area = Column(Boolean)
     created_at = Column(DateTime)
 
 
@@ -154,7 +156,6 @@ class State(db.Model):
     state_name = Column(String())
     latitude = Column(Float)
     longitude = Column(Float)
-    in_disputed_area = Column(Boolean)
     created_at = Column(DateTime)
 
 
