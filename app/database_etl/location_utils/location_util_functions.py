@@ -93,6 +93,9 @@ def check_if_in_disputed_area(df: pd.DataFrame) -> pd.DataFrame:
     # Defining this as a closure so that we have access to
     # disputed_areas_fl
     def row_in_disputed_area(row: pd.Series) -> bool:
+        # Null check
+        if pd.isna(row['pin_longitude']) or pd.isna(row['pin_latitude']):
+            return False
         # Construct a point at the row's coordinates
         pin = Point({"x": row['pin_longitude'], "y": row['pin_latitude']})
         # Add buffer to account for the effect of jittering pins
@@ -115,7 +118,7 @@ def get_record_coordinates(record: pd.Series, geo_dfs: dict) -> Tuple:
     pin_region_type = 'country' if record['country'] is not None else ''
 
     for region_type in ['state', 'city']:
-        if len(record[region_type]) > 0:
+        if record[region_type] and len(record[region_type]) > 0:
             pin_regions = record[region_type]
             pin_region_type = region_type
             # once we've found more than 1 region for a given type
@@ -124,6 +127,9 @@ def get_record_coordinates(record: pd.Series, geo_dfs: dict) -> Tuple:
             # thus we must stop our selection here
             if len(pin_regions) > 1:
                 break
+
+    if pin_region_type == '':
+        return None, None
 
     # get latitude and longitude for the record
     geo_df = geo_dfs[pin_region_type]
@@ -136,8 +142,8 @@ def get_record_coordinates(record: pd.Series, geo_dfs: dict) -> Tuple:
 # Computes pin location for each record
 def compute_pin_latlngs(df: pd.DataFrame, geo_dfs: dict) -> pd.DataFrame:
     # Get record coordinates
-    df['pin_latitude'], \
-    df['pin_longitude'] = zip(*df.apply(lambda record: get_record_coordinates(record), axis=1))
+    df['pin_latitude'], df['pin_longitude'] = \
+        zip(*df.apply(lambda record: get_record_coordinates(record, geo_dfs), axis=1))
     # Populate in_disputed_area col
     df = check_if_in_disputed_area(df)
     return df

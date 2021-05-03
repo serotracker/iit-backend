@@ -42,6 +42,7 @@ class RecordsSchema(Schema):
     publication_start_date = fields.String()
     publication_end_date = fields.String()
     include_in_srma = fields.Boolean(allow_none=True)
+    include_disputed_regions = fields.Boolean(allow_none=True)
 
 
 class PaginatedRecordsSchema(RecordsSchema):

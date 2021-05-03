@@ -159,10 +159,6 @@ def create_multi_select_tables(original_data, current_time):
     multi_select_tables_dict["state"] = add_latlng_to_df("region", "state_name", multi_select_tables_dict["state"])
     multi_select_tables_dict["city"] = add_latlng_to_df("place", "city_name", multi_select_tables_dict["city"])
 
-    # Add in_disputed_area column to cities and states
-    multi_select_tables_dict["state"] = check_if_in_disputed_area(multi_select_tables_dict["state"])
-    multi_select_tables_dict["city"] = check_if_in_disputed_area(multi_select_tables_dict["city"])
-
     # Delete country iso2 column, no longer needed
     # Note: only need this temporarily, so fine to drop
     multi_select_tables_dict["state"] = multi_select_tables_dict["state"].drop(columns=['country_iso2'])
