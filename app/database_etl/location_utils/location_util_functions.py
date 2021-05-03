@@ -98,12 +98,9 @@ def check_if_in_disputed_area(df: pd.DataFrame) -> pd.DataFrame:
             return False
         # Construct a point at the row's coordinates
         pin = Point({"x": row['pin_longitude'], "y": row['pin_latitude']})
-        # Add buffer to account for the effect of jittering pins
-        pin = pin.buffer(0.5)
         # construct a geometry filter to check if each point is in a disputed area
         pin_filter = intersects(pin)
-        in_disputed_area = len(disputed_areas_fl.query(geometry_filter=pin_filter)
-                               .features) > 0
+        in_disputed_area = len(disputed_areas_fl.query(geometry_filter=pin_filter).features) > 0
         return in_disputed_area
 
     # apply row_in_disputed_area across the whole df
