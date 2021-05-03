@@ -14,6 +14,7 @@ from app.database_etl.airtable_records_handler import get_all_records, apply_stu
     apply_min_risk_of_bias, standardize_airtable_data, add_test_adjustments
 from app.database_etl.tableau_data_connector import upload_analyze_csv
 from app.database_etl.summary_report_generator import SummaryReport
+from app.database_etl.location_utils import compute_pin_latlngs
 
 load_dotenv()
 
@@ -93,6 +94,9 @@ def main():
         # remove state names from city_name field
         multi_select_tables_dict["city"]["city_name"] = multi_select_tables_dict["city"]["city_name"] \
             .map(lambda a: a.split(",")[0] if "," in a else a)
+
+        # Compute pin information for each record in dashboard source table
+        dashboard_source = compute_pin_latlngs(dashboard_source)
 
         # Validate the dashboard source df
         dashboard_source = validate_records(dashboard_source, DashboardSourceSchema())
