@@ -88,15 +88,20 @@ def main():
         # Create research source based on dashboard source
         research_source, research_source_cols = create_research_source_df(dashboard_source)
 
+        # Compute pin information for each record in dashboard source table
+        geo_dfs = {
+            'city': multi_select_tables_dict['city'],
+            'state': multi_select_tables_dict['state'],
+            'country': country_df
+        }
+        dashboard_source = compute_pin_latlngs(dashboard_source, geo_dfs)
+
         # Format dashboard source table after creating research source
         dashboard_source = format_dashboard_source(dashboard_source, research_source_cols)
 
         # remove state names from city_name field
         multi_select_tables_dict["city"]["city_name"] = multi_select_tables_dict["city"]["city_name"] \
             .map(lambda a: a.split(",")[0] if "," in a else a)
-
-        # Compute pin information for each record in dashboard source table
-        dashboard_source = compute_pin_latlngs(dashboard_source)
 
         # Validate the dashboard source df
         dashboard_source = validate_records(dashboard_source, DashboardSourceSchema())

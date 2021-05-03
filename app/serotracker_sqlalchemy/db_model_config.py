@@ -35,6 +35,7 @@ db_tables = ['airtable_source',
              'test_manufacturer',
              'test_manufacturer_bridge']
 
+# TODO: instead of using this config, programmatically generate a list of columns for the DashboardSource table
 dashboard_source_cols = ['source_name', 'source_type', 'study_name', 'denominator_value',
                          'overall_risk_of_bias', 'serum_pos_prevalence', 'isotype_igm', 'isotype_iga',
                          'isotype_igg', 'sex', 'age', 'sampling_start_date', 'sampling_end_date', 'estimate_grade',
@@ -43,7 +44,8 @@ dashboard_source_cols = ['source_name', 'source_type', 'study_name', 'denominato
                          'tests_per_hundred', 'deaths_per_hundred', 'vaccinations_per_hundred',
                          'full_vaccinations_per_hundred', 'publication_date', 'geo_exact_match',
                          'sensitivity', 'specificity', 'summary', 'study_type', 'source_publisher', 'lead_organization',
-                         'first_author', 'adj_prevalence', 'adj_prev_ci_lower', 'adj_prev_ci_upper']
+                         'first_author', 'adj_prevalence', 'adj_prev_ci_lower', 'adj_prev_ci_upper', 'pin_latitude',
+                         'pin_longitude', 'in_disputed_area']
 
 research_source_cols = ['case_population', 'deaths_population', 'age_max', 'age_min', 'age_variation',
                         'age_variation_measure', 'average_age', 'case_count_neg14', 'case_count_neg9',
