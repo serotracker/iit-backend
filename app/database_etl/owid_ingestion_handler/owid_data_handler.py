@@ -29,7 +29,7 @@ try:
                                                                               'Date',
                                                                               'H7_Vaccination policy']]
 except HTTPError as e:
-    body = f'Error fetching OWID data: {e}.\nOne or more of the Github file paths may have changed.'
+    body = f'Error fetching OWID or OxCGRT data: {e}.\nOne or more of the Github file paths may have changed.'
     send_slack_message(body, channel='#dev-logging-etl')
 
 
