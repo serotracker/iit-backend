@@ -74,6 +74,7 @@ class ResearchSource(db.Model):
     death_count_plus11 = Column(Integer)
     death_count_plus4 = Column(Integer)
     include_in_srma = Column(Boolean)
+    sensspec_from_manufacturer = Column(Boolean)
     ind_eval_lab = Column(String())
     ind_eval_link = Column(String())
     ind_se = Column(Float)

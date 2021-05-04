@@ -20,7 +20,8 @@ research_fields = ['2020 Population Count - Case', '2020 Population Count - Mort
                    'Serum pos prevalence, 95pct CI Lower', 'Serum pos prevalence, 95pct CI Upper',
                    'Specificity Denominator', 'Sub-grouping Variable', 'Subgroup category for analysis',
                    'Test Link Unique ID', 'Test Name', 'Test Validation', 'included in SRMA (mar 2021)',
-                   'Sub-group specific category (clean)', 'Date Created', 'Last modified time', 'Record ID']
+                   'Sub-group specific category (clean)', 'Date Created', 'Last modified time', 'Record ID',
+                   'SR Clean: Test Manufacturer Searched']
 
 full_airtable_fields = {'2020 Population Count - Case': 'case_population',
                         '2020 Population Count - Mortality': 'deaths_population',
@@ -97,6 +98,7 @@ full_airtable_fields = {'2020 Population Count - Case': 'case_population',
                         'Specificity': 'specificity',
                         'Specificity Denominator': 'sp_n',
                         'Specimen Type': 'specimen_type',
+                        'SR Clean: Test Manufacturer Searched': 'sensspec_from_manufacturer',
                         'State/Province': 'state',
                         'Study Type': 'study_type',
                         'Sub-group specific category (clean)': 'subgroup_specific_category',
