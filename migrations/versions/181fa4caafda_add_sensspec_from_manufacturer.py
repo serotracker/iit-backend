@@ -1,4 +1,4 @@
-"""empty message
+"""add_senspec_from_manufacturer
 
 Revision ID: 181fa4caafda
 Revises: 70bae1ca82e9
