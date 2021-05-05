@@ -155,3 +155,16 @@ Confirm that the data has indeed been migrated by checking pgAdmin 4.
 - Add path to this Flask app to your `PYTHONPATH`: `export PYTHONPATH=PATH_TO_REPO/iit-backend:$PYTHONPATH`
 - Run development server: `python3 -m flask run` (without environment variables exported) or `python3 manage.py run` (with or without environment variables exported)
 - Run ETL: `python3 app/database_etl/etl_main.py` (with environment variables exported and Flask app in `PYTHONPATH`
+
+---
+# Infrastructure Documentation
+## Continuous Integration
+The following commands are run with CI:
+```
+pip install -r requirements.txt
+python manage.py test
+```
+The full configuration is found [here](.github/workflows/ci.yml).
+
+## Continuous Deployment
+Deployment is conducted server-side. The documentation can be found [here](https://github.com/serotracker/scripts#update_backendsh).
