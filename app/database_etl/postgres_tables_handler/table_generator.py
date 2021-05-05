@@ -7,7 +7,7 @@ from app.utils import airtable_fields_config
 from app.database_etl.location_utils import add_latlng_to_df, get_country_code
 from .table_formatter import replace_null_string
 from app.database_etl.owid_ingestion_handler import get_vaccinations_per_hundred, get_tests_per_hundred, \
-    get_deaths_per_hundred, get_cases_per_hundred, get_midpoint, get_whether_exact_match
+    get_deaths_per_hundred, get_cases_per_hundred, get_vaccination_policy, get_midpoint, get_whether_exact_match
 
 import pandas as pd
 
@@ -67,6 +67,11 @@ def create_dashboard_source_df(original_data, current_time):
     # Create full vaccination count column
     original_data['full_vaccinations_per_hundred'] = original_data.apply(
         lambda row: get_vaccinations_per_hundred(row['country'], row['sampling_midpoint_date'], fully_vaccinated=True),
+        axis=1)
+
+    # Create vaccination policy column
+    original_data['vaccination_policy'] = original_data.apply(
+        lambda row: get_vaccination_policy(row['country'], row['sampling_midpoint_date']),
         axis=1)
 
     # Create flag denoting whether geographic mapping is 1:1

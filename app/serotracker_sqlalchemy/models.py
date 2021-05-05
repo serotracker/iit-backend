@@ -50,10 +50,12 @@ class DashboardSource(db.Model):
     deaths_per_hundred = Column(Float)
     vaccinations_per_hundred = Column(Float)
     full_vaccinations_per_hundred = Column(Float)
+    vaccination_policy = Column(String())
     geo_exact_match = Column(Boolean)
     adj_prevalence = Column(Float)
     adj_prev_ci_lower = Column(Float)
     adj_prev_ci_upper = Column(Float)
+
 
 # Research table for all additional research fields
 class ResearchSource(db.Model):
