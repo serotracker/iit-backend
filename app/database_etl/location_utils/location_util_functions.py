@@ -1,7 +1,12 @@
 import os
 import requests
 import json
-
+from arcgis.features import FeatureLayer
+from arcgis.geometry import Point
+from arcgis.geometry.filters import intersects
+import pandas as pd
+from statistics import mean
+from typing import Tuple
 
 # Note: this function takes in a relative path
 def read_from_json(path_to_json):
@@ -77,3 +82,65 @@ def get_city(row):
         return cities
     else:
         return row['city']
+
+# Checks whether each row of an input city or state dataframe
+# is in one of the WHO's disputed areas
+def check_if_in_disputed_area(df: pd.DataFrame) -> pd.DataFrame:
+    WHO_FL_URL = "https://services.arcgis.com/5T5nSi527N4F7luB/arcgis/rest/services/DISPUTED_AREAS_mask/FeatureServer/0"
+    # Create feature layer object
+    disputed_areas_fl = FeatureLayer(WHO_FL_URL)
+
+    # Defining this as a closure so that we have access to
+    # disputed_areas_fl
+    def row_in_disputed_area(row: pd.Series) -> bool:
+        # Null check
+        if pd.isna(row['pin_longitude']) or pd.isna(row['pin_latitude']):
+            return False
+        # Construct a point at the row's coordinates
+        pin = Point({"x": row['pin_longitude'], "y": row['pin_latitude']})
+        # construct a geometry filter to check if each point is in a disputed area
+        pin_filter = intersects(pin)
+        in_disputed_area = len(disputed_areas_fl.query(geometry_filter=pin_filter).features) > 0
+        return in_disputed_area
+
+    # apply row_in_disputed_area across the whole df
+    df['in_disputed_area'] = df.apply(lambda row: row_in_disputed_area(row), axis=1)
+    return df
+
+
+# Get pin latitude and longitude for a record
+# Param geo_dfs = dictionary of city, state, and country DFs
+def get_record_coordinates(record: pd.Series, geo_dfs: dict) -> Tuple:
+    pin_regions = [record['country']]
+    pin_region_type = 'country' if record['country'] is not None else ''
+
+    for region_type in ['state', 'city']:
+        if record[region_type] and len(record[region_type]) > 0:
+            pin_regions = record[region_type]
+            pin_region_type = region_type
+            # once we've found more than 1 region for a given type
+            # we cannot compute locations from a more specific region type
+            # e.g. if we have multiple states, we cannot match each city with a state
+            # thus we must stop our selection here
+            if len(pin_regions) > 1:
+                break
+
+    if pin_region_type == '':
+        return None, None
+
+    # get latitude and longitude for the record
+    geo_df = geo_dfs[pin_region_type]
+    col_name = f"{pin_region_type}_name"
+    pin_lat = mean([geo_df[geo_df[col_name] == region_name].iloc[0]['latitude'] for region_name in pin_regions])
+    pin_lng = mean([geo_df[geo_df[col_name] == region_name].iloc[0]['longitude'] for region_name in pin_regions])
+
+    return pin_lat, pin_lng
+
+# Computes pin location for each record
+def compute_pin_latlngs(df: pd.DataFrame, geo_dfs: dict) -> pd.DataFrame:
+    # Get record coordinates
+    df['pin_latitude'], df['pin_longitude'] = \
+        zip(*df.apply(lambda record: get_record_coordinates(record, geo_dfs), axis=1))
+    # Populate in_disputed_area col
+    df = check_if_in_disputed_area(df)
+    return df
