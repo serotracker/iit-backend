@@ -130,6 +130,8 @@ class Country(db.Model):
     country_iso3 = Column(String())
     latitude = Column(Float)
     longitude = Column(Float)
+    hrp_class = Column(String())
+    income_class = Column(String())
     created_at = Column(DateTime)
 
 

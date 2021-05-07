@@ -10,6 +10,7 @@ from app.database_etl.owid_ingestion_handler import get_vaccinations_per_hundred
     get_deaths_per_hundred, get_cases_per_hundred, get_vaccination_policy, get_midpoint, get_whether_exact_match
 
 import pandas as pd
+import os
 
 
 def isotype_col(isotype_string, x):
@@ -202,6 +203,24 @@ def create_country_df(dashboard_source_df, current_time):
     country_df['created_at'] = current_time
     country_df = add_latlng_to_df("country", "country_name", country_df)
     country_df['country_iso3'] = country_df["country_name"].map(lambda a: get_country_code(a))
+
+    # Populate HRP status column
+    hrp_csv_path = os.path.dirname(os.path.abspath(__file__)) + '/country_hrp_map.csv'
+    hrp_countries = set(pd.read_csv(hrp_csv_path)['country_iso_code'])
+    country_df['hrp_class'] = country_df['country_iso3'].map(lambda a: 'HRP' if a in hrp_countries else 'non-HRP')
+
+    # Populate income status column
+    income_csv_path = os.path.dirname(os.path.abspath(__file__)) + '/country_income_class_map.csv'
+    income_class_df = pd.read_csv(income_csv_path)
+    # defining as a closure so that we have access to income_class_df
+    def get_income_class(iso3_code):
+        # get row in income class df that corresponds to the input iso3 code
+        income_class_row = income_class_df[income_class_df['Code'] == iso3_code]
+        if income_class_row.empty:
+            return None
+        else:
+            return income_class_row.iloc[0]['Income group']
+    country_df['income_class'] = country_df['country_iso3'].map(lambda a: get_income_class(a))
 
     # Note: only need this temporarily, so fine to drop
     country_df = country_df.drop(columns=['country_iso2'])

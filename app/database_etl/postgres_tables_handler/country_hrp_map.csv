@@ -1,0 +1,64 @@
+region,country,country_iso_code
+AMRO,Aruba,ABW
+EMRO,Afghanistan,AFG
+AFRO,Angola,AGO
+AMRO,Argentina,ARG
+AFRO,Burundi,BDI
+AFRO,Benin,BEN
+AFRO,Burkina Faso,BFA
+SEARO,Bangladesh,BGD
+AMRO,Bolivia (Plurinational State of),BOL
+AMRO,Brazil,BRA
+AFRO,Central African Republic,CAF
+AMRO,Chile,CHL
+AFRO,Cameroon,CMR
+AFRO,Democratic Republic of the Congo,COD
+AFRO,Congo,COG
+AMRO,Colombia,COL
+AMRO,Costa Rica,CRI
+AMRO,Curacao,CUW
+EMRO,Djibouti,DJI
+AMRO,Dominican Republic,DOM
+AMRO,Ecuador,ECU
+EMRO,Egypt,EGY
+AFRO,Ethiopia,ETH
+AMRO,Guyana,GUY
+AMRO,Haiti,HTI
+EMRO,Iran (Islamic Republic of),IRN
+EMRO,Iraq,IRQ
+EMRO,Jordan,JOR
+AFRO,Kenya,KEN
+EMRO,Lebanon,LBN
+AFRO,Liberia,LBR
+EMRO,Libya,LBY
+AMRO,Mexico,MEX
+AFRO,Mali,MLI
+SEARO,Myanmar,MMR
+AFRO,Mozambique,MOZ
+AFRO,Niger,NER
+AFRO,Nigeria,NGA
+EMRO,Pakistan,PAK
+AMRO,Panama,PAN
+AMRO,Peru,PER
+WPRO,Philippines,PHL
+SEARO,Democratic People's Republic of Korea,PRK
+AMRO,Paraguay,PRY
+EMRO,"occupied Palestinian territory, including east Jerusalem",PSE
+AFRO,Rwanda,RWA
+EMRO,Sudan,SDN
+AFRO,Sierra Leone,SLE
+EMRO,Somalia,SOM
+AFRO,South Sudan,SSD
+EMRO,Syrian Arab Republic,SYR
+AFRO,Chad,TCD
+AFRO,Togo,TGO
+AMRO,Trinidad and Tobago,TTO
+EURO,Turkey,TUR
+AFRO,United Republic of Tanzania,TZA
+AFRO,Uganda,UGA
+EURO,Ukraine,UKR
+AMRO,Uruguay,URY
+AMRO,Venezuela (Bolivarian Republic of),VEN
+EMRO,Yemen,YEM
+AFRO,Zambia,ZMB
+AFRO,Zimbabwe,ZWE
