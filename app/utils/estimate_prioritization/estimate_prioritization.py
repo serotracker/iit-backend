@@ -124,3 +124,18 @@ def get_prioritized_estimates(estimates: pd.DataFrame,
     
     selected_estimate_df = pd.concat(selected_estimates, axis = 1).T.astype(estimates.dtypes.to_dict())
     return selected_estimate_df
+
+
+# Gets prioritized estimates without pooling by a specified subgroup stratifying var
+def get_prioritized_estimates_without_pooling(estimates: pd.DataFrame,
+                                filters: Union[tuple, None] = None,
+                                donotpoolby: bool = True):
+    normal_estimates = get_prioritized_estimates(estimates, filters = filters)
+    unpooled_filters = set(filters) if filters else set()
+    unpooled_filters = set.union(unpooled_filters, set(('subgroup_var' == donotpoolby)))
+    unpooled_estimates = get_prioritized_estimates(estimates, filters = unpooled_filters, pool = False)
+
+    # return union of unpooled_estimates and normal_estimates
+    all_estimates = pd.concat([normal_estimates, unpooled_estimates], ignore_index=True).\
+        drop_duplicates().reset_index(drop=True)
+    return all_estimates
