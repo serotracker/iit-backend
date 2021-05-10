@@ -14,7 +14,7 @@ from app.database_etl.airtable_records_handler import get_all_records, apply_stu
     apply_min_risk_of_bias, standardize_airtable_data, add_test_adjustments
 from app.database_etl.tableau_data_connector import upload_analyze_csv
 from app.database_etl.summary_report_generator import SummaryReport
-from app.database_etl.location_utils import compute_pin_latlngs
+from app.database_etl.location_utils import compute_pin_info
 
 load_dotenv()
 
@@ -94,7 +94,7 @@ def main():
             'state': multi_select_tables_dict['state'],
             'country': country_df
         }
-        dashboard_source = compute_pin_latlngs(dashboard_source, geo_dfs)
+        dashboard_source = compute_pin_info(dashboard_source, geo_dfs)
 
         # Format dashboard source table after creating research source
         dashboard_source = format_dashboard_source(dashboard_source, research_source_cols)
