@@ -73,6 +73,8 @@ def get_all_records(research_fields=False):
         # Alias for country name and iso3 code
         fields_list.append(Country.country_name.label("country"))
         fields_list.append(Country.country_iso3.label("country_iso3"))
+        fields_list.append(Country.income_class.label("income_class"))
+        fields_list.append(Country.hrp_class.label("hrp_class"))
 
         # Aliases for lat lngs
         fields_list.append(Country.latitude.label("country_latitude"))
