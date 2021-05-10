@@ -195,6 +195,15 @@ def create_bridge_tables(original_data, multi_select_tables, current_time):
     return bridge_tables_dict
 
 
+def get_income_class(iso3_code, income_class_df):
+    # get row in income class df that corresponds to the input iso3 code
+    income_class_row = income_class_df[income_class_df['Code'] == iso3_code]
+    if income_class_row.empty:
+        return None
+    else:
+        return income_class_row.iloc[0]['Income group']
+
+
 def create_country_df(dashboard_source_df, current_time):
     country_df = pd.DataFrame(columns=['country_name', 'country_id', 'country_iso2'])
     country_df['country_name'] = dashboard_source_df['country'].unique()
@@ -212,15 +221,7 @@ def create_country_df(dashboard_source_df, current_time):
     # Populate income status column
     income_csv_path = os.path.dirname(os.path.abspath(__file__)) + '/country_income_class_map.csv'
     income_class_df = pd.read_csv(income_csv_path)
-    # defining as a closure so that we have access to income_class_df
-    def get_income_class(iso3_code):
-        # get row in income class df that corresponds to the input iso3 code
-        income_class_row = income_class_df[income_class_df['Code'] == iso3_code]
-        if income_class_row.empty:
-            return None
-        else:
-            return income_class_row.iloc[0]['Income group']
-    country_df['income_class'] = country_df['country_iso3'].map(lambda a: get_income_class(a))
+    country_df['income_class'] = country_df['country_iso3'].map(lambda a: get_income_class(a, income_class_df))
 
     # Note: only need this temporarily, so fine to drop
     country_df = country_df.drop(columns=['country_iso2'])
