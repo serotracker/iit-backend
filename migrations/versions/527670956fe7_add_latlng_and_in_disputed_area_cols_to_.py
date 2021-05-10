@@ -1,8 +1,8 @@
 """Add latlng and in_disputed_area cols to dashboard source
 
-Revision ID: 5a06f38194b4
-Revises: 70bae1ca82e9
-Create Date: 2021-05-01 13:53:21.387375
+Revision ID: 527670956fe7
+Revises: 93e86260d1eb
+Create Date: 2021-05-10 13:00:32.809385
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '5a06f38194b4'
-down_revision = '70bae1ca82e9'
+revision = '527670956fe7'
+down_revision = '93e86260d1eb'
 branch_labels = None
 depends_on = None
 
