@@ -42,6 +42,7 @@ class Records(Resource):
         prioritize_estimates = data.get('prioritize_estimates', True)
         prioritize_estimates_mode = data.get('prioritize_estimates_mode', 'dashboard')
         include_disputed_regions = data.get('include_disputed_regions', False)
+        include_subgeography_estimates = data.get('include_subgeography_estimates', False)
 
         sampling_start_date, sampling_end_date = convert_start_end_dates(data, use_sampling_date=True)
         publication_start_date, publication_end_date = convert_start_end_dates(data, use_sampling_date=False)
@@ -57,7 +58,8 @@ class Records(Resource):
                                       prioritize_estimates=prioritize_estimates,
                                       prioritize_estimates_mode=prioritize_estimates_mode,
                                       include_in_srma=include_in_srma,
-                                      include_disputed_regions=include_disputed_regions)
+                                      include_disputed_regions=include_disputed_regions,
+                                      include_subgeography_estimates=include_subgeography_estimates)
         if not columns or ("pin_latitude" in columns and "pin_longitude" in columns):
             result = jitter_pins(result)
         return jsonify(result)

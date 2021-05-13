@@ -4,8 +4,7 @@ from sqlalchemy.dialects.postgresql import array
 from sqlalchemy import func, cast, case, and_, String, ARRAY
 import pandas as pd
 import numpy as np
-from app.utils.estimate_prioritization import get_prioritized_estimates
-from statistics import mean
+from app.utils.estimate_prioritization import get_prioritized_estimates, get_prioritized_estimates_without_pooling
 
 # For typing purposes
 from sqlalchemy.sql.visitors import VisitableType as SQLalchemyType
@@ -129,7 +128,7 @@ Output: set of records represented by dicts
 
 
 def get_filtered_records(research_fields=False, filters=None, columns=None, include_disputed_regions=False,
-                         sampling_start_date=None, sampling_end_date=None,
+                         sampling_start_date=None, sampling_end_date=None, include_subgeography_estimates=False,
                          publication_start_date=None, publication_end_date=None, prioritize_estimates=True,
                          prioritize_estimates_mode='dashboard', include_in_srma=False):
     query_dicts = get_all_records(research_fields, include_disputed_regions)
@@ -192,7 +191,11 @@ def get_filtered_records(research_fields=False, filters=None, columns=None, incl
     # or keep everything in dataframes (don't want to have this conversion here long term)
     if prioritize_estimates:
         result_df = pd.DataFrame(result)
-        prioritized_records = get_prioritized_estimates(result_df, mode=prioritize_estimates_mode)
+        if get_subgeography_estimates:
+            prioritized_records = get_prioritized_estimates(result_df, mode=prioritize_estimates_mode)
+        else:
+            prioritized_records = get_prioritized_estimates_without_pooling(result_df,
+                                            subgroup_var="Geographical area", mode=prioritize_estimates_mode)
         # If records exist, clean dataframe
         if not prioritized_records.empty:
             # Convert from True/None to True/False

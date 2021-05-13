@@ -95,7 +95,7 @@ def get_all_filter_options() -> Dict[str, Any]:
         options["genpop"] = sorted(results)
         
         # Get subgroup_var
-        query = session.query(distinct(ResearchSource.subgroup_var))
+        query = session.query(distinct(DashboardSource.subgroup_var))
         results = [q[0] for q in query if q[0] is not None]
         options["subgroup_var"] = sorted(results)
         
