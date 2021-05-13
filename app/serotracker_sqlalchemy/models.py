@@ -58,6 +58,7 @@ class DashboardSource(db.Model):
     pin_latitude = Column(Float)
     pin_longitude = Column(Float)
     in_disputed_area = Column(Boolean)
+    subgroup_var = Column(String())
 
 
 # Research table for all additional research fields
@@ -106,7 +107,6 @@ class ResearchSource(db.Model):
     seroprev_95_ci_lower = Column(Float)
     seroprev_95_ci_upper = Column(Float)
     sp_n = Column(Float)
-    subgroup_var = Column(String())
     subgroup_cat = Column(String())
     subgroup_specific_category = Column(String())
     test_linked_uid = Column(String())
