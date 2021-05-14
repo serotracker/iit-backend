@@ -116,8 +116,9 @@ class ResearchSource(db.Model):
     airtable_record_id = Column(String())
     adj_sensitivity = Column(Float)
     adj_specificity = Column(Float)
-    ind_eval_type = Column(String)
+    ind_eval_type = Column(String())
     created_at = Column(DateTime)
+    zotero_citation_key = Column(String())
 
 
 # Create base multi select tables

@@ -90,3 +90,4 @@ class ResearchSourceSchema(Schema):
     test_linked_uid = fields.Str(allow_none=True)
     test_name = fields.Str(allow_none=True)
     test_validation = fields.Str(allow_none=True)
+    zotero_citation_key = fields.Str(allow_none = True)
