@@ -191,11 +191,12 @@ def get_filtered_records(research_fields=False, filters=None, columns=None, incl
     # or keep everything in dataframes (don't want to have this conversion here long term)
     if prioritize_estimates:
         result_df = pd.DataFrame(result)
-        if get_subgeography_estimates:
-            prioritized_records = get_prioritized_estimates(result_df, mode=prioritize_estimates_mode)
-        else:
+        if include_subgeography_estimates:
             prioritized_records = get_prioritized_estimates_without_pooling(result_df,
-                                            subgroup_var="Geographical area", mode=prioritize_estimates_mode)
+                                                                            subgroup_var="Geographical area",
+                                                                            mode=prioritize_estimates_mode)
+        else:
+            prioritized_records = get_prioritized_estimates(result_df, mode=prioritize_estimates_mode)
         # If records exist, clean dataframe
         if not prioritized_records.empty:
             # Convert from True/None to True/False

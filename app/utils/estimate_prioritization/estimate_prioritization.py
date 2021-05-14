@@ -91,7 +91,9 @@ def get_prioritized_estimates(estimates: pd.DataFrame,
     if estimates.empty:
         return pd.DataFrame()
     if filters is not None:
-        estimates = estimates[filters]
+        # Apply filter lambda functions if they're supplied
+        for filter in filters:
+            estimates = estimates[estimates.apply(filter, axis = 1)]
     
     selected_estimates = []
     for _, study_estimates in estimates.groupby('study_name'):
@@ -121,8 +123,12 @@ def get_prioritized_estimates(estimates: pd.DataFrame,
             selected_estimates.append(get_pooled_estimate(study_estimates))
         else:
             selected_estimates.append(study_estimates)
-    
-    selected_estimate_df = pd.concat(selected_estimates, axis = 1).T.astype(estimates.dtypes.to_dict())
+
+    if pool:
+        selected_estimate_df = pd.concat(selected_estimates, axis=1).T.astype(estimates.dtypes.to_dict())
+    else:
+        selected_estimate_df = pd.concat(selected_estimates)
+
     return selected_estimate_df
 
 
@@ -134,10 +140,11 @@ def get_prioritized_estimates_without_pooling(estimates: pd.DataFrame,
                                 **kwargs):
     normal_estimates = get_prioritized_estimates(estimates, filters = filters, **kwargs)
     unpooled_filters = set(filters) if filters else set()
-    unpooled_filters = set.union(unpooled_filters, set(('subgroup_var' == subgroup_var)))
+    unpooled_filters = tuple(set.union(unpooled_filters,
+                                       set([lambda estimate: estimate['subgroup_var'] == subgroup_var])))
     unpooled_estimates = get_prioritized_estimates(estimates, filters = unpooled_filters, pool = False, **kwargs)
 
     # return union of unpooled_estimates and normal_estimates
     all_estimates = pd.concat([normal_estimates, unpooled_estimates], ignore_index=True).\
-        drop_duplicates().reset_index(drop=True)
+        drop_duplicates(subset=['source_id']).reset_index(drop=True)
     return all_estimates
