@@ -19,12 +19,20 @@ def get_most_recent_publication_info(row: Dict) -> Dict:
     # If pub date is None set to index to 0
     except AttributeError:
         max_index = 0
+        
     # If source type exists, get element at that index
     if row['source_type']:
         # We should take either the max_index based on the latest pub date,
         # or the last element of source type if the max index doesn't exist
         i = min(max_index, len(row['source_type']) - 1)
         row['source_type'] = row['source_type'][i]
+
+    # If zotero citation key exists, get element at that index
+    if row['zotero_citation_key']:
+        # We should take either the max_index based on the latest pub date,
+        # or the last element of source type if the max index doesn't exist
+        i = min(max_index, len(row['zotero_citation_key']) - 1)
+        row['zotero_citation_key'] = row['zotero_citation_key'][i]
 
     # Index whether org author exists and corresponding first author
     if row['organizational_author'] and row['first_author']:
@@ -42,6 +50,7 @@ def get_most_recent_publication_info(row: Dict) -> Dict:
         # If it is not an organizational author, then get last name
         if not is_org_author and len(row['first_author']) > 0:
             row['first_author'] = row['first_author'].strip().split()[-1]
+
     return row
 
 
