@@ -114,8 +114,9 @@ def row_in_feature_layer(row: pd.Series, feature_layer: FeatureLayer) -> bool:
                 body = f'Unable to check if the record with ID {row["source_id"]} is in a disputed region.'
                 send_slack_message(body, channel='#dev-logging-etl')
                 continue_query = False
-            sleep(1.5**(retries))
-            retries += 1
+            else:
+                sleep(1.5**(retries))
+                retries += 1
 
     return in_disputed_area
 
