@@ -164,5 +164,8 @@ Confirm that the data has indeed been migrated by checking pgAdmin 4.
 ## Export and Import
 
 - Export database snapshot: `pg_dump -h localhost -U USERNAME whiteclaw -f EXPORT-FILENAME.sql`
-- Ensure that the database you're trying to write to exists: in postgres, `createdb -T template0 whiteclaw` if this db does not already exist 
-- Restore the snapshot: `psql whiteclaw < EXPORT-FILENAME.sql`
+- Wipe the existing database:
+   - Enter postgres interactively as the `postgres` user: `psql -U postgres -h localhost -W`
+   - Drop the database: `drop database whiteclaw;`
+   - Create the database: `create database whiteclaw;`
+- Restore the snapshot: `psql -h localhost -U USERNAME whiteclaw < EXPORT-FILENAME.sql`
