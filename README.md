@@ -149,9 +149,20 @@ Confirm that the data has indeed been migrated by checking pgAdmin 4.
 
 # Helpful Code Snippets
 
+## Working With Postgres
+
 - Start Postgres database: `sudo service postgresql start`
 - Open Postgres interactively: `psql -h localhost -d whiteclaw -U USERNAME -w`
+
+## Running ETL and Local Server
+
 - Export environment variables from `.env` file into current shell: `set -o allexport; source .env; set +o allexport`
 - Add path to this Flask app to your `PYTHONPATH`: `export PYTHONPATH=PATH_TO_REPO/iit-backend:$PYTHONPATH`
 - Run development server: `python3 -m flask run` (without environment variables exported) or `python3 manage.py run` (with or without environment variables exported)
-- Run ETL: `python3 app/database_etl/etl_main.py` (with environment variables exported and Flask app in `PYTHONPATH`
+- Run ETL: `python3 app/database_etl/etl_main.py` (with environment variables exported and Flask app in `PYTHONPATH`)
+
+## Export and Import
+
+- Export database snapshot: `pg_dump -h localhost -U USERNAME whiteclaw -f EXPORT-FILENAME.sql`
+- Ensure that the database you're trying to write to exists: in postgres, `createdb -T template0 whiteclaw` if this db does not already exist 
+- Restore the snapshot: `psql whiteclaw < EXPORT-FILENAME.sql`
