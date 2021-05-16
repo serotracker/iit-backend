@@ -1,4 +1,4 @@
-"""empty message
+"""add citekey and senspec manufacturer columns
 
 Revision ID: 0c66a0480d6a
 Revises: 527670956fe7
