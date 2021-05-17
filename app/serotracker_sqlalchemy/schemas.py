@@ -57,6 +57,7 @@ class ResearchSourceSchema(Schema):
     death_count_plus11 = fields.Float(allow_none=True, allow_nan=True)
     death_count_plus4 = fields.Float(allow_none=True, allow_nan=True)
     include_in_srma = fields.Boolean(allow_none=True)
+    sensspec_from_manufacturer = fields.Boolean(allow_none=True)
     ind_eval_lab = fields.Str(allow_none=True)
     ind_eval_link = fields.Str(allow_none=True)
     ind_se = fields.Float(allow_none=True, allow_nan=True)
@@ -89,3 +90,4 @@ class ResearchSourceSchema(Schema):
     test_linked_uid = fields.Str(allow_none=True)
     test_name = fields.Str(allow_none=True)
     test_validation = fields.Str(allow_none=True)
+    zotero_citation_key = fields.Str(allow_none = True)
