@@ -168,4 +168,4 @@ Confirm that the data has indeed been migrated by checking pgAdmin 4.
    - Enter postgres interactively as the `postgres` user: `psql -U postgres -h localhost -W`
    - Drop the database: `drop database whiteclaw;`
    - Create the database: `create database whiteclaw;`
-- Restore the snapshot: `psql whiteclaw < EXPORT-FILENAME.sql`
+- Restore the snapshot: `psql -h localhost -U USERNAME whiteclaw < EXPORT-FILENAME.sql`
