@@ -1,6 +1,6 @@
 import os
 import logging
-
+from typing import Tuple
 import pandas as pd
 
 from app.utils.notifications_sender import send_slack_message
@@ -17,7 +17,7 @@ def replace_null_string(x):
     return x
 
 
-def get_WHO_mapped_variables(country: str, gbd_mapping_df: pd.DataFrame):
+def get_WHO_mapped_variables(country: str, gbd_mapping_df: pd.DataFrame) -> Tuple:
     # Get row in GBD mapping DF that corresponds to the input country
     gbd_row = gbd_mapping_df[gbd_mapping_df['Country'] == country]
     if not gbd_row.empty:
@@ -26,7 +26,7 @@ def get_WHO_mapped_variables(country: str, gbd_mapping_df: pd.DataFrame):
         return None, None, None
 
 
-def add_mapped_variables(df):
+def add_mapped_variables(df: pd.DataFrame) -> pd.DataFrame:
     # Create mapped columns for gbd regions, subregion and lmic/hic countries
     path = os.path.dirname(os.path.abspath(__file__)) + '/GBD_mapping_country.csv'
     gbd_mapping_country = pd.read_csv(path)
