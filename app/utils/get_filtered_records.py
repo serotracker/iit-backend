@@ -47,7 +47,7 @@ def _get_isotype_col_expression(label:str = "isotypes"):
 def _apply_agg_query(agg_field_exp: SQLalchemyExpression, label:str,
                      type:SQLalchemyType = String) -> SQLAlchemyLabelExpression:
     return case([(func.array_agg(agg_field_exp).filter(agg_field_exp.isnot(None)).isnot(None),
-                  cast(func.array_agg(agg_field_exp).filter(agg_field_exp.isnot(None)), ARRAY(type)))],
+                  cast(func.array_agg(func.distinct(agg_field_exp)).filter(agg_field_exp.isnot(None)), ARRAY(type)))],
                 else_=cast(array([]), ARRAY(type))).label(label)
 
 def get_all_records(research_fields=False, include_disputed_regions=False):
