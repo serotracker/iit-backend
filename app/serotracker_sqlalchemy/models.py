@@ -115,6 +115,7 @@ class ResearchSource(db.Model):
     test_validation = Column(String())
     gbd_region = Column(String())
     gbd_subregion = Column(String())
+    who_region = Column(String())
     lmic_hic = Column(String())
     genpop = Column(String())
     sampling_type = Column(String())
