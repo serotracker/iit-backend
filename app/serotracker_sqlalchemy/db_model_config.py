@@ -55,7 +55,7 @@ research_source_cols = ['case_population', 'deaths_population', 'age_max', 'age_
                         'sample_frame_info', 'number_of_females', 'number_of_males', 'numerator_value',
                         'estimate_name', 'test_not_linked_reason', 'se_n', 'seroprev_95_ci_lower',
                         'seroprev_95_ci_upper', 'sp_n', 'subgroup_var', 'subgroup_cat',
-                        'test_linked_uid', 'test_name', 'test_validation', 'gbd_region', 'gbd_subregion',
+                        'test_linked_uid', 'test_name', 'test_validation', 'gbd_region', 'gbd_subregion', 'who_region',
                         'lmic_hic', 'genpop', 'sampling_type', 'subgroup_specific_category', 'last_modified_time',
                         'date_created', 'adj_sensitivity', 'adj_specificity', 'ind_eval_type', 'include_in_srma',
                         'sensspec_from_manufacturer', 'zotero_citation_key']
