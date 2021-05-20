@@ -45,7 +45,7 @@ dashboard_source_cols = ['source_name', 'source_type', 'study_name', 'denominato
                          'full_vaccinations_per_hundred', 'publication_date', 'geo_exact_match',
                          'sensitivity', 'specificity', 'summary', 'study_type', 'source_publisher', 'lead_organization',
                          'first_author', 'adj_prevalence', 'adj_prev_ci_lower', 'adj_prev_ci_upper', 'pin_latitude',
-                         'pin_longitude', 'in_disputed_area']
+                         'pin_longitude', 'in_disputed_area', 'vaccination_policy']
 
 research_source_cols = ['case_population', 'deaths_population', 'age_max', 'age_min', 'age_variation',
                         'age_variation_measure', 'average_age', 'case_count_neg14', 'case_count_neg9',
