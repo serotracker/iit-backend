@@ -1,14 +1,19 @@
 import os
 import requests
 import json
-from arcgis.features import FeatureLayer
-from arcgis.geometry import Point
-from arcgis.geometry.filters import intersects
-import pandas as pd
 from statistics import mean
 from typing import Tuple
 from time import sleep
+
+import pandas as pd
+from arcgis.features import FeatureLayer
+from arcgis.geometry import Point
+from arcgis.geometry.filters import intersects
+
 from app.utils.notifications_sender import send_slack_message
+from app.serotracker_sqlalchemy import db_session, ResearchSource, DashboardSource,\
+    State, StateBridge, City, CityBridge, Country
+
 
 # Note: this function takes in a relative path
 def read_from_json(path_to_json):
@@ -22,6 +27,7 @@ def read_from_json(path_to_json):
 ISO3_CODES = read_from_json('country_iso3.json')
 ISO2_CODES = read_from_json('country_iso2.json')
 COUNTRY_ALTERNATIVE_NAMES = read_from_json('country_alternative_names.json')
+
 
 # Place = string representing the name of the place
 # Country code = ISO2 alpha country code, used as an optional argument to the mapbox api
@@ -149,8 +155,49 @@ def get_record_coordinates(record: pd.Series, geo_dfs: dict) -> Tuple:
 
     return pin_lat, pin_lng
 
+
 # Computes pin latlngs and whether or not the pin is in a disputed area
 def compute_pin_info(df: pd.DataFrame, geo_dfs: dict) -> pd.DataFrame:
+    # Get df with airtable_record_id, country_name, state_name, city_name
+    with db_session() as session:
+        total_db_records = session.query(ResearchSource.airtable_record_id,
+                                         Country.country_name,
+                                         State.state_name,
+                                         City.city_name)\
+            .join(DashboardSource, ResearchSource.source_id == DashboardSource.source_id, isouter=True)\
+            .join(Country, DashboardSource.country_id == Country.country_id, isouter=True)\
+            .join(StateBridge, DashboardSource.source_id == StateBridge.source_id, isouter=True)\
+            .join(State, StateBridge.state_id == State.state_id, isouter=True)\
+            .join(CityBridge, DashboardSource.source_id == CityBridge.source_id, isouter=True)\
+            .join(City, CityBridge.city_id == City.city_id, isouter=True).all()
+        total_db_records = [q._asdict() for q in total_db_records]
+        total_db_records = pd.DataFrame(data=total_db_records)
+
+    df.to_csv('records_from_etl.csv', index=False)
+    total_db_records.to_csv('records_from_db.csv', index=False)
+
+    # Concat old and new records and fillna with 0 (NaN and None become 0 so it is standardized)
+    diff = pd.concat([df[['airtable_record_id', 'country', 'state', 'city']], total_db_records])
+    diff.fillna(0, inplace=True)
+
+    print(diff)
+    print(diff.shape[0])
+
+    diff.to_csv('diff.csv', index=False)
+
+    # Drop duplicates based on these cols
+    diff = diff.drop_duplicates(keep=False)
+
+    print(diff)
+    print(diff.shape[0])
+
+    # Get all unique airtable_record_ids that are new/have been modified
+    new_airtable_record_ids = diff['airtable_record_id'].unique()
+
+    print(new_airtable_record_ids)
+    print(len(new_airtable_record_ids))
+    exit()
+
     # Get record coordinates
     df['pin_latitude'], df['pin_longitude'] = \
         zip(*df.apply(lambda record: get_record_coordinates(record, geo_dfs), axis=1))
@@ -159,5 +206,6 @@ def compute_pin_info(df: pd.DataFrame, geo_dfs: dict) -> pd.DataFrame:
     # Create feature layer object
     disputed_areas_fl = FeatureLayer(WHO_FL_URL)
     # apply row_in_disputed_area across the whole df
-    df['in_disputed_area'] = df.apply(lambda row: row_in_feature_layer(row, disputed_areas_fl), axis=1)
+    # df['in_disputed_area'] = df.apply(lambda row: row_in_feature_layer(row, disputed_areas_fl), axis=1)
+    df['in_disputed_area'] = False
     return df
