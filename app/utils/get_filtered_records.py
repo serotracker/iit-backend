@@ -40,6 +40,7 @@ def _get_isotype_col_expression(label:str = "isotypes"):
                 else_=cast(array([]), ARRAY(String))).label(label)
     return expression
 
+
 # Query to aggregate multiple multi select options into a single array
 # Note: case statement is used so that we show [] instead of [None]
 # agg_field_exp --> sqlalchemy expression representing the field you'd like to aggregate (e.g. State.Longitude)
@@ -48,6 +49,7 @@ def _apply_agg_query(agg_field_exp: SQLalchemyExpression, label:str,
     return case([(func.array_agg(agg_field_exp).filter(agg_field_exp.isnot(None)).isnot(None),
                   cast(func.array_agg(agg_field_exp).filter(agg_field_exp.isnot(None)), ARRAY(type)))],
                 else_=cast(array([]), ARRAY(type))).label(label)
+
 
 def get_all_records(research_fields=False, include_disputed_regions=False):
     with db_session() as session:

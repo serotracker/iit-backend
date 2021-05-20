@@ -47,7 +47,6 @@ class Records(Resource):
         sampling_start_date, sampling_end_date = convert_start_end_dates(data, use_sampling_date=True)
         publication_start_date, publication_end_date = convert_start_end_dates(data, use_sampling_date=False)
         include_in_srma = data.get('include_in_srma', False)
-
         result = get_filtered_records(research_fields,
                                       filters,
                                       columns,
