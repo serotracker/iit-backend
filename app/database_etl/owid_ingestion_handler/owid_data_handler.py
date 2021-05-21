@@ -111,20 +111,7 @@ def get_vaccination_policy(country_name: str, midpoint_date: datetime):
 
     if ret.empty or pd.isna(ret.iloc[0]):
         return None
-
-    # Map the ordinal value of the vaccination policy to the policy level
-    vaccination_policy_mapping = {0: "No availability",
-                                  1: "Availability for ONE of following: key workers/ clinically vulnerable groups "
-                                     "(non elderly) / elderly groups",
-                                  2: "Availability for TWO of following: key workers/ clinically vulnerable groups "
-                                     "(non elderly) / elderly groups",
-                                  3: "Availability for ALL of following: key workers/ clinically vulnerable groups "
-                                     "(non elderly) / elderly groups",
-                                  4: "Availability for all three plus partial additional availability "
-                                     "(select broad groups/ages)",
-                                  5: "Universal availability"}
-    ret = int(ret.iloc[0])
-    return vaccination_policy_mapping[ret]
+    return int(ret.iloc[0])
 
 
 def get_whether_exact_match(estimate_grade: str):

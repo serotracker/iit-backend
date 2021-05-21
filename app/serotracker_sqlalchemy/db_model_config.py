@@ -45,7 +45,7 @@ dashboard_source_cols = ['source_name', 'source_type', 'study_name', 'denominato
                          'full_vaccinations_per_hundred', 'publication_date', 'geo_exact_match',
                          'sensitivity', 'specificity', 'summary', 'study_type', 'source_publisher', 'lead_organization',
                          'first_author', 'adj_prevalence', 'adj_prev_ci_lower', 'adj_prev_ci_upper', 'pin_latitude',
-                         'pin_longitude', 'in_disputed_area', 'subgroup_var']
+                         'pin_longitude', 'in_disputed_area', 'vaccination_policy', 'subgroup_var']
 
 research_source_cols = ['case_population', 'deaths_population', 'age_max', 'age_min', 'age_variation',
                         'age_variation_measure', 'average_age', 'case_count_neg14', 'case_count_neg9',
@@ -55,6 +55,7 @@ research_source_cols = ['case_population', 'deaths_population', 'age_max', 'age_
                         'sample_frame_info', 'number_of_females', 'number_of_males', 'numerator_value',
                         'estimate_name', 'test_not_linked_reason', 'se_n', 'seroprev_95_ci_lower',
                         'seroprev_95_ci_upper', 'sp_n', 'subgroup_cat',
-                        'test_linked_uid', 'test_name', 'test_validation', 'gbd_region', 'gbd_subregion',
+                        'test_linked_uid', 'test_name', 'test_validation', 'gbd_region', 'gbd_subregion', 'who_region',
                         'lmic_hic', 'genpop', 'sampling_type', 'subgroup_specific_category', 'last_modified_time',
-                        'date_created', 'adj_sensitivity', 'adj_specificity', 'ind_eval_type', 'include_in_srma']
+                        'date_created', 'adj_sensitivity', 'adj_specificity', 'ind_eval_type', 'include_in_srma',
+                        'sensspec_from_manufacturer', 'zotero_citation_key']

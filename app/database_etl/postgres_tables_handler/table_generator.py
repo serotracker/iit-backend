@@ -89,7 +89,7 @@ def create_research_source_df(dashboard_source_df):
     research_source_cols = list(airtable_fields_config['research'].values()) + ['gbd_region', 'gbd_subregion',
                                                                                 'lmic_hic', 'genpop', 'sampling_type',
                                                                                 'ind_eval_type', 'adj_sensitivity',
-                                                                                'adj_specificity']
+                                                                                'adj_specificity', 'who_region']
     research_source = dashboard_source_df[research_source_cols]
 
     # Add source id and created at columns from dashboard source df

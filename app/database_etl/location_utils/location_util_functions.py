@@ -7,6 +7,8 @@ from arcgis.geometry.filters import intersects
 import pandas as pd
 from statistics import mean
 from typing import Tuple
+from time import sleep
+from app.utils.notifications_sender import send_slack_message
 
 # Note: this function takes in a relative path
 def read_from_json(path_to_json):
@@ -94,7 +96,28 @@ def row_in_feature_layer(row: pd.Series, feature_layer: FeatureLayer) -> bool:
     pin = Point({"x": row['pin_longitude'], "y": row['pin_latitude']})
     # construct a geometry filter to check if each point is in a disputed area
     pin_filter = intersects(pin)
-    in_disputed_area = len(feature_layer.query(geometry_filter=pin_filter).features) > 0
+
+    continue_query = True
+    retries = 0
+    MAX_RETRIES = 9
+    # Default to setting in_disputed_area = True to ensure we never show pins in disputed area
+    in_disputed_area = True
+    # Make query to determine whether or not the pin is in the disputed area
+    # If the query times out, retry with exponential backoff
+    while continue_query:
+        try:
+            in_disputed_area = len(feature_layer.query(geometry_filter=pin_filter).features) > 0
+            continue_query = False
+        except Exception as e:
+            # send slack message if we exceed retry count
+            if retries > MAX_RETRIES:
+                body = f'Unable to check if the record with ID {row["source_id"]} is in a disputed region.'
+                send_slack_message(body, channel='#dev-logging-etl')
+                continue_query = False
+            else:
+                sleep(1.5**(retries))
+                retries += 1
+
     return in_disputed_area
 
 
