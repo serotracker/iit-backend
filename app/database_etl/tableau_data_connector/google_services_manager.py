@@ -11,9 +11,9 @@ from app.utils import send_slack_message
 
 
 class GoogleSheetsManager:
-    def __init__(self):
+    def __init__(self, sheet_name):
         self.scope = ['https://www.googleapis.com/auth/spreadsheets']
-        self.range = 'A1:ZZ10000'
+        self.range = f'{sheet_name}!A1:ZZ10000'
         self.client_service = self.create_service()
         return
 
@@ -43,7 +43,7 @@ class GoogleSheetsManager:
         sheet.values().clear(spreadsheetId=spreadsheet_id, range=self.range).execute()
         return
 
-    def update_sheet(self, spreadsheet_id, sheet_id, df):
+    def update_sheet(self, spreadsheet_id, df):
         sheet = self.client_service.spreadsheets()
         batch_update_values_request_body = {'valueInputOption': 'RAW',
                                             'data': {'range': self.range,
@@ -52,7 +52,6 @@ class GoogleSheetsManager:
         self.clear_sheet(spreadsheet_id)
         try:
             sheet.values().batchUpdate(spreadsheetId=spreadsheet_id,
-                                       sheetId=sheet_id,
                                        body=batch_update_values_request_body).execute()
         except (HttpError, BatchError) as e:
             body = f'Error loading Tableau CSV to google sheets: {e}'
