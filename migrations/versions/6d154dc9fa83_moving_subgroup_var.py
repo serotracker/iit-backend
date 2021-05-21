@@ -1,8 +1,8 @@
-"""Move subgroup_var to dashboard_source table
+"""moving subgroup var
 
-Revision ID: ab3821bad767
-Revises: 527670956fe7
-Create Date: 2021-05-13 16:56:18.574744
+Revision ID: 6d154dc9fa83
+Revises: d09ee853c6fa
+Create Date: 2021-05-20 22:54:32.100983
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'ab3821bad767'
-down_revision = '527670956fe7'
+revision = '6d154dc9fa83'
+down_revision = 'd09ee853c6fa'
 branch_labels = None
 depends_on = None
 
