@@ -33,10 +33,9 @@ def upload_analyze_csv(canadian_data):
     records_df = records_df.replace(']', '')
 
     # Upload df to google sheet
-    g_client = GoogleSheetsManager()
-    sheet_id = os.getenv('CANADIAN_SHEET_ID') if canadian_data else os.getenv('GENERAL_SHEET_ID')
+    sheet_name = 'Canadian data' if canadian_data else 'tableau_analyze_records'
+    g_client = GoogleSheetsManager(sheet_name)
     g_client.update_sheet(spreadsheet_id=os.getenv('ANALYZE_SPREADSHEET_ID'),
-                          sheet_id=sheet_id,
                           df=records_df)
     return
 
