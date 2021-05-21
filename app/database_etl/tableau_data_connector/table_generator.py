@@ -14,7 +14,8 @@ def upload_analyze_csv(canadian_data):
     # Get records
     prioritize_estimates = True if canadian_data else False
     include_subgeography_estimates = True if canadian_data else False
-    records = get_filtered_records(research_fields=True, filters=None, columns=None, sampling_start_date=None,
+    filters = {'country': ['Canada']} if canadian_data else None
+    records = get_filtered_records(research_fields=True, filters=filters, columns=None, sampling_start_date=None,
                                    sampling_end_date=None, prioritize_estimates=prioritize_estimates,
                                    include_subgeography_estimates=include_subgeography_estimates)
     records = jitter_pins(records)
