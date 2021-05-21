@@ -4,8 +4,7 @@ from sqlalchemy.dialects.postgresql import array
 from sqlalchemy import func, cast, case, and_, String, ARRAY
 import pandas as pd
 import numpy as np
-from app.utils.estimate_prioritization import get_prioritized_estimates
-from statistics import mean
+from app.utils.estimate_prioritization import get_prioritized_estimates, get_prioritized_estimates_without_pooling
 
 # For typing purposes
 from sqlalchemy.sql.visitors import VisitableType as SQLalchemyType
@@ -41,6 +40,7 @@ def _get_isotype_col_expression(label:str = "isotypes"):
                 else_=cast(array([]), ARRAY(String))).label(label)
     return expression
 
+
 # Query to aggregate multiple multi select options into a single array
 # Note: case statement is used so that we show [] instead of [None]
 # agg_field_exp --> sqlalchemy expression representing the field you'd like to aggregate (e.g. State.Longitude)
@@ -49,6 +49,7 @@ def _apply_agg_query(agg_field_exp: SQLalchemyExpression, label:str,
     return case([(func.array_agg(agg_field_exp).filter(agg_field_exp.isnot(None)).isnot(None),
                   cast(func.array_agg(func.distinct(agg_field_exp)).filter(agg_field_exp.isnot(None)), ARRAY(type)))],
                 else_=cast(array([]), ARRAY(type))).label(label)
+
 
 def get_all_records(research_fields=False, include_disputed_regions=False):
     with db_session() as session:
@@ -129,7 +130,7 @@ Output: set of records represented by dicts
 
 
 def get_filtered_records(research_fields=False, filters=None, columns=None, include_disputed_regions=False,
-                         sampling_start_date=None, sampling_end_date=None,
+                         sampling_start_date=None, sampling_end_date=None, include_subgeography_estimates=False,
                          publication_start_date=None, publication_end_date=None, prioritize_estimates=True,
                          prioritize_estimates_mode='dashboard', include_in_srma=False):
     query_dicts = get_all_records(research_fields, include_disputed_regions)
@@ -192,7 +193,12 @@ def get_filtered_records(research_fields=False, filters=None, columns=None, incl
     # or keep everything in dataframes (don't want to have this conversion here long term)
     if prioritize_estimates:
         result_df = pd.DataFrame(result)
-        prioritized_records = get_prioritized_estimates(result_df, mode=prioritize_estimates_mode)
+        if include_subgeography_estimates:
+            prioritized_records = get_prioritized_estimates_without_pooling(result_df,
+                                                                            subgroup_var="Geographical area",
+                                                                            mode=prioritize_estimates_mode)
+        else:
+            prioritized_records = get_prioritized_estimates(result_df, mode=prioritize_estimates_mode)
         # If records exist, clean dataframe
         if not prioritized_records.empty:
             # Convert from True/None to True/False
