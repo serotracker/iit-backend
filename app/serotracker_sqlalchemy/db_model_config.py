@@ -27,13 +27,17 @@ db_model_config = {
     ]
 }
 
-db_tables = ['airtable_source',
+db_tables = ['dashboard_source',
+             'research_source',
+             'country',
              'city',
              'city_bridge',
              'state',
              'state_bridge',
              'test_manufacturer',
-             'test_manufacturer_bridge']
+             'test_manufacturer_bridge',
+             'antibody_target',
+             'antibody_target_bridge']
 
 # TODO: instead of using this config, programmatically generate a list of columns for the DashboardSource table
 dashboard_source_cols = ['source_name', 'source_type', 'study_name', 'denominator_value',

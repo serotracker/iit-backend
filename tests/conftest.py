@@ -1,12 +1,11 @@
 import pytest
 
 from app import create_app, db as _db
-from app.serotracker_sqlalchemy import db_session
 
 
 @pytest.fixture(scope='session')
 def app():
-    app = create_app(db=_db)
+    app = create_app(_db)
     return app
 
 
@@ -16,7 +15,7 @@ def client(app):
 
 
 @pytest.fixture(scope='session')
-def db():
+def db(app):
     _db.create_all()
     yield _db
     _db.drop_all()
@@ -24,4 +23,4 @@ def db():
 
 @pytest.fixture(scope='function')
 def session():
-    return db_session
+    return _db.session

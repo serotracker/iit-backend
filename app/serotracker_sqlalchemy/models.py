@@ -1,14 +1,50 @@
 from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.types import TypeDecorator, CHAR
+import uuid
 
 from app import db
+
+# See https://gist.github.com/gmolveau/7caeeefe637679005a7bb9ae1b5e421e
+class GUID(TypeDecorator):
+    """Platform-independent GUID type.
+    Uses PostgreSQL's UUID type, otherwise uses
+    CHAR(32), storing as stringified hex values.
+    """
+    impl = CHAR
+
+    def load_dialect_impl(self, dialect):
+        if dialect.name == 'postgresql':
+            return dialect.type_descriptor(UUID(as_uuid=True))
+        else:
+            return dialect.type_descriptor(CHAR(32))
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return value
+        elif dialect.name == 'postgresql':
+            return str(value)
+        else:
+            if not isinstance(value, uuid.UUID):
+                return "%.32x" % uuid.UUID(value).int
+            else:
+                # hexstring
+                return "%.32x" % value.int
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return value
+        else:
+            if not isinstance(value, uuid.UUID):
+                value = uuid.UUID(value)
+            return value
 
 
 # Dashboard table for all dashboard fields
 class DashboardSource(db.Model):
     __tablename__ = 'dashboard_source'
 
-    source_id = Column(UUID(as_uuid=True), primary_key=True)
+    source_id = Column(GUID(), primary_key=True)
     source_name = Column(String())
     publication_date = Column(DateTime)
     first_author = Column(String())
@@ -18,7 +54,7 @@ class DashboardSource(db.Model):
     summary = Column(String())
     study_name = Column(String())
     study_type = Column(String())
-    country_id = Column(UUID(as_uuid=True))
+    country_id = Column(GUID())
     lead_organization = Column(String())
     sampling_start_date = Column(DateTime)
     sampling_end_date = Column(DateTime)
@@ -66,7 +102,7 @@ class DashboardSource(db.Model):
 class ResearchSource(db.Model):
     __tablename__ = 'research_source'
 
-    source_id = Column(UUID(as_uuid=True), primary_key=True)
+    source_id = Column(GUID(), primary_key=True)
     case_population = Column(Integer)
     deaths_population = Column(Integer)
     age_max = Column(Float)
@@ -133,7 +169,7 @@ class ResearchSource(db.Model):
 class Country(db.Model):
     __tablename__ = 'country'
 
-    country_id = Column(UUID(as_uuid=True), primary_key=True)
+    country_id = Column(GUID(), primary_key=True)
     country_name = Column(String())
     country_iso3 = Column(String())
     country_iso2 = Column(String())
@@ -147,7 +183,7 @@ class Country(db.Model):
 class City(db.Model):
     __tablename__ = 'city'
 
-    city_id = Column(UUID(as_uuid=True), primary_key=True)
+    city_id = Column(GUID(), primary_key=True)
     city_name = Column(String())
     latitude = Column(Float)
     longitude = Column(Float)
@@ -161,7 +197,7 @@ class City(db.Model):
 class State(db.Model):
     __tablename__ = 'state'
 
-    state_id = Column(UUID(as_uuid=True), primary_key=True)
+    state_id = Column(GUID(), primary_key=True)
     state_name = Column(String())
     latitude = Column(Float)
     longitude = Column(Float)
@@ -174,7 +210,7 @@ class State(db.Model):
 class TestManufacturer(db.Model):
     __tablename__ = 'test_manufacturer'
 
-    test_manufacturer_id = Column(UUID(as_uuid=True), primary_key=True)
+    test_manufacturer_id = Column(GUID(), primary_key=True)
     test_manufacturer_name = Column(String())
     created_at = Column(DateTime)
 
@@ -182,7 +218,7 @@ class TestManufacturer(db.Model):
 class AntibodyTarget(db.Model):
     __tablename__ = 'antibody_target'
 
-    antibody_target_id = Column(UUID(as_uuid=True), primary_key=True)
+    antibody_target_id = Column(GUID(), primary_key=True)
     antibody_target_name = Column(String())
     created_at = Column(DateTime)
 
@@ -191,34 +227,34 @@ class AntibodyTarget(db.Model):
 class CityBridge(db.Model):
     __tablename__ = 'city_bridge'
 
-    id = Column(UUID(as_uuid=True), primary_key=True)
-    source_id = Column(UUID(as_uuid=True))
-    city_id = Column(UUID(as_uuid=True))
+    id = Column(GUID(), primary_key=True)
+    source_id = Column(GUID())
+    city_id = Column(GUID())
     created_at = Column(DateTime)
 
 
 class StateBridge(db.Model):
     __tablename__ = 'state_bridge'
 
-    id = Column(UUID(as_uuid=True), primary_key=True)
-    source_id = Column(UUID(as_uuid=True))
-    state_id = Column(UUID(as_uuid=True))
+    id = Column(GUID(), primary_key=True)
+    source_id = Column(GUID())
+    state_id = Column(GUID())
     created_at = Column(DateTime)
 
 
 class TestManufacturerBridge(db.Model):
     __tablename__ = 'test_manufacturer_bridge'
 
-    id = Column(UUID(as_uuid=True), primary_key=True)
-    source_id = Column(UUID(as_uuid=True))
-    test_manufacturer_id = Column(UUID(as_uuid=True))
+    id = Column(GUID(), primary_key=True)
+    source_id = Column(GUID())
+    test_manufacturer_id = Column(GUID())
     created_at = Column(DateTime)
 
 
 class AntibodyTargetBridge(db.Model):
     __tablename__ = 'antibody_target_bridge'
 
-    id = Column(UUID(as_uuid=True), primary_key=True)
-    source_id = Column(UUID(as_uuid=True))
-    antibody_target_id = Column(UUID(as_uuid=True))
+    id = Column(GUID(), primary_key=True)
+    source_id = Column(GUID())
+    antibody_target_id = Column(GUID())
     created_at = Column(DateTime)
