@@ -203,4 +203,14 @@ In this file, each line contains one scheduled command. Refer to [this article](
 
 For further information on `cron`, refer to the [crontab Linux manual](https://man7.org/linux/man-pages/man5/crontab.5.html).
 
+## `tmux` sessions
+A `tmux` session is an isolated environment on a machine where a process can run indefinitely. SeroTracker makes use of `tmux` sessions to run our backend servers and several scripts.  
+The tmux sessions for each machine are summarized in the below table.
+
+| Instance (IP address)  | Session name | Description                                |
+|------------------------|--------------|--------------------------------------------|
+| Prod (3.97.103.19)     | backend      | Run the Flask backend                      |
+| Prod (3.97.103.19)     | install      | Install requirements, update the DB schema |
+| Medium (35.182.41.225) | etl          | Run the ETL (once daily)                   |
+| Dev (35.183.11.41)     | covidence    | Run the Covidence server                   |
 
