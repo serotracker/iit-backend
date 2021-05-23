@@ -1,11 +1,10 @@
 from app.serotracker_sqlalchemy import db_session, DashboardSource, ResearchSource, \
-    db_model_config, Country, State, City, dashboard_source_cols, research_source_cols
+    db_model_config, Country, dashboard_source_cols, research_source_cols
 from sqlalchemy.dialects.postgresql import array
-from sqlalchemy import func, cast, case, and_, Float, String, ARRAY
+from sqlalchemy import func, cast, case, and_, String, ARRAY
 import pandas as pd
 import numpy as np
-from app.utils.estimate_prioritization import get_prioritized_estimates
-from statistics import mean
+from app.utils.estimate_prioritization import get_prioritized_estimates, get_prioritized_estimates_without_pooling
 
 # For typing purposes
 from sqlalchemy.sql.visitors import VisitableType as SQLalchemyType
@@ -41,24 +40,21 @@ def _get_isotype_col_expression(label:str = "isotypes"):
                 else_=cast(array([]), ARRAY(String))).label(label)
     return expression
 
+
 # Query to aggregate multiple multi select options into a single array
 # Note: case statement is used so that we show [] instead of [None]
 # agg_field_exp --> sqlalchemy expression representing the field you'd like to aggregate (e.g. State.Longitude)
 def _apply_agg_query(agg_field_exp: SQLalchemyExpression, label:str,
                      type:SQLalchemyType = String) -> SQLAlchemyLabelExpression:
     return case([(func.array_agg(agg_field_exp).filter(agg_field_exp.isnot(None)).isnot(None),
-                  cast(func.array_agg(agg_field_exp).filter(agg_field_exp.isnot(None)), ARRAY(type)))],
+                  cast(func.array_agg(func.distinct(agg_field_exp)).filter(agg_field_exp.isnot(None)), ARRAY(type)))],
                 else_=cast(array([]), ARRAY(type))).label(label)
 
-def get_all_records(research_fields=False):
+
+def get_all_records(research_fields=False, include_disputed_regions=False):
     with db_session() as session:
         # Get all records for now, join on all tables
         table_infos = db_model_config['supplementary_table_info']
-
-        # Create list of entity_name keys such as "age_name" which would be "Youth (13-17)"
-        entity_names = [f"{t['entity']}" for t in table_infos]
-        entity_names += ['country_latitude', 'country_longitude', 'city_longitude', 'city_latitude',
-                         'state_longitude', 'state_latitude']
 
         # Add columns from dashboard source to select statement
         fields_list = [DashboardSource.source_id]
@@ -73,10 +69,8 @@ def get_all_records(research_fields=False):
         # Alias for country name and iso3 code
         fields_list.append(Country.country_name.label("country"))
         fields_list.append(Country.country_iso3.label("country_iso3"))
-
-        # Aliases for lat lngs
-        fields_list.append(Country.latitude.label("country_latitude"))
-        fields_list.append(Country.longitude.label("country_longitude"))
+        fields_list.append(Country.income_class.label("income_class"))
+        fields_list.append(Country.hrp_class.label("hrp_class"))
 
         # Will need to group by every field that isn't array aggregated
         # using copy here since python assigns list variables by ref instead of by value
@@ -87,11 +81,6 @@ def get_all_records(research_fields=False):
             # Use case: We want to get fields from the bridge table without the _name suffix
             fields_list.append(_apply_agg_query(getattr(table_info["main_table"], f"{table_info['entity']}_name"),
                                                table_info['entity']))
-
-        fields_list.append(_apply_agg_query(State.latitude, "state_latitude", type=Float))
-        fields_list.append(_apply_agg_query(State.longitude, "state_longitude", type=Float))
-        fields_list.append(_apply_agg_query(City.latitude, "city_latitude", type=Float))
-        fields_list.append(_apply_agg_query(City.longitude, "city_longitude", type=Float))
 
         query = session.query(*fields_list, _get_isotype_col_expression(label="isotypes_reported"))
 
@@ -116,6 +105,10 @@ def get_all_records(research_fields=False):
         if research_fields:
             query = query.join(ResearchSource, ResearchSource.source_id == DashboardSource.source_id)
 
+        # Filter out estimates in disputed areas if necessary
+        if not include_disputed_regions:
+            query = query.filter(DashboardSource.in_disputed_area == False)
+
         # Need to apply group by so that array_agg works as expected
         query = query.group_by(*groupby_fields)
 
@@ -136,11 +129,11 @@ Output: set of records represented by dicts
 '''
 
 
-def get_filtered_records(research_fields=False, filters=None, columns=None,
-                         sampling_start_date=None, sampling_end_date=None,
+def get_filtered_records(research_fields=False, filters=None, columns=None, include_disputed_regions=False,
+                         sampling_start_date=None, sampling_end_date=None, include_subgeography_estimates=False,
                          publication_start_date=None, publication_end_date=None, prioritize_estimates=True,
                          prioritize_estimates_mode='dashboard', include_in_srma=False):
-    query_dicts = get_all_records(research_fields)
+    query_dicts = get_all_records(research_fields, include_disputed_regions)
     if query_dicts is None or len(query_dicts) == 0:
         return []
 
@@ -200,7 +193,12 @@ def get_filtered_records(research_fields=False, filters=None, columns=None,
     # or keep everything in dataframes (don't want to have this conversion here long term)
     if prioritize_estimates:
         result_df = pd.DataFrame(result)
-        prioritized_records = get_prioritized_estimates(result_df, mode=prioritize_estimates_mode)
+        if include_subgeography_estimates:
+            prioritized_records = get_prioritized_estimates_without_pooling(result_df,
+                                                                            subgroup_var="Geographical area",
+                                                                            mode=prioritize_estimates_mode)
+        else:
+            prioritized_records = get_prioritized_estimates(result_df, mode=prioritize_estimates_mode)
         # If records exist, clean dataframe
         if not prioritized_records.empty:
             # Convert from True/None to True/False
@@ -219,28 +217,6 @@ def get_filtered_records(research_fields=False, filters=None, columns=None,
     # because the include_in_srma field is in the ResearchSource table
     if include_in_srma and research_fields:
         result = [estimate for estimate in result if estimate['include_in_srma']]
-
-    for record in result:
-        # Get the latitude and longitude to use for estimate pin
-        # Use coordinate at the most specific geographic level that's available in the database
-        # If there are multiple coordinates for a given geographic level, use the average
-        # Note this needs to happen after prioritization of estimates
-        # because the prioritization function may group multiple estimates from the same study into 1
-        record['pin_latitude'] = record['country_latitude']
-        record['pin_longitude'] = record['country_longitude']
-        record['pin_region_type'] = 'country' if record['country_latitude'] is not None else ''
-        for region_type in ['state', 'city']:
-            # If we find coordinates for a given geographic level
-            # Average them and use that average to render the pin
-            if len(record[f'{region_type}_latitude']) > 0:
-                record['pin_latitude'] = mean(record[f'{region_type}_latitude'])
-                record['pin_longitude'] = mean(record[f'{region_type}_longitude'])
-                record['pin_region_type'] = region_type
-
-        # Delete lng/lat columns that are now unnecessary
-        for region_type in ['country', 'state', 'city']:
-            record.pop(f'{region_type}_latitude')
-            record.pop(f'{region_type}_longitude')
 
     # Finally, if columns have been supplied, only return those columns
     if columns is not None and len(columns) > 0:

@@ -7,9 +7,10 @@ from app.utils import airtable_fields_config
 from app.database_etl.location_utils import add_latlng_to_df, get_country_code
 from .table_formatter import replace_null_string
 from app.database_etl.owid_ingestion_handler import get_vaccinations_per_hundred, get_tests_per_hundred, \
-    get_deaths_per_hundred, get_cases_per_hundred, get_midpoint, get_whether_exact_match
+    get_deaths_per_hundred, get_cases_per_hundred, get_vaccination_policy, get_midpoint, get_whether_exact_match
 
 import pandas as pd
+import os
 
 
 def isotype_col(isotype_string, x):
@@ -69,6 +70,11 @@ def create_dashboard_source_df(original_data, current_time):
         lambda row: get_vaccinations_per_hundred(row['country'], row['sampling_midpoint_date'], fully_vaccinated=True),
         axis=1)
 
+    # Create vaccination policy column
+    original_data['vaccination_policy'] = original_data.apply(
+        lambda row: get_vaccination_policy(row['country'], row['sampling_midpoint_date']),
+        axis=1)
+
     # Create flag denoting whether geographic mapping is 1:1
     original_data['geo_exact_match'] = original_data.apply(
         lambda row: get_whether_exact_match(row['estimate_grade']), axis=1)
@@ -83,7 +89,7 @@ def create_research_source_df(dashboard_source_df):
     research_source_cols = list(airtable_fields_config['research'].values()) + ['gbd_region', 'gbd_subregion',
                                                                                 'lmic_hic', 'genpop', 'sampling_type',
                                                                                 'ind_eval_type', 'adj_sensitivity',
-                                                                                'adj_specificity']
+                                                                                'adj_specificity', 'who_region']
     research_source = dashboard_source_df[research_source_cols]
 
     # Add source id and created at columns from dashboard source df
@@ -189,6 +195,15 @@ def create_bridge_tables(original_data, multi_select_tables, current_time):
     return bridge_tables_dict
 
 
+def get_income_class(iso3_code, income_class_df):
+    # get row in income class df that corresponds to the input iso3 code
+    income_class_row = income_class_df[income_class_df['Code'] == iso3_code]
+    if income_class_row.empty:
+        return None
+    else:
+        return income_class_row.iloc[0]['Income group']
+
+
 def create_country_df(dashboard_source_df, current_time):
     country_df = pd.DataFrame(columns=['country_name', 'country_id', 'country_iso2'])
     country_df['country_name'] = dashboard_source_df['country'].unique()
@@ -197,6 +212,16 @@ def create_country_df(dashboard_source_df, current_time):
     country_df['created_at'] = current_time
     country_df = add_latlng_to_df("country", "country_name", country_df)
     country_df['country_iso3'] = country_df["country_name"].map(lambda a: get_country_code(a))
+
+    # Populate HRP status column
+    hrp_csv_path = os.path.dirname(os.path.abspath(__file__)) + '/country_hrp_map.csv'
+    hrp_countries = set(pd.read_csv(hrp_csv_path)['country_iso_code'])
+    country_df['hrp_class'] = country_df['country_iso3'].map(lambda a: 'HRP' if a in hrp_countries else 'non-HRP')
+
+    # Populate income status column
+    income_csv_path = os.path.dirname(os.path.abspath(__file__)) + '/country_income_class_map.csv'
+    income_class_df = pd.read_csv(income_csv_path)
+    country_df['income_class'] = country_df['country_iso3'].map(lambda a: get_income_class(a, income_class_df))
 
     # Note: only need this temporarily, so fine to drop
     country_df = country_df.drop(columns=['country_iso2'])

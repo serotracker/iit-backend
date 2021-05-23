@@ -10,10 +10,14 @@ from app.namespaces.data_provider.data_provider_service import jitter_pins
 load_dotenv()
 
 
-def upload_analyze_csv():
+def upload_analyze_csv(canadian_data):
     # Get records
-    records = get_filtered_records(research_fields=True, filters=None, columns=None, sampling_start_date=None,
-                                   sampling_end_date=None, prioritize_estimates=False)
+    prioritize_estimates = True if canadian_data else False
+    include_subgeography_estimates = True if canadian_data else False
+    filters = {'country': ['Canada']} if canadian_data else None
+    records = get_filtered_records(research_fields=True, filters=filters, columns=None, sampling_start_date=None,
+                                   sampling_end_date=None, prioritize_estimates=prioritize_estimates,
+                                   include_subgeography_estimates=include_subgeography_estimates)
     records = jitter_pins(records)
     records_df = pd.DataFrame(records)
 
@@ -29,7 +33,9 @@ def upload_analyze_csv():
     records_df = records_df.replace(']', '')
 
     # Upload df to google sheet
-    g_client = GoogleSheetsManager()
-    g_client.update_sheet(os.getenv('ANALYZE_SPREADSHEET_ID'), records_df)
+    sheet_name = 'Canadian data' if canadian_data else 'tableau_analyze_records'
+    g_client = GoogleSheetsManager(sheet_name)
+    g_client.update_sheet(spreadsheet_id=os.getenv('ANALYZE_SPREADSHEET_ID'),
+                          df=records_df)
     return
 

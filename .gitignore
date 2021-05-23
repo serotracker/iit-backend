@@ -38,3 +38,4 @@ app/database_etl/tableau_data_connector/token.pickle
 csvs/
 load-dotenv.sh
 push_csvs.py
+.db_snapshots/

@@ -50,10 +50,16 @@ class DashboardSource(db.Model):
     deaths_per_hundred = Column(Float)
     vaccinations_per_hundred = Column(Float)
     full_vaccinations_per_hundred = Column(Float)
+    vaccination_policy = Column(String())
     geo_exact_match = Column(Boolean)
     adj_prevalence = Column(Float)
     adj_prev_ci_lower = Column(Float)
     adj_prev_ci_upper = Column(Float)
+    pin_latitude = Column(Float)
+    pin_longitude = Column(Float)
+    in_disputed_area = Column(Boolean)
+    subgroup_var = Column(String())
+
 
 # Research table for all additional research fields
 class ResearchSource(db.Model):
@@ -74,6 +80,7 @@ class ResearchSource(db.Model):
     death_count_plus11 = Column(Integer)
     death_count_plus4 = Column(Integer)
     include_in_srma = Column(Boolean)
+    sensspec_from_manufacturer = Column(Boolean)
     ind_eval_lab = Column(String())
     ind_eval_link = Column(String())
     ind_se = Column(Float)
@@ -101,7 +108,6 @@ class ResearchSource(db.Model):
     seroprev_95_ci_lower = Column(Float)
     seroprev_95_ci_upper = Column(Float)
     sp_n = Column(Float)
-    subgroup_var = Column(String())
     subgroup_cat = Column(String())
     subgroup_specific_category = Column(String())
     test_linked_uid = Column(String())
@@ -109,14 +115,16 @@ class ResearchSource(db.Model):
     test_validation = Column(String())
     gbd_region = Column(String())
     gbd_subregion = Column(String())
+    who_region = Column(String())
     lmic_hic = Column(String())
     genpop = Column(String())
     sampling_type = Column(String())
     airtable_record_id = Column(String())
     adj_sensitivity = Column(Float)
     adj_specificity = Column(Float)
-    ind_eval_type = Column(String)
+    ind_eval_type = Column(String())
     created_at = Column(DateTime)
+    zotero_citation_key = Column(String())
 
 
 # Create base multi select tables
@@ -128,6 +136,8 @@ class Country(db.Model):
     country_iso3 = Column(String())
     latitude = Column(Float)
     longitude = Column(Float)
+    hrp_class = Column(String())
+    income_class = Column(String())
     created_at = Column(DateTime)
 
 

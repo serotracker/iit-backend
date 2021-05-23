@@ -1,6 +1,6 @@
 import os
 import logging
-
+from typing import Tuple
 import pandas as pd
 
 from app.utils.notifications_sender import send_slack_message
@@ -17,33 +17,34 @@ def replace_null_string(x):
     return x
 
 
-def add_mapped_variables(df):
+def get_WHO_mapped_variables(country: str, gbd_mapping_df: pd.DataFrame) -> Tuple:
+    # Get row in GBD mapping DF that corresponds to the input country
+    gbd_row = gbd_mapping_df[gbd_mapping_df['Country'] == country]
+    if not gbd_row.empty:
+        return gbd_row.iloc[0]['GBD Region'], gbd_row.iloc[0]['GBD Subregion'], gbd_row.iloc[0]['WHO region']
+    else:
+        return None, None, None
+
+
+def add_mapped_variables(df: pd.DataFrame) -> pd.DataFrame:
     # Create mapped columns for gbd regions, subregion and lmic/hic countries
     path = os.path.dirname(os.path.abspath(__file__)) + '/GBD_mapping_country.csv'
     gbd_mapping_country = pd.read_csv(path)
-    gbd_region_col = []
-    gbd_subregion_col = []
-    slack_messages = []
-    for index, row in df.iterrows():
-        country = row['country']
-        gbd_row = gbd_mapping_country[gbd_mapping_country['Country'] == country]
-        if gbd_row.shape[0] > 0:
-            gbd_region_col.append(gbd_row.iloc[0]['GBD Region'])
-            gbd_subregion_col.append(gbd_row.iloc[0]['GBD Subregion'])
-        else:
-            gbd_region_col.append(None)
-            gbd_subregion_col.append(None)
+    df['gbd_region'], df['gbd_subregion'], df['who_region'] = \
+        zip(*df['country'].map(lambda x: get_WHO_mapped_variables(x, gbd_mapping_country)))
 
-            # Send slack message and log warning
-            body = f'No GBD region or subregion found for {country}'
+    # Add logging for countries without available GBD mappings
+    # Get set of all countries that exist in df but not in gbd_mapping_country
+    # See https://realpython.com/python-sets/#operators-vs-methods
+    countries_with_no_mapping = set(df['country']) - set(gbd_mapping_country['Country'])
+    countries_with_no_mapping.remove(None)
+    if len(countries_with_no_mapping) > 0:
+        body = 'No GBD region or subregion found for the following countries: '
+        for country in countries_with_no_mapping:
+            body += f'{country}, '
+        logging.warning(body)
+        send_slack_message(body, channel='#dev-logging-etl')
 
-            # Don't repeatedly send the same slack error or else will hit API limit
-            if body not in slack_messages:
-                slack_messages.append(body)
-                logging.warning(body)
-                send_slack_message(body, channel='#dev-logging-etl')
-    df['gbd_region'] = gbd_region_col
-    df['gbd_subregion'] = gbd_subregion_col
     df['lmic_hic'] = df['gbd_region'].apply(
         lambda GBD_region: 'HIC' if GBD_region == 'High-income' else None if not GBD_region else 'LMIC')
 

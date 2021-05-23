@@ -23,8 +23,13 @@ try:
                            'jhu/total_cases_per_million.csv')  # per million
     deaths_df = pd.read_csv('https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/'
                             'jhu/total_deaths_per_million.csv')  # per million
+    vaccine_policy_rollout_df = pd.read_csv('https://raw.githubusercontent.com/OxCGRT/covid-policy-tracker/'
+                                            'master/data/OxCGRT_latest.csv')[['CountryCode',
+                                                                              'Jurisdiction',
+                                                                              'Date',
+                                                                              'H7_Vaccination policy']]
 except HTTPError as e:
-    body = f'Error fetching OWID data: {e}.\nOne or more of the Github file paths may have changed.'
+    body = f'Error fetching OWID or OxCGRT data: {e}.\nOne or more of the Github file paths may have changed.'
     send_slack_message(body, channel='#dev-logging-etl')
 
 
@@ -91,6 +96,22 @@ def get_vaccinations_per_hundred(country_name: str, midpoint_date: datetime, ful
     col_name = 'people_fully_vaccinated_per_hundred' if fully_vaccinated else 'people_vaccinated_per_hundred'
     ret = country_data.loc[country_data['date'] == target_date][col_name]
     return float(ret) if not ret.empty else None
+
+
+def get_vaccination_policy(country_name: str, midpoint_date: datetime):
+    if str(midpoint_date) == 'NaT': return None
+    country_id = get_country_code(country_name)
+    offset = OFFSETS['VACCINATIONS']
+    target_date = (midpoint_date + offset).strftime('%Y%m%d')
+
+    country_data = vaccine_policy_rollout_df.loc[vaccine_policy_rollout_df['CountryCode'] == country_id]
+    country_data['Date'] = country_data['Date'].apply(lambda x: str(x))
+    ret = country_data.loc[(country_data['Date'] == target_date) &
+                           (country_data['Jurisdiction'] == 'NAT_TOTAL')]['H7_Vaccination policy']
+
+    if ret.empty or pd.isna(ret.iloc[0]):
+        return None
+    return int(ret.iloc[0])
 
 
 def get_whether_exact_match(estimate_grade: str):
