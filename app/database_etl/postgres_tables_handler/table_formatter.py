@@ -37,7 +37,7 @@ def add_mapped_variables(df: pd.DataFrame) -> pd.DataFrame:
     # Get set of all countries that exist in df but not in gbd_mapping_country
     # See https://realpython.com/python-sets/#operators-vs-methods
     countries_with_no_mapping = set(df['country']) - set(gbd_mapping_country['Country'])
-    countries_with_no_mapping.remove(None)
+    countries_with_no_mapping.discard(None)
     if len(countries_with_no_mapping) > 0:
         body = 'No GBD region or subregion found for the following countries: '
         for country in countries_with_no_mapping:
