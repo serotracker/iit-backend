@@ -192,7 +192,6 @@ def test_manufacturer_bridge_factory(_session, **kwargs):
     return TestManufacturerBridgeFactory(**kwargs)
 
 
-# TODO: finish setting up this factory class
 def research_source_factory(_session, **kwargs):
     class ResearchSourceFactory(factory.alchemy.SQLAlchemyModelFactory):
         class Meta:
