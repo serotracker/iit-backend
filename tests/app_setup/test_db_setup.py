@@ -26,10 +26,9 @@ def test_empty_db(session):
     assert len(session.query(TestManufacturerBridge).all()) == 0
 
 
-# def test_one_dashboard_source_record(session):
-#     with session() as _session:
-#         new_dashboard_source_record = factories.dashboard_source_factory(_session)
-#         all_dashboard_source_records = _session.query(DashboardSource).all()
-#         assert [new_dashboard_source_record] == all_dashboard_source_records
-#         assert len(all_dashboard_source_records) == 1
-#         delete_records(_session, all_dashboard_source_records)
+def test_one_dashboard_source_record(session):
+    new_dashboard_source_record = factories.dashboard_source_factory(session)
+    all_dashboard_source_records = session.query(DashboardSource).all()
+    assert [new_dashboard_source_record] == all_dashboard_source_records
+    assert len(all_dashboard_source_records) == 1
+    delete_records(session, all_dashboard_source_records)
