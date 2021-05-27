@@ -38,9 +38,12 @@ class ApiDevelopmentConfig(ApiConfig):
 
 
 class ApiTestingConfig(ApiConfig):
-    # This creates an in-memory sqlite db
-    # See https://martin-thoma.com/sql-connection-strings/
-    SQLALCHEMY_DATABASE_URI = "sqlite://"
+    DATABASE_USERNAME = os.getenv('DATABASE_USERNAME', 'postgres')
+    DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD', 'postgres')
+    DATABASE_HOST_ADDRESS = 'localhost'
+    DATABASE_NAME = 'whiteclaw_test'
+    SQLALCHEMY_DATABASE_URI = \
+        f'postgresql://{DATABASE_USERNAME}:{DATABASE_PASSWORD}@{DATABASE_HOST_ADDRESS}:5432/{DATABASE_NAME}'
     SQLALCHEMY_TRACK_MODIFICATIONS = os.getenv('SQLALCHEMY_TRACK_MODIFICATIONS', True)
 
     def __init__(self):

@@ -9,6 +9,13 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v1
+    - name: Setup PostgreSQL
+      uses: harmon758/postgresql-action@v1
+      with:
+        postgresql version: '12'
+        postgresql db: 'whiteclaw_test'
+        postgresql user: 'postgres'
+        postgresql password: 'postgres'
     - name: Setup Python
       uses: actions/setup-python@v2
       with:
@@ -18,11 +25,10 @@ jobs:
         pip install -r requirements.txt
     - name: Test
       run: |
-        python manage.py test
+        pytest -vv
       env:
         AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
         AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
         FLASK_ENV: 'test'
         LOG_CONFIG_PATH: '/home/runner/work/iit-backend/iit-backend/logging.cfg'
         LOG_FILE_PATH: '/home/runner/work/iit-backend/iit-backend/logfile.log'
-        CSV_DIR: 'data/'
