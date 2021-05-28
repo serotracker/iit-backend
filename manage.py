@@ -29,7 +29,8 @@ def make_shell_context():
 @manager.command
 def test():
     if os.getenv('FLASK_ENV') == 'test':
-        subprocess.call(['pytest', '-vv'])
+        # Only run tests in the /tests directory
+        subprocess.call(['pytest', 'tests', '-vv'])
     else:
         print('Set FLASK_ENV = \'test\' and run again.')
 

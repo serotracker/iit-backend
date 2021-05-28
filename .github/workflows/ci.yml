@@ -25,7 +25,7 @@ jobs:
         pip install -r requirements.txt
     - name: Test
       run: |
-        pytest -vv
+        pytest tests -vv
       env:
         AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
         AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
