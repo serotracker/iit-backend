@@ -145,7 +145,7 @@ traitlets==5.0.5
 typing-extensions==3.7.4.3
 ujson==4.0.2
 uritemplate==3.0.1
-urllib3==1.25.9
+urllib3==1.26.5
 wcwidth==0.2.5
 webencodings==0.5.1
 Werkzeug==0.16.0
