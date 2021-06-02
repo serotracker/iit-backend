@@ -17,11 +17,6 @@ def db(app):
     _db.drop_all()
 
 
-@pytest.fixture(scope='function')
-def session():
-    return _db.session
-
-
 # Pytest fixture that inserts a realistic set of records
 # and yields a client so that we can test endpoints
 @pytest.fixture(scope='module')
