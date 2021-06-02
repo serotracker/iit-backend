@@ -100,7 +100,7 @@ pooling_function_maps = [
                  summary_function = lambda estimates, col: get_unique_value(estimates[col], 'Multiple Types')),
     PoolingFnMap(summary_type = 'unique_value_test_validation',
                  column_names = ['genpop'],
-                 summary_function = lambda estimates, col: get_unique_value(estimates[col], 'Multiple tests with diff validations or values derived from each type')),
+                 summary_function = lambda estimates, col: get_unique_value(estimates[col], 'Multiple test_utils with diff validations or values derived from each type')),
     PoolingFnMap(summary_type = 'concatenate_with_semicolons',
                  column_names = ['sample_frame_info',
                                  'test_name',

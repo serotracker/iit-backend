@@ -1,6 +1,6 @@
-import tests.factories as factories
+import test_utils.factories as factories
 
-from tests.utils import delete_records, delete_all_records, insert_full_recordset
+from test_utils import delete_records, delete_all_records, insert_full_recordset
 from app.serotracker_sqlalchemy.models import DashboardSource
 
 

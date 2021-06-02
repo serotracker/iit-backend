@@ -1,4 +1,4 @@
-import tests.factories as factories
+import test_utils.factories as factories
 import uuid
 from app.serotracker_sqlalchemy import DashboardSource, ResearchSource, Country, City, State, \
     TestManufacturer, AntibodyTarget, CityBridge, StateBridge, TestManufacturerBridge, AntibodyTargetBridge
