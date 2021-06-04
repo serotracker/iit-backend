@@ -124,28 +124,28 @@ def row_in_feature_layer(row: pd.Series, feature_layer: FeatureLayer) -> bool:
 # Get pin latitude and longitude for a record
 # Param geo_dfs = dictionary of city, state, and country DFs
 def get_record_coordinates(record: pd.Series, geo_dfs: dict) -> Tuple:
-    pin_regions = [record['country']]
-    pin_region_type = 'country' if record['country'] is not None else ''
+    pin_lat = None
+    pin_lng = None
 
-    for region_type in ['state', 'city']:
+    for region_type in ['country', 'state', 'city']:
         if record[region_type] and len(record[region_type]) > 0:
             pin_regions = record[region_type]
-            pin_region_type = region_type
+            geo_df = geo_dfs[region_type]
+            col_name = f"{region_type}_name"
+            pin_lats = [geo_df[geo_df[col_name] == region_name].iloc[0]['latitude'] for region_name
+                        in pin_regions if pd.notnull(geo_df[geo_df[col_name] == region_name].iloc[0]['latitude'])]
+            pin_lngs = [geo_df[geo_df[col_name] == region_name].iloc[0]['longitude'] for region_name
+                        in pin_regions if pd.notnull(geo_df[geo_df[col_name] == region_name].iloc[0]['longitude'])]
+            if len(pin_lats) > 0:
+                pin_lat = mean(pin_lats)
+                pin_lng = mean(pin_lngs)
+
             # once we've found more than 1 region for a given type
             # we cannot compute locations from a more specific region type
             # e.g. if we have multiple states, we cannot match each city with a state
             # thus we must stop our selection here
             if len(pin_regions) > 1:
                 break
-
-    if pin_region_type == '':
-        return None, None
-
-    # get latitude and longitude for the record
-    geo_df = geo_dfs[pin_region_type]
-    col_name = f"{pin_region_type}_name"
-    pin_lat = mean([geo_df[geo_df[col_name] == region_name].iloc[0]['latitude'] for region_name in pin_regions])
-    pin_lng = mean([geo_df[geo_df[col_name] == region_name].iloc[0]['longitude'] for region_name in pin_regions])
 
     return pin_lat, pin_lng
 

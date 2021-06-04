@@ -89,12 +89,15 @@ def main():
         research_source, research_source_cols = create_research_source_df(dashboard_source)
 
         # Compute pin information for each record in dashboard source table
+        # modify dashboard source structure so country col is similar to city and state col
+        modified_dashboard_source = dashboard_source
+        modified_dashboard_source['country'] = modified_dashboard_source['country'].apply(lambda x: [x])
         geo_dfs = {
             'city': multi_select_tables_dict['city'],
             'state': multi_select_tables_dict['state'],
             'country': country_df
         }
-        dashboard_source = compute_pin_info(dashboard_source, geo_dfs)
+        dashboard_source = compute_pin_info(modified_dashboard_source, geo_dfs)
 
         # Format dashboard source table after creating research source
         dashboard_source = format_dashboard_source(dashboard_source, research_source_cols)
