@@ -6,7 +6,7 @@ dashboard_fields = ['Source Name', 'Publication Date', 'First Author Full Name',
                     'Sensitivity', 'Specificity', 'Included?', 'Denominator Value', 'Numerator Definition',
                     'Serum positive prevalence', 'Overall Risk of Bias (JBI)', 'Grade of Estimate Scope',
                     'SeroTracker Analysis Primary Estimate', 'Most Adjusted Primary Estimate', 'Isotype combination',
-                    'Rapid Review Study Name (Text)', 'Test Adjustment', 'Population Adjustment']
+                    'Rapid Review Study Name (Text)', 'Test Adjustment', 'Population Adjustment', 'UNITY: Criteria']
 
 research_fields = ['2020 Population Count - Case', '2020 Population Count - Mortality', 'Age Maximum', 'Age Minimum',
                    'Age variation', 'Age variation measure', 'Antibody target', 'Average age',
@@ -110,6 +110,7 @@ full_airtable_fields = {'2020 Population Count - Case': 'case_population',
                         'Test Name': 'test_name',
                         'Test Type': 'test_type',
                         'Test Validation': 'test_validation',
+                        'UNITY: Criteria': 'is_unity_aligned',
                         'URL': 'url',
                         'Zotero Citation Key': 'zotero_citation_key'}
 
