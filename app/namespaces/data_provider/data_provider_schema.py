@@ -45,7 +45,7 @@ class RecordsSchema(Schema):
     include_in_srma = fields.Boolean(allow_none=True)
     include_disputed_regions = fields.Boolean(allow_none=True)
     include_subgeography_estimates = fields.Boolean(allow_none=True)
-    unity_aligned = fields.Boolean(allow_none=True)
+    unity_aligned_only = fields.Boolean(allow_none=True)
 
 
 class PaginatedRecordsSchema(RecordsSchema):
@@ -76,4 +76,4 @@ class StudyCountSchema(Schema):
     )
     sampling_start_date = fields.String()
     sampling_end_date = fields.String()
-    unity_aligned = fields.Boolean(allow_none=True)
+    unity_aligned_only = fields.Boolean(allow_none=True)

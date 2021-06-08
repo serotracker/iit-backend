@@ -51,7 +51,7 @@ def _apply_agg_query(agg_field_exp: SQLalchemyExpression, label:str,
                 else_=cast(array([]), ARRAY(type))).label(label)
 
 
-def get_all_records(research_fields=False, include_disputed_regions=False, unity_aligned=False):
+def get_all_records(research_fields=False, include_disputed_regions=False, unity_aligned_only=False):
     with db_session() as session:
         # Get all records for now, join on all tables
         table_infos = db_model_config['supplementary_table_info']
@@ -110,7 +110,7 @@ def get_all_records(research_fields=False, include_disputed_regions=False, unity
             query = query.filter(DashboardSource.in_disputed_area == False)
 
         # Filter out non unity aligned studies if necessary
-        if unity_aligned:
+        if unity_aligned_only:
             query = query.filter(DashboardSource.is_unity_aligned == True)
 
         # Need to apply group by so that array_agg works as expected
@@ -136,8 +136,8 @@ Output: set of records represented by dicts
 def get_filtered_records(research_fields=False, filters=None, columns=None, include_disputed_regions=False,
                          sampling_start_date=None, sampling_end_date=None, include_subgeography_estimates=False,
                          publication_start_date=None, publication_end_date=None, prioritize_estimates=True,
-                         prioritize_estimates_mode='dashboard', include_in_srma=False, unity_aligned=False):
-    query_dicts = get_all_records(research_fields, include_disputed_regions, unity_aligned)
+                         prioritize_estimates_mode='dashboard', include_in_srma=False, unity_aligned_only=False):
+    query_dicts = get_all_records(research_fields, include_disputed_regions, unity_aligned_only)
     if query_dicts is None or len(query_dicts) == 0:
         return []
 
