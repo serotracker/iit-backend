@@ -3,10 +3,9 @@ import logging.config
 from flask_restplus import Resource, Namespace
 from flask import jsonify, make_response, request
 
-from .data_provider_service import get_record_details, get_country_seroprev_summaries, jitter_pins
+from .data_provider_service import get_record_details, get_country_seroprev_summaries, jitter_pins, get_all_filter_options
 from .data_provider_schema import RecordDetailsSchema, RecordsSchema, PaginatedRecordsSchema, StudyCountSchema
 from app.utils import validate_request_input_against_schema, get_filtered_records, get_paginated_records, convert_start_end_dates
-from app.database_etl.postgres_tables_handler import get_all_filter_options
 
 data_provider_ns = Namespace('data_provider', description='Endpoints for getting database records.')
 logging.getLogger(__name__)
@@ -43,6 +42,7 @@ class Records(Resource):
         prioritize_estimates_mode = data.get('prioritize_estimates_mode', 'dashboard')
         include_disputed_regions = data.get('include_disputed_regions', False)
         include_subgeography_estimates = data.get('include_subgeography_estimates', False)
+        unity_aligned_only = data.get('unity_aligned_only', False)
 
         sampling_start_date, sampling_end_date = convert_start_end_dates(data, use_sampling_date=True)
         publication_start_date, publication_end_date = convert_start_end_dates(data, use_sampling_date=False)
@@ -58,7 +58,8 @@ class Records(Resource):
                                       prioritize_estimates_mode=prioritize_estimates_mode,
                                       include_in_srma=include_in_srma,
                                       include_disputed_regions=include_disputed_regions,
-                                      include_subgeography_estimates=include_subgeography_estimates)
+                                      include_subgeography_estimates=include_subgeography_estimates,
+                                      unity_aligned_only=unity_aligned_only)
         if not columns or ("pin_latitude" in columns and "pin_longitude" in columns):
             result = jitter_pins(result)
         return jsonify(result)
@@ -187,11 +188,13 @@ class GeogStudyCount(Resource):
         # Query all the records with the desired filters. Pull only country, denom, and seroprev cols
         filters = json_input.get('filters')
         sampling_start_date, sampling_end_date = convert_start_end_dates(json_input, use_sampling_date=True)
+        unity_aligned_only = json_input.get('unity_aligned_only', False)
         columns = ['country', 'country_iso3', 'denominator_value', 'serum_pos_prevalence', 'estimate_grade']
         records = get_filtered_records(filters=filters,
                                        columns=columns,
                                        sampling_start_date=sampling_start_date,
-                                       sampling_end_date=sampling_end_date)
+                                       sampling_end_date=sampling_end_date,
+                                       unity_aligned_only=unity_aligned_only)
 
         # Check if no records are returned
         if not records:

@@ -59,6 +59,7 @@ class DashboardSource(db.Model):
     pin_longitude = Column(Float)
     in_disputed_area = Column(Boolean)
     subgroup_var = Column(String())
+    is_unity_aligned = Column(Boolean)
 
 
 # Research table for all additional research fields

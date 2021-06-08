@@ -2,9 +2,13 @@ import pandas as pd
 import numpy
 import math
 from random import uniform
+from typing import Dict, Any
 
-from app.serotracker_sqlalchemy import db_session, DashboardSource, Country, db_model_config, dashboard_source_cols
+from app.serotracker_sqlalchemy import db_session, DashboardSource, Country, ResearchSource, State, City, \
+    AntibodyTarget, db_model_config, dashboard_source_cols
 from app.utils import _get_isotype_col_expression
+from sqlalchemy import distinct, func
+from app.database_etl.postgres_tables_handler import get_filter_static_options
 
 
 def _get_parsed_record(results):
@@ -157,3 +161,54 @@ def jitter_pins(records):
             else:
                 locations_seen.add(loc)
     return records
+
+
+def get_all_filter_options() -> Dict[str, Any]:
+    with db_session() as session:
+        options = get_filter_static_options()
+
+        # Get countries
+        query = session.query(distinct(getattr(Country, "country_name")))
+        results = [q[0] for q in query if q[0] is not None]
+        # sort countries in alpha order
+        options["country"] = sorted(results)
+
+        # Get genpop
+        query = session.query(distinct(ResearchSource.genpop))
+        results = [q[0] for q in query if q[0] is not None]
+        options["genpop"] = sorted(results)
+
+        # Get subgroup_var
+        query = session.query(distinct(DashboardSource.subgroup_var))
+        results = [q[0] for q in query if q[0] is not None]
+        options["subgroup_var"] = sorted(results)
+
+        # Get subgroup_cat
+        query = session.query(distinct(ResearchSource.subgroup_cat))
+        results = [q[0] for q in query if q[0] is not None]
+        options["subgroup_cat"] = sorted(results)
+
+        # Get state
+        query = session.query(distinct(State.state_name))
+        results = [q[0] for q in query if q[0] is not None]
+        options["state"] = sorted(results)
+
+        # Get city
+        query = session.query(distinct(City.city_name))
+        results = [q[0] for q in query if q[0] is not None]
+        options["city"] = sorted(results)
+
+        # Get antibody target
+        query = session.query(distinct(AntibodyTarget.antibody_target_name))
+        results = [q[0] for q in query if q[0] is not None]
+        options["antibody_target"] = sorted(results)
+
+        options["max_sampling_end_date"] = session.query(func.max(DashboardSource.sampling_end_date))[0][0].isoformat()
+        options["min_sampling_end_date"] = session.query(func.min(DashboardSource.sampling_end_date))[0][0].isoformat()
+        options["max_publication_end_date"] = session.query(func.max(DashboardSource.publication_date))[0][
+            0].isoformat()
+        options["min_publication_end_date"] = session.query(func.min(DashboardSource.publication_date))[0][
+            0].isoformat()
+        options["updated_at"] = session.query(func.max(DashboardSource.publication_date))[0][0].isoformat()
+
+        return options

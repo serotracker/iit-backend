@@ -20,7 +20,7 @@ class RecordsSchema(Schema):
                                                     "sex", "age", "isotypes_reported", "test_type",
                                                     "specimen_type", "estimate_grade",
                                                     "subgroup_var", "subgroup_cat",
-                                                    "state", "city"])),
+                                                    "state", "city", "antibody_target"])),
         values=fields.List(fields.String())
     )
     columns = fields.List(fields.String(validate=validate.OneOf(["age", "city", "state", "population_group",
@@ -35,7 +35,8 @@ class RecordsSchema(Schema):
                                                                  "denominator_value", "numerator_definition",
                                                                  "serum_pos_prevalence", "overall_risk_of_bias",
                                                                  "estimate_grade", "isotypes_reported", "created_at",
-                                                                 "pin_longitude", "pin_latitude", "pin_region_type"])))
+                                                                 "pin_longitude", "pin_latitude", "pin_region_type",
+                                                                 "is_unity_aligned", "antibody_target"])))
     # Date fields should be supplied as unix timestamp
     sampling_start_date = fields.String()
     sampling_end_date = fields.String()
@@ -44,6 +45,7 @@ class RecordsSchema(Schema):
     include_in_srma = fields.Boolean(allow_none=True)
     include_disputed_regions = fields.Boolean(allow_none=True)
     include_subgeography_estimates = fields.Boolean(allow_none=True)
+    unity_aligned_only = fields.Boolean(allow_none=True)
 
 
 class PaginatedRecordsSchema(RecordsSchema):
@@ -69,8 +71,9 @@ class StudyCountSchema(Schema):
                                                     "sex", "age", "isotypes_reported", "test_type",
                                                     "specimen_type", "estimate_grade",
                                                     "subgroup_var", "subgroup_cat",
-                                                    "state", "city"])),
+                                                    "state", "city", "antibody_target"])),
         values=fields.List(fields.String())
     )
     sampling_start_date = fields.String()
     sampling_end_date = fields.String()
+    unity_aligned_only = fields.Boolean(allow_none=True)
