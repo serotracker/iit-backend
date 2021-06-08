@@ -1,13 +1,9 @@
 import logging
 
-from sqlalchemy import distinct, func
-
-from app.serotracker_sqlalchemy import db_session, DashboardSource, \
-    Country, ResearchSource, State, City
 from app.utils.notifications_sender import send_slack_message
 from app.utils.estimate_prioritization import get_columns_with_pooling_functions
 import pandas as pd
-from typing import Dict, List, Any
+from typing import Dict, List
 
 
 def get_filter_static_options() -> Dict[str, List[str]]:
@@ -77,50 +73,6 @@ def get_filter_static_options() -> Dict[str, List[str]]:
             "Other"
         ],
     }
-
-
-def get_all_filter_options() -> Dict[str, Any]:
-    with db_session() as session:
-        options = get_filter_static_options()
-
-        # Get countries
-        query = session.query(distinct(getattr(Country, "country_name")))
-        results = [q[0] for q in query if q[0] is not None]
-        # sort countries in alpha order
-        options["country"] = sorted(results)
-        
-        # Get genpop
-        query = session.query(distinct(ResearchSource.genpop))
-        results = [q[0] for q in query if q[0] is not None]
-        options["genpop"] = sorted(results)
-        
-        # Get subgroup_var
-        query = session.query(distinct(DashboardSource.subgroup_var))
-        results = [q[0] for q in query if q[0] is not None]
-        options["subgroup_var"] = sorted(results)
-        
-        # Get subgroup_cat
-        query = session.query(distinct(ResearchSource.subgroup_cat))
-        results = [q[0] for q in query if q[0] is not None]
-        options["subgroup_cat"] = sorted(results)
-
-        # Get state
-        query = session.query(distinct(State.state_name))
-        results = [q[0] for q in query if q[0] is not None]
-        options["state"] = sorted(results)
-
-        # Get city
-        query = session.query(distinct(City.city_name))
-        results = [q[0] for q in query if q[0] is not None]
-        options["city"] = sorted(results)
-
-        options["max_sampling_end_date"] = session.query(func.max(DashboardSource.sampling_end_date))[0][0].isoformat()
-        options["min_sampling_end_date"] = session.query(func.min(DashboardSource.sampling_end_date))[0][0].isoformat()
-        options["max_publication_end_date"] = session.query(func.max(DashboardSource.publication_date))[0][0].isoformat()
-        options["min_publication_end_date"] = session.query(func.min(DashboardSource.publication_date))[0][0].isoformat()
-        options["updated_at"] = session.query(func.max(DashboardSource.publication_date))[0][0].isoformat()
-
-        return options
 
 
 # Send alert email if filter options have changed

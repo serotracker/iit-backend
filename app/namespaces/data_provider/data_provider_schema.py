@@ -20,7 +20,7 @@ class RecordsSchema(Schema):
                                                     "sex", "age", "isotypes_reported", "test_type",
                                                     "specimen_type", "estimate_grade",
                                                     "subgroup_var", "subgroup_cat",
-                                                    "state", "city"])),
+                                                    "state", "city", "antibody_target"])),
         values=fields.List(fields.String())
     )
     columns = fields.List(fields.String(validate=validate.OneOf(["age", "city", "state", "population_group",
@@ -36,7 +36,7 @@ class RecordsSchema(Schema):
                                                                  "serum_pos_prevalence", "overall_risk_of_bias",
                                                                  "estimate_grade", "isotypes_reported", "created_at",
                                                                  "pin_longitude", "pin_latitude", "pin_region_type",
-                                                                 "is_unity_aligned"])))
+                                                                 "is_unity_aligned", "antibody_target"])))
     # Date fields should be supplied as unix timestamp
     sampling_start_date = fields.String()
     sampling_end_date = fields.String()
@@ -71,7 +71,7 @@ class StudyCountSchema(Schema):
                                                     "sex", "age", "isotypes_reported", "test_type",
                                                     "specimen_type", "estimate_grade",
                                                     "subgroup_var", "subgroup_cat",
-                                                    "state", "city"])),
+                                                    "state", "city", "antibody_target"])),
         values=fields.List(fields.String())
     )
     sampling_start_date = fields.String()
