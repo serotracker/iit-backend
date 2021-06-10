@@ -51,7 +51,8 @@ def _apply_agg_query(agg_field_exp: SQLalchemyExpression, label:str,
                 else_=cast(array([]), ARRAY(type))).label(label)
 
 
-def get_all_records(research_fields=False, include_disputed_regions=False, unity_aligned_only=False):
+def get_all_records(research_fields=False, include_disputed_regions=False,
+                    unity_aligned_only=False, include_records_without_latlngs=False):
     with db_session() as session:
         # Get all records for now, join on all tables
         table_infos = db_model_config['supplementary_table_info']
@@ -112,6 +113,11 @@ def get_all_records(research_fields=False, include_disputed_regions=False, unity
         # Filter out non unity aligned studies if necessary
         if unity_aligned_only:
             query = query.filter(DashboardSource.is_unity_aligned == True)
+
+        # Filter out records without latlngs
+        if not include_records_without_latlngs:
+            query = query.filter(DashboardSource.pin_latitude.isnot(None)).\
+                filter(DashboardSource.pin_longitude.isnot(None))
 
         # Need to apply group by so that array_agg works as expected
         query = query.group_by(*groupby_fields)
