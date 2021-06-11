@@ -159,10 +159,7 @@ def create_multi_select_tables(original_data, current_time):
     multi_select_tables_dict["state"] = add_latlng_to_df("region", "state_name", multi_select_tables_dict["state"])
     multi_select_tables_dict["city"] = add_latlng_to_df("place", "city_name", multi_select_tables_dict["city"])
 
-    # Delete country iso2 column, no longer needed
-    # Note: only need this temporarily, so fine to drop
-    multi_select_tables_dict["state"] = multi_select_tables_dict["state"].drop(columns=['country_iso2'])
-    multi_select_tables_dict["city"] = multi_select_tables_dict["city"].drop(columns=['country_iso2'])
+    # Delete country iso2 column from original_data
     original_data = original_data.drop(columns=['country_iso2'])
 
     return multi_select_tables_dict
@@ -222,9 +219,6 @@ def create_country_df(dashboard_source_df, current_time):
     income_csv_path = os.path.dirname(os.path.abspath(__file__)) + '/country_income_class_map.csv'
     income_class_df = pd.read_csv(income_csv_path)
     country_df['income_class'] = country_df['country_iso3'].map(lambda a: get_income_class(a, income_class_df))
-
-    # Note: only need this temporarily, so fine to drop
-    country_df = country_df.drop(columns=['country_iso2'])
 
     # Send alert email if ISO3 codes not found
     null_iso3 = country_df[country_df['country_iso3'].isnull()]

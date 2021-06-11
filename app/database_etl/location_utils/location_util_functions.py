@@ -136,7 +136,7 @@ def get_record_coordinates(record: pd.Series, geo_dfs: dict) -> Tuple:
                         in pin_regions if pd.notnull(geo_df[geo_df[col_name] == region_name].iloc[0]['latitude'])]
             pin_lngs = [geo_df[geo_df[col_name] == region_name].iloc[0]['longitude'] for region_name
                         in pin_regions if pd.notnull(geo_df[geo_df[col_name] == region_name].iloc[0]['longitude'])]
-            if len(pin_lats) > 0:
+            if len(pin_lats) > 0 and len(pin_lngs) > 0:
                 pin_lat = mean(pin_lats)
                 pin_lng = mean(pin_lngs)
 

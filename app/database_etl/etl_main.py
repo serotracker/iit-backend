@@ -102,7 +102,9 @@ def main():
         # Format dashboard source table after creating research source
         dashboard_source = format_dashboard_source(dashboard_source, research_source_cols)
 
-        # remove state names from city_name field
+        # remove state names from city name column and place them in their own column
+        multi_select_tables_dict["city"]["state_name"] = multi_select_tables_dict["city"]["city_name"] \
+            .map(lambda a: a.split(",")[1] if "," in a else None)
         multi_select_tables_dict["city"]["city_name"] = multi_select_tables_dict["city"]["city_name"] \
             .map(lambda a: a.split(",")[0] if "," in a else a)
 

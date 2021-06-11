@@ -135,6 +135,7 @@ class Country(db.Model):
     country_id = Column(UUID(as_uuid=True), primary_key=True)
     country_name = Column(String())
     country_iso3 = Column(String())
+    country_iso2 = Column(String())
     latitude = Column(Float)
     longitude = Column(Float)
     hrp_class = Column(String())
@@ -147,10 +148,13 @@ class City(db.Model):
 
     city_id = Column(UUID(as_uuid=True), primary_key=True)
     city_name = Column(String())
-    state_name = Column(String())
     latitude = Column(Float)
     longitude = Column(Float)
     created_at = Column(DateTime)
+    # The columns below are not needed for our endpoints but are helpful
+    # when debugging latlng assignment
+    state_name = Column(String())
+    country_iso2 = Column(String())
 
 
 class State(db.Model):
@@ -161,6 +165,9 @@ class State(db.Model):
     latitude = Column(Float)
     longitude = Column(Float)
     created_at = Column(DateTime)
+    # The columns below are not needed for our endpoints but are helpful
+    # when debugging latlng assignment
+    country_iso2 = Column(String())
 
 
 class TestManufacturer(db.Model):
