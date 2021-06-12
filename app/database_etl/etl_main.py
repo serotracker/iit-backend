@@ -132,10 +132,10 @@ def main():
         validate_pooling_function_columns(tables_dict)
 
         # Upload tableau csv to google sheets with prioritization estimates
-        upload_analyze_csv(canadian_data=False)
+        #upload_analyze_csv(canadian_data=False)
 
         # Upload tableau csv to google sheets without prioritizing estimates for canadian data
-        upload_analyze_csv(canadian_data=True)
+        #upload_analyze_csv(canadian_data=True)
         return
 
 

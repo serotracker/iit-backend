@@ -4,6 +4,7 @@ import json
 from statistics import mean
 from typing import Tuple
 from time import sleep
+from itertools import product
 
 import pandas as pd
 from arcgis.features import FeatureLayer
@@ -161,9 +162,9 @@ def compute_pin_info(df: pd.DataFrame, geo_dfs: dict) -> pd.DataFrame:
     # Get df with airtable_record_id, country_name, state_name, city_name
     with db_session() as session:
         total_db_records = session.query(ResearchSource.airtable_record_id,
-                                         Country.country_name,
-                                         State.state_name,
-                                         City.city_name)\
+                                         Country.country_name.label('country'),
+                                         State.state_name.label('state'),
+                                         City.city_name.label('city'))\
             .join(DashboardSource, ResearchSource.source_id == DashboardSource.source_id, isouter=True)\
             .join(Country, DashboardSource.country_id == Country.country_id, isouter=True)\
             .join(StateBridge, DashboardSource.source_id == StateBridge.source_id, isouter=True)\
@@ -173,39 +174,66 @@ def compute_pin_info(df: pd.DataFrame, geo_dfs: dict) -> pd.DataFrame:
         total_db_records = [q._asdict() for q in total_db_records]
         total_db_records = pd.DataFrame(data=total_db_records)
 
-    df.to_csv('records_from_etl.csv', index=False)
-    total_db_records.to_csv('records_from_db.csv', index=False)
+    df = df[df['airtable_record_id'].isin(['rec02T2QJbo0Walfr', 'recmM293BPhfc4tRd'])]
+    pd.set_option('display.max_rows', None)
+
+    # Re-format df from airtable so it matches df by removing all lists
+    # example: rec0YwDjZjqf8lWBf,Japan,0,"['Tokyo', ' Osaka', ' Miyagi']",0,0,0 --> break into 3 sep records
+    reformated_df = pd.DataFrame(columns=df.columns)
+    for _, row in df.iterrows():
+        print(row)
+        states = row['state'] if row['state'] else [None]
+        cities = row['city'] if row['city'] else [None]
+
+        print(type(states))
+        print(type(cities))
+
+        # Remove leading or trailing whitespace (occurs due to human entry errors)
+        states = [x.strip() for x in states if x is not None]
+        cities = [x.strip() for x in cities if x is not None]
+        total_state_city_combos = product(states, cities)
+        print(states)
+        print(cities)
+        print(list(total_state_city_combos))
+    exit()
+
+
+
+
+    # df.to_csv('records_from_etl.csv', index=False)
+    # total_db_records.to_csv('records_from_db.csv', index=False)
 
     # Concat old and new records and fillna with 0 (NaN and None become 0 so it is standardized)
     diff = pd.concat([df[['airtable_record_id', 'country', 'state', 'city']], total_db_records])
     diff.fillna(0, inplace=True)
+    diff.to_csv('diff.csv', index=False)
+    exit()
 
-    print(diff)
+    print("concatenated size")
     print(diff.shape[0])
 
     diff.to_csv('diff.csv', index=False)
 
     # Drop duplicates based on these cols
-    diff = diff.drop_duplicates(keep=False)
-
-    print(diff)
-    print(diff.shape[0])
-
-    # Get all unique airtable_record_ids that are new/have been modified
-    new_airtable_record_ids = diff['airtable_record_id'].unique()
-
-    print(new_airtable_record_ids)
-    print(len(new_airtable_record_ids))
-    exit()
-
-    # Get record coordinates
-    df['pin_latitude'], df['pin_longitude'] = \
-        zip(*df.apply(lambda record: get_record_coordinates(record, geo_dfs), axis=1))
-    # Populate in_disputed_area col
-    WHO_FL_URL = "https://services.arcgis.com/5T5nSi527N4F7luB/arcgis/rest/services/DISPUTED_AREAS_mask/FeatureServer/0"
-    # Create feature layer object
-    disputed_areas_fl = FeatureLayer(WHO_FL_URL)
-    # apply row_in_disputed_area across the whole df
-    # df['in_disputed_area'] = df.apply(lambda row: row_in_feature_layer(row, disputed_areas_fl), axis=1)
+    # diff = diff.drop_duplicates(keep=False)
+    #
+    # print("true diff size size")
+    # print(diff.shape[0])
+    #
+    # # Get all unique airtable_record_ids that are new/have been modified
+    # new_airtable_record_ids = diff['airtable_record_id'].unique()
+    #
+    # print("new airtable record ids")
+    # print(len(new_airtable_record_ids))
+    #
+    # # Get record coordinates
+    # df['pin_latitude'], df['pin_longitude'] = \
+    #     zip(*df.apply(lambda record: get_record_coordinates(record, geo_dfs), axis=1))
+    # # Populate in_disputed_area col
+    # WHO_FL_URL = "https://services.arcgis.com/5T5nSi527N4F7luB/arcgis/rest/services/DISPUTED_AREAS_mask/FeatureServer/0"
+    # # Create feature layer object
+    # disputed_areas_fl = FeatureLayer(WHO_FL_URL)
+    # # apply row_in_disputed_area across the whole df
+    # # df['in_disputed_area'] = df.apply(lambda row: row_in_feature_layer(row, disputed_areas_fl), axis=1)
     df['in_disputed_area'] = False
     return df
