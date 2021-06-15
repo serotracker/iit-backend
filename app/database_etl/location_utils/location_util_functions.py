@@ -124,28 +124,51 @@ def row_in_feature_layer(row: pd.Series, feature_layer: FeatureLayer) -> bool:
 # Get pin latitude and longitude for a record
 # Param geo_dfs = dictionary of city, state, and country DFs
 def get_record_coordinates(record: pd.Series, geo_dfs: dict) -> Tuple:
-    pin_regions = [record['country']]
-    pin_region_type = 'country' if record['country'] is not None else ''
-
-    for region_type in ['state', 'city']:
-        if record[region_type] and len(record[region_type]) > 0:
-            pin_regions = record[region_type]
-            pin_region_type = region_type
-            # once we've found more than 1 region for a given type
-            # we cannot compute locations from a more specific region type
-            # e.g. if we have multiple states, we cannot match each city with a state
-            # thus we must stop our selection here
-            if len(pin_regions) > 1:
-                break
-
-    if pin_region_type == '':
+    # First try to query a matching country for the record and temporarily assign
+    # its pin coordinates to it
+    if not record['country']:
+        # If there is no country associated with the record there is no way we can query a latlng, return None
         return None, None
+    country_df = geo_dfs['country']
+    matching_country = country_df[country_df['country_name'] == record['country']].iloc[0]
+    pin_lat, pin_lng = matching_country['latitude'], matching_country['longitude']
+    matching_country_iso2 = matching_country['country_iso2']
+    # Exit if there's no matching iso2 code since we won't be able to query the state and city effectively
+    if matching_country_iso2 == None:
+        return pin_lat, pin_lng
 
-    # get latitude and longitude for the record
-    geo_df = geo_dfs[pin_region_type]
-    col_name = f"{pin_region_type}_name"
-    pin_lat = mean([geo_df[geo_df[col_name] == region_name].iloc[0]['latitude'] for region_name in pin_regions])
-    pin_lng = mean([geo_df[geo_df[col_name] == region_name].iloc[0]['longitude'] for region_name in pin_regions])
+    # Now try to query a matching state
+    if len(record['state']) == 0:
+        # If no states exist, return
+        return pin_lat, pin_lng
+    state_df = geo_dfs['state']
+    # query matching states based on matching state name and country_iso2 code
+    matching_states = [state_df[(state_df['state_name'] == state_name) & (state_df['country_iso2'] == matching_country_iso2)].iloc[0]
+                       for state_name in record['state']]
+    state_latitudes = [s['latitude'] for s in matching_states if not pd.isna(s['latitude'])]
+    state_longitudes = [s['longitude'] for s in matching_states if not pd.isna(s['longitude'])]
+    if len(state_latitudes) > 0 and len(state_longitudes) > 0:
+        # only update pin_lat and pin_lng if we actually get valid state coords
+        pin_lat, pin_lng = mean(state_latitudes), mean(state_longitudes)
+    if len(record['state']) > 1:
+        # If more than 1 state, we cannot accurately query city coords, so return
+        return pin_lat, pin_lng
+    matching_state_name = matching_states[0]['state_name']
+
+    # Finally try to query a matching city
+    if len(record['city']) == 0:
+        # If no cities exist, return
+        return pin_lat, pin_lng
+    city_df = geo_dfs['city']
+    # query matching cities based on matching state name and country_iso2 code
+    matching_cities = [city_df[(city_df['city_name'] == city_name)
+                       & (city_df['country_iso2'] == matching_country_iso2)
+                       & (city_df['state_name'] == matching_state_name)].iloc[0] for city_name in record['city']]
+    city_latitudes = [c['latitude'] for c in matching_cities if not pd.isna(c['latitude'])]
+    city_longitudes = [c['longitude'] for c in matching_cities if not pd.isna(c['longitude'])]
+    if len(city_latitudes) > 0 and len(city_longitudes) > 0:
+        # only update pin_lat and pin_lng if we actually get valid city coords
+        pin_lat, pin_lng = mean(city_latitudes), mean(city_longitudes)
 
     return pin_lat, pin_lng
 
