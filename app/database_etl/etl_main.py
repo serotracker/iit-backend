@@ -88,18 +88,6 @@ def main():
         # Create research source based on dashboard source
         research_source, research_source_cols = create_research_source_df(dashboard_source)
 
-        # remove state names from city name column and place them in their own column
-        multi_select_tables_dict["city"]["state_name"] = multi_select_tables_dict["city"]["city_name"] \
-            .map(lambda a: a.split(",")[1] if "," in a else None)
-        multi_select_tables_dict["city"]["city_name"] = multi_select_tables_dict["city"]["city_name"] \
-            .map(lambda a: a.split(",")[0] if "," in a else a)
-        # do the same for the dashboard source column
-        # Also standardize so the column type is always a list (None --> empty list)
-        dashboard_source["city"] = dashboard_source["city"] \
-            .map(lambda cities: [city.split(",")[0] for city in cities] if cities else [])
-        dashboard_source["state"] = dashboard_source["state"] \
-            .map(lambda states: states if states else [])
-
         # Compute pin information for each record in dashboard source table
         geo_dfs = {
             'city': multi_select_tables_dict['city'],
@@ -110,6 +98,10 @@ def main():
 
         # Format dashboard source table after creating research source
         dashboard_source = format_dashboard_source(dashboard_source, research_source_cols)
+
+        # remove state names from city_name field
+        multi_select_tables_dict["city"]["city_name"] = multi_select_tables_dict["city"]["city_name"] \
+            .map(lambda a: a.split(",")[0] if "," in a else a)
 
         # Validate the dashboard source df
         dashboard_source = validate_records(dashboard_source, DashboardSourceSchema())
