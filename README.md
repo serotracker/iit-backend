@@ -169,3 +169,48 @@ Confirm that the data has indeed been migrated by checking pgAdmin 4.
    - Drop the database: `drop database whiteclaw;`
    - Create the database: `create database whiteclaw;`
 - Restore the snapshot: `psql -h localhost -U USERNAME whiteclaw < EXPORT-FILENAME.sql`
+
+
+---
+# Infrastructure Documentation
+## CI/CD
+### Continuous Integration
+The following commands are run with CI:
+```
+pip install -r requirements.txt
+python manage.py test
+```
+The full configuration is found [here](.github/workflows/ci.yml).
+
+### Continuous Deployment
+Deployment is conducted server-side. The documentation can be found [here](https://github.com/serotracker/scripts#update_backendsh).
+
+### Results
+Results of each job can be viewed in the Actions tab of the repository: https://github.com/serotracker/iit-backend/actions  
+By default, upon a failed job, GitHub is configured to send emails to the author of the commit. To customize these notifications, refer to [GitHub Actions notification options](GitHub Actions notification options).   
+
+
+## Cronjobs
+The backend makes use of `cron` to run jobs on a schedule. 
+The following tasks are executed by `cron`:
+- Updating the backend
+- Running the ETL
+- Retrieving errors
+
+To view/modify cronjobs run on a particular machine, run the command `crontab -e`. 
+This will open the `cron` file in a `vim` editor.   
+In this file, each line contains one scheduled command. Refer to [this article](https://ostechnix.com/a-beginners-guide-to-cron-jobs/) to understand cronjob formatting.
+
+For further information on `cron`, refer to the [crontab Linux manual](https://man7.org/linux/man-pages/man5/crontab.5.html).
+
+## `tmux` sessions
+A `tmux` session is an isolated environment on a machine where a process can run indefinitely. SeroTracker makes use of `tmux` sessions to run our backend servers and several scripts.  
+The tmux sessions for each machine are summarized in the below table.
+
+| Instance (IP address)  | Session name | Description                                |
+|------------------------|--------------|--------------------------------------------|
+| Prod (3.97.103.19)     | backend      | Run the Flask backend                      |
+| Prod (3.97.103.19)     | install      | Install requirements, update the DB schema |
+| Medium (35.182.41.225) | etl          | Run the ETL (once daily)                   |
+| Dev (35.183.11.41)     | covidence    | Run the Covidence server                   |
+
