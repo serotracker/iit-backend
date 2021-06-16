@@ -1,6 +1,6 @@
 dashboard_fields = ['Source Name', 'Publication Date', 'First Author Full Name', 'Organizational Author', 'URL',
                     'Source Type', 'Source Publisher', 'One-Line Summary', 'Study Type', 'Country',
-                    'Lead Organization', 'State/Province', 'City', 'County', 'Sampling Start Date', 'Sampling End Date',
+                    'Lead Organization', 'State/Province', 'City', 'Sampling Start Date', 'Sampling End Date',
                     'Sample Frame (sex)', 'Sample Frame (age)', 'Sample Frame (groups of interest)', 'Sampling Method',
                     'Test Manufacturer', 'Test Type', 'Specimen Type', 'Isotype(s) Reported', 'Sub-grouping Variable',
                     'Sensitivity', 'Specificity', 'Included?', 'Denominator Value', 'Numerator Definition',
@@ -21,7 +21,7 @@ research_fields = ['2020 Population Count - Case', '2020 Population Count - Mort
                    'Specificity Denominator', 'Subgroup category for analysis',
                    'Test Link Unique ID', 'Test Name', 'Test Validation', 'included in SRMA (mar 2021)',
                    'Sub-group specific category (clean)', 'Date Created', 'Last modified time', 'Record ID',
-                   'SR Clean: Test Manufacturer Searched', 'Zotero Citation Key']
+                   'SR Clean: Test Manufacturer Searched', 'Zotero Citation Key', 'County']
 
 full_airtable_fields = {'2020 Population Count - Case': 'case_population',
                         '2020 Population Count - Mortality': 'deaths_population',
