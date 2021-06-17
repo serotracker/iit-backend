@@ -126,6 +126,7 @@ class ResearchSource(db.Model):
     ind_eval_type = Column(String())
     created_at = Column(DateTime)
     zotero_citation_key = Column(String())
+    county = Column(String())
 
 
 # Create base multi select tables
