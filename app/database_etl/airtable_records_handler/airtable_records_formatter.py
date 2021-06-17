@@ -57,7 +57,7 @@ def get_most_recent_publication_info(row: Dict) -> Dict:
 def standardize_airtable_data(df: pd.DataFrame) -> pd.DataFrame:
     # List of columns that are lookup fields and therefore only have one element in the list
     single_element_list_cols = ['included', 'source_name', 'url', 'source_publisher', 'summary',
-                                'study_type', 'country', 'lead_organization', 'overall_risk_of_bias',
+                                'study_type', 'lead_organization', 'overall_risk_of_bias',
                                 'age_variation', 'age_variation_measure', 'ind_eval_lab', 'ind_eval_link',
                                 'ind_se', 'ind_se_n', 'ind_sp', 'ind_sp_n', 'jbi_1', 'jbi_2', 'jbi_3', 'jbi_4',
                                 'jbi_5', 'jbi_6', 'jbi_7', 'jbi_8', 'jbi_9', 'measure_of_age', 'number_of_females',
@@ -69,8 +69,8 @@ def standardize_airtable_data(df: pd.DataFrame) -> pd.DataFrame:
         df[col] = df[col].apply(lambda x: x[0] if x is not None else x)
 
     # Convert elements that are "Not reported" or "Not Reported" or "NR" to None
-    df.replace({'nr': None, 'NR': None, 'Not Reported': None, 'Not reported': None, 'Not available': None},
-               inplace=True)
+    df.replace({'nr': None, 'NR': None, 'Not Reported': None, 'Not reported': None,
+                'Not available': None, 'NA': None}, inplace=True)
 
     # Replace columns that should be floats with NaN from None and rescale to percentage
     df[['ind_sp', 'ind_se']] = df[['ind_sp', 'ind_se']].replace({None: np.nan}) / 100
