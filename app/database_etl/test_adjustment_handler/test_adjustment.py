@@ -90,10 +90,34 @@ class TestAdjHandler:
         return cached_model
 
     def fit_one_pystan_model(self, model_params: Dict) -> Tuple:
+        
+        # Need to change the Hyperparameters in this part given the
+        # the model Data
+        
+        #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+        #                          Start of New Code                         #
+        #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+        
+        if (model_params['n_se'] < 10 or model_params['y_se'] < 10 or model_params['n_sp'] < 5 or model_params['y_sp'] < 5):
+            adpt_delt = 0.99
+            self.n_iter = 12000
+        else:
+            adpt_delt = 0.80
+            self.n_iter = 2000
+                
+        
+        
+        
+        
+        #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+        #                            End of New Code                         #
+        #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*
+        
+        
         fit = self.TESTADJ_MODEL.sampling(data=model_params,
                                           iter=self.n_iter,
                                           chains=self.n_chains,
-                                          control={'adapt_delta': 0.95},
+                                          control={'adapt_delta': adpt_delt},
                                           check_hmc_diagnostics=False)
 
         summary = fit.summary()
