@@ -174,45 +174,60 @@ def compute_pin_info(df: pd.DataFrame, geo_dfs: dict) -> pd.DataFrame:
         total_db_records = [q._asdict() for q in total_db_records]
         total_db_records = pd.DataFrame(data=total_db_records)
 
-    df = df[df['airtable_record_id'].isin(['rec02T2QJbo0Walfr', 'recmM293BPhfc4tRd'])]
-    pd.set_option('display.max_rows', None)
+    df.fillna(0, inplace=True)
+    total_db_records.fillna(0, inplace=True)
+    total_db_records = total_db_records[total_db_records['airtable_record_id'].isin(['rec02T2QJbo0Walfr', 'rech4589uFwzCwTKs', 'rech4589uFwzCwTKs'])]
+    df = df[df['airtable_record_id'].isin(['rec02T2QJbo0Walfr', 'recmM293BPhfc4tRd', 'rech4589uFwzCwTKs'])]
+    total_db_records.to_csv('total.csv', index=False)
+    df[['airtable_record_id', 'country', 'state', 'city']].to_csv('df.csv', index=False)
 
     # Re-format df from airtable so it matches df by removing all lists
     # example: rec0YwDjZjqf8lWBf,Japan,0,"['Tokyo', ' Osaka', ' Miyagi']",0,0,0 --> break into 3 sep records
-    reformated_df = pd.DataFrame(columns=df.columns)
+    reformated_df = pd.DataFrame(columns=total_db_records.columns)
     for _, row in df.iterrows():
-        print(row)
-        states = row['state'] if row['state'] else [None]
-        cities = row['city'] if row['city'] else [None]
+        # Extract states and cities
+        states = row['state']
+        cities = row['city']
 
-        print(type(states))
-        print(type(cities))
-
-        # Remove leading or trailing whitespace (occurs due to human entry errors)
-        states = [x.strip() for x in states if x is not None]
-        cities = [x.strip() for x in cities if x is not None]
-        total_state_city_combos = product(states, cities)
         print(states)
         print(cities)
-        print(list(total_state_city_combos))
-    exit()
 
+        # Turn comma separated string into list if not 0 (meaning no value)
+        states = states[0].split(",") if states != 0 else [0]
+        cities = cities[0].split(",") if cities != 0 else [0]
 
+        print(states)
+        print(cities)
 
+        # Remove leading or trailing whitespace (occurs due to human entry errors)
+        states = [x.strip() if x != 0 else x for x in states]
+        cities = [x.strip() if x != 0 else x for x in cities]
 
-    # df.to_csv('records_from_etl.csv', index=False)
-    # total_db_records.to_csv('records_from_db.csv', index=False)
+        print(states)
+        print(cities)
+
+        # Create list of all the combinations of states and cities
+        total_state_city_combos = product(states, cities)
+        print(total_state_city_combos)
+
+        for combo in total_state_city_combos:
+            new_row = {'airtable_record_id': row['airtable_record_id'],
+                       'country': row['country'],
+                       'state': combo[0],
+                       'city': combo[1]}
+            reformated_df = reformated_df.append(new_row, ignore_index=True)
+    reformated_df.to_csv('reformated_df.csv', index=False)
 
     # Concat old and new records and fillna with 0 (NaN and None become 0 so it is standardized)
-    diff = pd.concat([df[['airtable_record_id', 'country', 'state', 'city']], total_db_records])
-    diff.fillna(0, inplace=True)
+    diff = pd.concat([reformated_df[['airtable_record_id', 'country', 'state', 'city']], total_db_records])
     diff.to_csv('diff.csv', index=False)
-    exit()
-
-    print("concatenated size")
-    print(diff.shape[0])
-
-    diff.to_csv('diff.csv', index=False)
+    dropped = diff.drop_duplicates(keep=False)
+    dropped.to_csv('dropped.csv', index=False)
+    #
+    # print("concatenated size")
+    # print(diff.shape[0])
+    #
+    # diff.to_csv('diff.csv', index=False)
 
     # Drop duplicates based on these cols
     # diff = diff.drop_duplicates(keep=False)
@@ -222,7 +237,7 @@ def compute_pin_info(df: pd.DataFrame, geo_dfs: dict) -> pd.DataFrame:
     #
     # # Get all unique airtable_record_ids that are new/have been modified
     # new_airtable_record_ids = diff['airtable_record_id'].unique()
-    #
+
     # print("new airtable record ids")
     # print(len(new_airtable_record_ids))
     #
@@ -234,6 +249,6 @@ def compute_pin_info(df: pd.DataFrame, geo_dfs: dict) -> pd.DataFrame:
     # # Create feature layer object
     # disputed_areas_fl = FeatureLayer(WHO_FL_URL)
     # # apply row_in_disputed_area across the whole df
-    # # df['in_disputed_area'] = df.apply(lambda row: row_in_feature_layer(row, disputed_areas_fl), axis=1)
-    df['in_disputed_area'] = False
+    # df['in_disputed_area'] = df.apply(lambda row: row_in_feature_layer(row, disputed_areas_fl), axis=1)
+    # df['in_disputed_area'] = False
     return df
