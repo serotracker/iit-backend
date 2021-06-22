@@ -90,11 +90,17 @@ class TestAdjHandler:
         return cached_model
 
     def fit_one_pystan_model(self, model_params: Dict) -> Tuple:
+        
+        # print("fit_one_pystan_model Is working")
+        # return 1,1
+        
+        
         fit = self.TESTADJ_MODEL.sampling(data=model_params,
                                           iter=self.n_iter,
                                           chains=self.n_chains,
                                           control={'adapt_delta': 0.95},
-                                          check_hmc_diagnostics=False)
+                                          check_hmc_diagnostics=False,
+                                          verbose=True)
 
         summary = fit.summary()
         summary_df = pd.DataFrame(data=summary['summary'],
@@ -178,16 +184,20 @@ class TestAdjHandler:
 
         # unadjusted estimate available and thus prioritized in estimate selection code
         if pd.isna(estimate['test_adj']):
-
+                
             # Independent evaluation is available
             if pd.notna(estimate['ind_se']) and pd.notna(estimate['ind_sp']):
                 adj_type = 'FINDDx / MUHC independent evaluation'
                 # Also note these must be divided by 100
                 se = (estimate['ind_se']) / 100
                 sp = (estimate['ind_sp']) / 100
-                se_n = float(estimate['ind_se_n'][0]) * 100 if estimate['ind_se_n'] is not None else 30
-                sp_n = float(estimate['ind_sp_n'][0]) * 100 if estimate['ind_sp_n'] is not None else 80
 
+                # se_n = float(estimate['ind_se_n'][0]) * 100 if estimate['ind_se_n'] is not None else 30
+                # sp_n = float(estimate['ind_sp_n'][0]) * 100 if estimate['ind_sp_n'] is not None else 80
+                se_n = float(estimate['ind_se_n']) * 100 if estimate['ind_se_n'] is not None else 30
+                sp_n = float(estimate['ind_sp_n']) * 100 if estimate['ind_sp_n'] is not None else 80
+                
+                
             # Author evaluation is available
             elif pd.notna(estimate['se_n']) and pd.notna(estimate['sp_n']) and \
                     pd.notna(estimate['sensitivity']) and pd.notna(estimate['specificity']):
@@ -261,7 +271,13 @@ class TestAdjHandler:
 def run_on_test_set(model_code: str = testadj_model_code, model_name: str = 'testadj_binomial_se_sp') -> pd.DataFrame:
     records_df = pd.read_csv('test_adj_test_set.csv')
     testadjHandler = TestAdjHandler(model_code=model_code, model_name=model_name)
-
+    
+    # Convert numeric cols to float (some of these come out of airtable as strings so need to standardize types)
+    float_cols = ['ind_se', 'ind_sp', 'ind_se_n', 'ind_sp_n', 'se_n', 'sp_n', 'sensitivity', 'specificity','denominator_value', 'serum_pos_prevalence']
+    records_df[float_cols] = records_df[float_cols].astype(float)
+    
+    
+    
     # Write to csv
     records_df['adj_prevalence'], records_df['adj_sensitivity'], records_df['adj_specificity'], \
     records_df['ind_eval_type'], records_df['adj_prev_ci_lower'], records_df['adj_prev_ci_upper'] = \
