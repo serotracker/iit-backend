@@ -131,7 +131,7 @@ recreate all the tables in the schema: `flask db upgrade`
 
 ### Populate local database
 
-Run the script `python app/database_etl/etl_main.py`.  
+Run the script `python app/database_etl/etl_main.py`.
 
 Confirm that the data has indeed been migrated by checking pgAdmin 4.
 
@@ -142,6 +142,7 @@ Confirm that the data has indeed been migrated by checking pgAdmin 4.
 3. Run `python manage.py test`
 
 ## Loading Tableau CSV to Google Sheets
+
 1. Navigate to `https://console.cloud.google.com/apis/credentials/oauthclient/702218053502-fcrju4976lt0p1dntbln2qdolo72qjki.apps.googleusercontent.com?authuser=3&project=covid-corporate--1589232879130`.
 2. Make sure you are signed into the console as `can.serosurveillance.dev@gmail.com`.
 3. Click `DOWNLOAD JSON` and save the file as `credentials.json` in the `tableau_data_connector` directory.
@@ -165,52 +166,67 @@ Confirm that the data has indeed been migrated by checking pgAdmin 4.
 
 - Export database snapshot: `pg_dump -h localhost -U USERNAME whiteclaw -f EXPORT-FILENAME.sql`
 - Wipe the existing database:
-   - Enter postgres interactively as the `postgres` user: `psql -U postgres -h localhost -W`
-   - Drop the database: `drop database whiteclaw;`
-   - Create the database: `create database whiteclaw;`
+  - Enter postgres interactively as the `postgres` user: `psql -U postgres -h localhost -W`
+  - Drop the database: `drop database whiteclaw;`
+  - Create the database: `create database whiteclaw;`
 - Restore the snapshot: `psql -h localhost -U USERNAME whiteclaw < EXPORT-FILENAME.sql`
 
+## Running Dockerized Flask App
+
+- `cd` into the root of this repo
+- Create a database dump and save it to `docker_postgres_dump.sql` using `pg_dump --create -h localhost -U <USERNAME> whiteclaw -f docker_postgres_dump.sql`
+- Run a cluster of containers using: `docker-compose up`. This will start a Flask app that's accessible via `localhost:5000` and a PostgreSQL instance that accessible to the Flask app.
+- Shut down the cluster of containers using: `CTRL-C` followed by `docker-compose down`
 
 ---
+
 # Infrastructure Documentation
+
 ## CI/CD
+
 ### Continuous Integration
+
 The following commands are run with CI:
+
 ```
 pip install -r requirements.txt
 python manage.py test
 ```
+
 The full configuration is found [here](.github/workflows/ci.yml).
 
 ### Continuous Deployment
+
 Deployment is conducted server-side. The documentation can be found [here](https://github.com/serotracker/scripts#update_backendsh).
 
 ### Results
-Results of each job can be viewed in the Actions tab of the repository: https://github.com/serotracker/iit-backend/actions  
-By default, upon a failed job, GitHub is configured to send emails to the author of the commit. To customize these notifications, refer to [GitHub Actions notification options](GitHub Actions notification options).   
 
+Results of each job can be viewed in the Actions tab of the repository: https://github.com/serotracker/iit-backend/actions  
+By default, upon a failed job, GitHub is configured to send emails to the author of the commit. To customize these notifications, refer to [GitHub Actions notification options](GitHub Actions notification options).
 
 ## Cronjobs
-The backend makes use of `cron` to run jobs on a schedule. 
+
+The backend makes use of `cron` to run jobs on a schedule.
 The following tasks are executed by `cron`:
+
 - Updating the backend
 - Running the ETL
 - Retrieving errors
 
-To view/modify cronjobs run on a particular machine, run the command `crontab -e`. 
-This will open the `cron` file in a `vim` editor.   
+To view/modify cronjobs run on a particular machine, run the command `crontab -e`.
+This will open the `cron` file in a `vim` editor.  
 In this file, each line contains one scheduled command. Refer to [this article](https://ostechnix.com/a-beginners-guide-to-cron-jobs/) to understand cronjob formatting.
 
 For further information on `cron`, refer to the [crontab Linux manual](https://man7.org/linux/man-pages/man5/crontab.5.html).
 
 ## `tmux` sessions
+
 A `tmux` session is an isolated environment on a machine where a process can run indefinitely. SeroTracker makes use of `tmux` sessions to run our backend servers and several scripts.  
 The tmux sessions for each machine are summarized in the below table.
 
 | Instance (IP address)  | Session name | Description                                |
-|------------------------|--------------|--------------------------------------------|
+| ---------------------- | ------------ | ------------------------------------------ |
 | Prod (3.97.103.19)     | backend      | Run the Flask backend                      |
 | Prod (3.97.103.19)     | install      | Install requirements, update the DB schema |
 | Medium (35.182.41.225) | etl          | Run the ETL (once daily)                   |
 | Dev (35.183.11.41)     | covidence    | Run the Covidence server                   |
-

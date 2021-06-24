@@ -1,0 +1,27 @@
+version: "3"
+
+services:
+  app:
+    build: .
+    restart: always
+    image: "iit-backend"
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    environment:
+      - FLASK_ENV=prod
+      - DATABASE_HOST_ADDRESS=db
+    depends_on:
+      - db
+
+  db:
+    restart: always
+    image: postgres:12.7
+    environment:
+      - POSTGRES_PASSWORD=$DATABASE_PASSWORD
+      - POSTGRES_USER=$DATABASE_USERNAME
+    volumes:
+      - ./docker_postgres_dump.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
