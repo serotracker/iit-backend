@@ -142,8 +142,10 @@ Output: set of records represented by dicts
 def get_filtered_records(research_fields=False, filters=None, columns=None, include_disputed_regions=False,
                          sampling_start_date=None, sampling_end_date=None, include_subgeography_estimates=False,
                          publication_start_date=None, publication_end_date=None, prioritize_estimates=True,
-                         prioritize_estimates_mode='dashboard', include_in_srma=False, unity_aligned_only=False):
-    query_dicts = get_all_records(research_fields, include_disputed_regions, unity_aligned_only)
+                         prioritize_estimates_mode='dashboard', include_in_srma=False, unity_aligned_only=False,
+                         include_records_without_latlngs=False):
+    query_dicts = get_all_records(research_fields, include_disputed_regions, unity_aligned_only,
+                                  include_records_without_latlngs)
     if query_dicts is None or len(query_dicts) == 0:
         return []
 

@@ -43,6 +43,7 @@ class Records(Resource):
         include_disputed_regions = data.get('include_disputed_regions', False)
         include_subgeography_estimates = data.get('include_subgeography_estimates', False)
         unity_aligned_only = data.get('unity_aligned_only', False)
+        include_records_without_latlngs = data.get('include_records_without_latlngs', False)
 
         sampling_start_date, sampling_end_date = convert_start_end_dates(data, use_sampling_date=True)
         publication_start_date, publication_end_date = convert_start_end_dates(data, use_sampling_date=False)
@@ -59,7 +60,8 @@ class Records(Resource):
                                       include_in_srma=include_in_srma,
                                       include_disputed_regions=include_disputed_regions,
                                       include_subgeography_estimates=include_subgeography_estimates,
-                                      unity_aligned_only=unity_aligned_only)
+                                      unity_aligned_only=unity_aligned_only,
+                                      include_records_without_latlngs=include_records_without_latlngs)
         if not columns or ("pin_latitude" in columns and "pin_longitude" in columns):
             result = jitter_pins(result)
         return jsonify(result)
