@@ -7,10 +7,10 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from .config import config_by_name
 
-logging.config.fileConfig(os.getenv('LOG_CONFIG_PATH'),
-                          disable_existing_loggers=False,
-                          defaults={'logfilename': os.getenv('LOG_FILE_PATH')})
-logging.getLogger(__name__)
+# logging.config.fileConfig(os.getenv('LOG_CONFIG_PATH'),
+#                           disable_existing_loggers=False,
+#                           defaults={'logfilename': os.getenv('LOG_FILE_PATH')})
+# logging.getLogger(__name__)
 
 
 def create_app(db):

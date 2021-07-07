@@ -175,7 +175,7 @@ Confirm that the data has indeed been migrated by checking pgAdmin 4.
 
 - `cd` into the root of this repo
 - Create a database dump and save it to `docker_postgres_dump.sql` using `pg_dump --create -h localhost -U <USERNAME> whiteclaw -f docker_postgres_dump.sql`
-- Run a cluster of containers using: `docker-compose up`. This will start a Flask app that's accessible via `localhost:5000` and a PostgreSQL instance that accessible to the Flask app.
+- Run a cluster of containers using: `docker-compose -f docker-compose-local.yml up`. This will start a Flask app that's accessible via `localhost:5000` and a PostgreSQL instance that accessible to the Flask app.
 - Shut down the cluster of containers using: `CTRL-C` followed by `docker-compose down`
 
 ---
