@@ -17,5 +17,12 @@ RUN apt-get update && \
     && apt-get remove -y --purge make gcc build-essential \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
+
+# set some default environment variables
+ENV FLASK_ENV=prod
+ENV LOG_CONFIG_PATH=logging.cfg
+ENV LOG_FILE_PATH=logfile.log
+
+EXPOSE 5000
 ENTRYPOINT [ "python" ]
 CMD [ "manage.py", "run"]
