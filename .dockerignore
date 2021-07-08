@@ -2,3 +2,8 @@
 .elasticbeanstalk/*
 .git
 .gitignore
+# No need for migrations, tests, or virtual environments in app deployment
+migrations/
+tests/
+venv/
+README.md

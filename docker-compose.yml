@@ -2,21 +2,27 @@ version: "3"
 
 services:
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile-app
     restart: always
     image: "iit-backend/app"
     ports:
-      - "8080:5000"
+      - "5000:5000"
+    env_file:
+      - .env
     environment:
       - FLASK_ENV=prod
-      - AIRTABLE_API_KEY
-      - AIRTABLE_BASE_ID
-      - DATABASE_USERNAME
-      - DATABASE_PASSWORD
-      - DATABASE_NAME=whiteclaw
-      - DATABASE_HOST_ADDRESS
-      - MAPBOX_API_KEY
-      - LOG_CONFIG_PATH=logging.cfg
-      - LOG_FILE_PATH=logfile.log
-      - ANALYZE_SPREADSHEET_ID
-      - SLACKBOT_TOKEN
+      - DATABASE_HOST_ADDRESS=db
+    depends_on:
+      - db
+  db:
+    restart: always
+    image: postgres:12.7
+    environment:
+      - POSTGRES_PASSWORD=$DATABASE_PASSWORD
+      - POSTGRES_USER=$DATABASE_USERNAME
+    volumes:
+      - ./docker_postgres_dump.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
