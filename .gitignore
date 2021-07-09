@@ -42,8 +42,3 @@ push_csvs.py
 
 # Data dump for docker postgres
 docker_postgres_dump.sql
-
-# Elastic Beanstalk Files
-.elasticbeanstalk/*
-!.elasticbeanstalk/*.cfg.yml
-!.elasticbeanstalk/*.global.yml
