@@ -180,7 +180,7 @@ Confirm that the data has indeed been migrated by checking pgAdmin 4.
 
 ---
 
-# Infrastructure Documentation
+# Infrastructure Documentation (Current - Vanilla EC2)
 
 ## CI/CD
 
@@ -230,3 +230,7 @@ The tmux sessions for each machine are summarized in the below table.
 | Prod (3.97.103.19)     | install      | Install requirements, update the DB schema |
 | Medium (35.182.41.225) | etl          | Run the ETL (once daily)                   |
 | Dev (35.183.11.41)     | covidence    | Run the Covidence server                   |
+
+# Infrastructure Documentation (Future - Elastic Beanstalk)
+
+See https://docs.google.com/document/d/1sItF1-I8uhfz9kQX62x2RooS4BndqnDBXH9g9TAWss0/edit#
