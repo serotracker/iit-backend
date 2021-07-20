@@ -31,7 +31,7 @@ def create_app(db):
     namespaces = config_obj.APP_NAMESPACES
     from .utils import init_namespace
     from .namespaces import airtable_scraper_ns, healthcheck_ns, data_provider_ns, cases_count_scraper_ns,\
-        meta_analysis_ns
+        meta_analysis_ns, airtable_record_updater_ns
     init_namespace(namespaces, api)
 
     app.app_context().push()
