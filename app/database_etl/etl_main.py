@@ -136,6 +136,9 @@ def main():
         # Make sure that filter options are still valid
         check_filter_options(dashboard_source)
 
+        # Update ordering and translations for filter options 
+        ingest_sample_frame_goi_filter_options()
+
         # See if any columns in the db are missing pooling functions
         validate_pooling_function_columns(tables_dict)
 
