@@ -81,3 +81,9 @@ def drop_table_entries(current_time: datetime, drop_old: bool = True):
                 session.query(table).filter(or_(table.created_at == current_time, table.created_at.is_(None))).delete()
             session.commit()
     return
+
+def drop_specific_table_entries(current_time: datetime, table_name):
+    with db_session() as session:
+        session.query(table_name).filter(or_(table_name.created_at != current_time, table_name.created_at.is_(None))).delete()
+        session.commit()
+    return

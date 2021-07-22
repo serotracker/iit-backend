@@ -1,8 +1,15 @@
+from app.serotracker_sqlalchemy.models import PopulationGroupOptions
 import os
 import requests
 import json
+import logging
+from uuid import uuid4
 
 from app.utils import full_airtable_fields, send_api_error_slack_notif
+from app.database_etl.postgres_tables_handler import drop_specific_table_entries
+from datetime import datetime
+from app.serotracker_sqlalchemy import db_session
+from app.serotracker_sqlalchemy.models import PopulationGroupOptions
 
 import pandas as pd
 
@@ -84,3 +91,47 @@ def get_all_records():
         }
         send_api_error_slack_notif(body, data, error=e, request_info=request_info, channel='#dev-logging-etl')
         return request_info
+
+def ingest_sample_frame_goi_filter_options():
+    url = "https://api.airtable.com/v0/appFfYIupTrVQ0HJx/Sample%20Frame%20GOI?fields=Order&fields=Name&sort%5B0%5D%5Bfield%5D=Order&fields=French%20Name"
+    headers = {'Authorization': 'Bearer {}'.format(AIRTABLE_API_KEY)}
+
+    # Make request and retrieve records in json format
+    r = requests.get(url, headers=headers)
+    data = r.json()
+
+    # Try to get records from data if the request was successful
+    try:
+        # Get sorted records
+        records = data["records"]
+        drop_specific_table_entries(datetime.now(), PopulationGroupOptions)
+
+        # Add records to table 
+        with db_session() as session:
+            records_to_add = [PopulationGroupOptions(id=uuid4(), 
+                                                    name=record['fields']['Name'], 
+                                                    french_name=record['fields']['French Name'] if 'French Name' in record['fields'] else None, 
+                                                    order=record['fields']['Order'], 
+                                                    created_at=datetime.now()) 
+                             for record in records if record['fields']]
+            session.bulk_save_objects(records_to_add)
+            session.commit()   
+        return records
+    except KeyError as e:
+        body = "Results were not successfully retrieved from Airtable API. " \
+               "Please check connection parameters in config.py and fields in airtable_fields_config.json."
+        request_info = {
+            "url": url,
+            "headers": json.dumps(headers)
+        }
+        logging.error(e)
+        # send_api_error_slack_notif(body, data, error=e, request_info=request_info, channel='#dev-logging-etl')
+        return request_info
+
+
+
+
+
+    
+
+

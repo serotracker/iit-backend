@@ -1,3 +1,4 @@
+from app.serotracker_sqlalchemy.models import PopulationGroupOptions
 import pandas as pd
 import numpy
 import math
@@ -211,4 +212,8 @@ def get_all_filter_options() -> Dict[str, Any]:
             0].isoformat()
         options["updated_at"] = session.query(func.max(DashboardSource.publication_date))[0][0].isoformat()
 
+        # Get population group options
+        results = session.query().with_entities(PopulationGroupOptions.order, PopulationGroupOptions.name, PopulationGroupOptions.french_name)
+        options["population_group"] = [[result[1], result[2]] for result in sorted(results, key=lambda result: result[0])]
+        
         return options
