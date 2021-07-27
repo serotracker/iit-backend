@@ -42,3 +42,5 @@ push_csvs.py
 
 # Data dump for docker postgres
 docker_postgres_dump.sql
+
+.DS_Store
