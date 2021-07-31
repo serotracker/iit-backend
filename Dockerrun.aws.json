@@ -1,0 +1,12 @@
+{
+    "AWSEBDockerrunVersion": "1",
+    "Image": {
+        "Name": "serotracker/iit-backend"
+    },
+    "Ports": [
+        {
+            "ContainerPort": 5000,
+            "HostPort": 5000
+        }
+    ]
+}

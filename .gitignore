@@ -39,3 +39,6 @@ csvs/
 load-dotenv.sh
 push_csvs.py
 .db_snapshots/
+
+# Data dump for docker postgres
+docker_postgres_dump.sql
