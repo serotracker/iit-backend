@@ -4,6 +4,7 @@ import pickle
 from math import log
 from hashlib import md5
 from typing import Dict, Tuple, Union
+import os
 
 import pandas as pd
 import pystan
@@ -90,11 +91,6 @@ class TestAdjHandler:
         return cached_model
 
     def fit_one_pystan_model(self, model_params: Dict) -> Tuple:
-        
-        # print("fit_one_pystan_model Is working")
-        # return 1,1
-        
-        
         fit = self.TESTADJ_MODEL.sampling(data=model_params,
                                           iter=self.n_iter,
                                           chains=self.n_chains,
@@ -266,20 +262,3 @@ class TestAdjHandler:
             lower, upper = proportion_confint(int(estimate['denominator_value'] * estimate['serum_pos_prevalence']),
                                               estimate['denominator_value'], alpha=0.05, method='jeffreys')
         return adj_prev, se, sp, adj_type, lower, upper
-
-
-def run_on_test_set(model_code: str = testadj_model_code, model_name: str = 'testadj_binomial_se_sp') -> pd.DataFrame:
-    records_df = pd.read_csv('test_adj_test_set.csv')
-    testadjHandler = TestAdjHandler(model_code=model_code, model_name=model_name)
-    
-    # Convert numeric cols to float (some of these come out of airtable as strings so need to standardize types)
-    float_cols = ['ind_se', 'ind_sp', 'ind_se_n', 'ind_sp_n', 'se_n', 'sp_n', 'sensitivity', 'specificity','denominator_value', 'serum_pos_prevalence']
-    records_df[float_cols] = records_df[float_cols].astype(float)
-    
-    
-    
-    # Write to csv
-    records_df['adj_prevalence'], records_df['adj_sensitivity'], records_df['adj_specificity'], \
-    records_df['ind_eval_type'], records_df['adj_prev_ci_lower'], records_df['adj_prev_ci_upper'] = \
-        zip(*records_df.apply(lambda row: testadjHandler.get_adjusted_estimate(row), axis=1))
-    return records_df
