@@ -32,3 +32,9 @@ jobs:
     - name: Install aws eb cli
       run: |
         pip install awsebcli
+    - name: Deploy Elastic Beanstalk App
+      run: |
+        eb deploy iit-backend-dev
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
