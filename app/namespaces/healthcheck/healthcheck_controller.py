@@ -8,5 +8,5 @@ healthcheck_ns = Namespace('healthcheck', description='A health check endpoint.'
 class Healthcheck(Resource):
     @healthcheck_ns.doc('A health check endpoint.')
     def get(self):
-        response = 'The healthcheck endpoint was hit, nice!'
+        response = 'The healthcheck endpoint was hit.'
         return jsonify(response)
