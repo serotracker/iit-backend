@@ -213,7 +213,10 @@ def get_all_filter_options() -> Dict[str, Any]:
         options["updated_at"] = session.query(func.max(DashboardSource.publication_date))[0][0].isoformat()
 
         # Get population group options
-        results = session.query().with_entities(PopulationGroupOptions.order, PopulationGroupOptions.name, PopulationGroupOptions.french_name)
+        results = session.query(PopulationGroupOptions.order, PopulationGroupOptions.name, PopulationGroupOptions.french_name)
+        # result[0]: Order associated with filter option, records are sorted by this Order
+        # result[1]: English translation of filter option
+        # result[2]: French translation of filter option
         options["population_group"] = [[result[1], result[2]] for result in sorted(results, key=lambda result: result[0])]
         
         return options
