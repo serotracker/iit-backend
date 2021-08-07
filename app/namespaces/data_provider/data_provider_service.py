@@ -217,6 +217,6 @@ def get_all_filter_options() -> Dict[str, Any]:
         # result[0]: Order associated with filter option, records are sorted by this Order
         # result[1]: English translation of filter option
         # result[2]: French translation of filter option
-        options["population_group"] = [[result[1], result[2]] for result in sorted(results, key=lambda result: result[0])]
+        options["population_group"] = [{"english": result[1], "french": result[2]} for result in sorted(results, key=lambda result: result[0])]
         
         return options
