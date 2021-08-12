@@ -15,4 +15,3 @@ class TestAdjustmentSchema(Schema):
     test_type = fields.String(allow_none=True)
     denominator_value = fields.Integer(allow_none=True)
     serum_pos_prevalence = fields.Float(allow_none=True)
-    record_id = fields.String(required=True)

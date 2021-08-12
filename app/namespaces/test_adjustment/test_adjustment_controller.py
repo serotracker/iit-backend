@@ -4,17 +4,17 @@ from flask_restplus import Resource, Namespace
 from flask import jsonify, make_response, request
 
 from app.utils import validate_request_input_against_schema
-from .airtable_record_updater_schema import TestAdjustmentSchema
-from .airtable_record_updater_service import TestAdjHandler, modify_record_test_adj_fields
+from .test_adjustment_schema import TestAdjustmentSchema
+from .test_adjustment_service import TestAdjHandler
 
 
-airtable_record_updater_ns = Namespace('airtable_record_updater', description='Endpoints for updating airtable records via scripting.')
+test_adjustment_ns = Namespace('test_adjustment', description='Endpoints for updating airtable records via scripting.')
 logging.getLogger(__name__)
 
 
-@airtable_record_updater_ns.route('/test_adjustment', methods=['POST'])
+@test_adjustment_ns.route('/get_adjusted', methods=['POST'])
 class Records(Resource):
-    @airtable_record_updater_ns.doc('An endpoint for getting all records from database with or without filters.')
+    @test_adjustment_ns.doc('An endpoint for getting all records from database with or without filters.')
     def post(self):
         # Convert input payload to json and throw error if it doesn't exist
         data = request.get_json()
@@ -34,8 +34,6 @@ class Records(Resource):
             # If there was an error with the input payload, return the error and 422 response
             return make_response(payload, status_code)
 
-        print(payload)
-
         # All of these params can be empty, in which case, our utility functions will just return all records
         test_adj = data.get('test_adj')
         ind_se = data.get('ind_se')
@@ -50,21 +48,13 @@ class Records(Resource):
         test_type = data.get('test_type')
         denominator_value = data.get('denominator_value')
         serum_pos_prevalence = data.get('serum_pos_prevalence')
-        record_id = data.get('record_id')
 
         # Apply test adjustment
         test_adj_handler = TestAdjHandler()
-        print('test adj handler created')
         adj_prevalence, adj_sensitivity, adj_specificity, ind_eval_type, adj_prev_ci_lower, adj_prev_ci_upper = \
             test_adj_handler.get_adjusted_estimate(test_adj, ind_se, ind_sp, ind_se_n, ind_sp_n, se_n, sp_n,
                                                    sensitivity, specificity, test_validation, test_type,
                                                    denominator_value, serum_pos_prevalence)
-
-        print('modifying airtable record')
-
-        # Modify record that test adjustment was applied on to fill in 6 additional columns
-        modify_record_test_adj_fields(adj_prevalence, adj_sensitivity, adj_specificity, ind_eval_type,
-                                      adj_prev_ci_lower, adj_prev_ci_upper, record_id)
 
         # Return result as json payload
         result = {"adj_prevalence": adj_prevalence,
