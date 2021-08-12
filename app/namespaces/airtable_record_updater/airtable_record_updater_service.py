@@ -4,6 +4,9 @@ import pickle
 from math import log
 from hashlib import md5
 from typing import Dict, Tuple, Union
+import os
+import requests
+import json
 
 import pandas as pd
 import pystan
@@ -187,8 +190,8 @@ class TestAdjHandler:
             if pd.notna(ind_se) and pd.notna(ind_sp):
                 adj_type = 'FINDDx / MUHC independent evaluation'
                 # Also note these must be divided by 100
-                se = (ind_se) / 100
-                sp = (ind_sp) / 100
+                se = ind_se
+                sp = ind_sp
                 output_se_n = float(ind_se_n) * 100 if ind_se_n is not None else 30
                 output_sp_n = float(ind_sp_n) * 100 if ind_sp_n is not None else 80
 
@@ -222,8 +225,8 @@ class TestAdjHandler:
                     if test_type and test_type == standard_test_type:
                         se = bastos_estimates[standard_test_type]['se']['50']
                         sp = bastos_estimates[standard_test_type]['sp']['50']
-                        se_n = bastos_estimates[standard_test_type]['se']['n']
-                        sp_n = bastos_estimates[standard_test_type]['sp']['n']
+                        output_se_n = bastos_estimates[standard_test_type]['se']['n']
+                        output_sp_n = bastos_estimates[standard_test_type]['sp']['n']
                         adj_type = 'Used Bastos SR/MA data; no sens, spec, or author adjustment available'
                         found_test_type = True
                         break
@@ -260,3 +263,37 @@ class TestAdjHandler:
             lower, upper = proportion_confint(int(denominator_value * serum_pos_prevalence),
                                               denominator_value, alpha=0.05, method='jeffreys')
         return adj_prev, se, sp, adj_type, lower, upper
+
+
+def modify_record_test_adj_fields(adj_prevalence, adj_sensitivity, adj_specificity, ind_eval_type,
+                                  adj_prev_ci_lower, adj_prev_ci_upper, record_id):
+    AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+    AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+    AIRTABLE_REQUEST_URL = "https://api.airtable.com/v0/{}/Rapid%20Review%3A%20Estimates?".format(AIRTABLE_BASE_ID)
+
+    url = AIRTABLE_REQUEST_URL.format(AIRTABLE_BASE_ID)
+    print(url)
+    headers = {'Authorization': 'Bearer {}'.format(AIRTABLE_API_KEY)}
+
+    # Make request and retrieve records in json format
+    data = {"records": [
+        {
+            "id": record_id,
+            "fields": {
+                "adj_prevalence": adj_prevalence,
+                "adj_sensitivity": adj_sensitivity,
+                "adj_specificity": adj_specificity,
+                "ind_eval_type": ind_eval_type,
+                "adj_prev_ci_lower": adj_prev_ci_lower,
+                "adj_prev_ci_upper": adj_prev_ci_upper
+            }
+        }
+    ]}
+
+    print(data)
+
+    r = requests.patch(url, data=data, headers=headers)
+    response = r.json()
+    print(response)
+    exit()
+

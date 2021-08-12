@@ -3,9 +3,9 @@ import logging.config
 from flask_restplus import Resource, Namespace
 from flask import jsonify, make_response, request
 
-from app.utils import validate_request_input_against_schema, get_filtered_records, get_paginated_records, convert_start_end_dates
+from app.utils import validate_request_input_against_schema
 from .airtable_record_updater_schema import TestAdjustmentSchema
-from .airtable_record_updater_service import TestAdjHandler
+from .airtable_record_updater_service import TestAdjHandler, modify_record_test_adj_fields
 
 
 airtable_record_updater_ns = Namespace('airtable_record_updater', description='Endpoints for updating airtable records via scripting.')
@@ -50,13 +50,21 @@ class Records(Resource):
         test_type = data.get('test_type')
         denominator_value = data.get('denominator_value')
         serum_pos_prevalence = data.get('serum_pos_prevalence')
+        record_id = data.get('record_id')
 
         # Apply test adjustment
         test_adj_handler = TestAdjHandler()
+        print('test adj handler created')
         adj_prevalence, adj_sensitivity, adj_specificity, ind_eval_type, adj_prev_ci_lower, adj_prev_ci_upper = \
             test_adj_handler.get_adjusted_estimate(test_adj, ind_se, ind_sp, ind_se_n, ind_sp_n, se_n, sp_n,
                                                    sensitivity, specificity, test_validation, test_type,
                                                    denominator_value, serum_pos_prevalence)
+
+        print('modifying airtable record')
+
+        # Modify record that test adjustment was applied on to fill in 6 additional columns
+        modify_record_test_adj_fields(adj_prevalence, adj_sensitivity, adj_specificity, ind_eval_type,
+                                      adj_prev_ci_lower, adj_prev_ci_upper, record_id)
 
         # Return result as json payload
         result = {"adj_prevalence": adj_prevalence,
