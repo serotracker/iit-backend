@@ -7,7 +7,6 @@ import logging
 from uuid import uuid4
 
 from app.utils import full_airtable_fields, send_api_error_slack_notif
-from app.database_etl.postgres_tables_handler import drop_specific_table_entries
 from datetime import datetime
 from app.serotracker_sqlalchemy import db_session
 from app.serotracker_sqlalchemy.models import PopulationGroupOptions
@@ -126,9 +125,6 @@ def ingest_sample_frame_goi_filter_options():
                              for record in records if record['fields']]
             session.bulk_save_objects(records_to_add)
             session.commit()  
-        
-        # Remove old records
-        drop_specific_table_entries(current_time, PopulationGroupOptions)
         return 
     except KeyError as e:
        return _handle_airtable_error(e, data, AIRTABLE_SAMPLE_FRAME_GOI_OPTIONS_REQUEST_URL)

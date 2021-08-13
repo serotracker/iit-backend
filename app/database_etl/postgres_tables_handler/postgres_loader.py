@@ -1,3 +1,4 @@
+from app.serotracker_sqlalchemy.models import PopulationGroupOptions
 import logging
 
 import pandas as pd
@@ -21,7 +22,8 @@ table_names_dict = {
     "state_bridge": StateBridge,
     "test_manufacturer_bridge": TestManufacturerBridge,
     "antibody_target_bridge": AntibodyTargetBridge,
-    "country": Country
+    "country": Country,
+    "population_group_options": PopulationGroupOptions,
 }
 
 
@@ -80,10 +82,4 @@ def drop_table_entries(current_time: datetime, drop_old: bool = True):
                 # Drop new records if type is new
                 session.query(table).filter(or_(table.created_at == current_time, table.created_at.is_(None))).delete()
             session.commit()
-    return
-
-def drop_specific_table_entries(current_time: datetime, table_name):
-    with db_session() as session:
-        session.query(table_name).filter(or_(table_name.created_at != current_time, table_name.created_at.is_(None))).delete()
-        session.commit()
     return
