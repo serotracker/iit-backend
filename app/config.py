@@ -38,17 +38,14 @@ class ApiDevelopmentConfig(ApiConfig):
 
 
 class ApiTestingConfig(ApiConfig):
-    DATABASE_USERNAME = os.getenv('DATABASE_USERNAME')
-    DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD')
+    DATABASE_USERNAME = os.getenv('DATABASE_USERNAME', 'postgres')
+    DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD', 'postgres')
     DATABASE_HOST_ADDRESS = 'localhost'
     DATABASE_NAME = 'whiteclaw_test'
-    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI',
-                                        'postgresql://{username}:{password}@{host_address}:5432/{database_name}'.format(
-                                            username=DATABASE_USERNAME,
-                                            password=DATABASE_PASSWORD,
-                                            host_address=DATABASE_HOST_ADDRESS,
-                                            database_name=DATABASE_NAME))
+    SQLALCHEMY_DATABASE_URI = \
+        f'postgresql://{DATABASE_USERNAME}:{DATABASE_PASSWORD}@{DATABASE_HOST_ADDRESS}:5432/{DATABASE_NAME}'
     SQLALCHEMY_TRACK_MODIFICATIONS = os.getenv('SQLALCHEMY_TRACK_MODIFICATIONS', True)
+
     def __init__(self):
         super(ApiConfig)
 

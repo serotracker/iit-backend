@@ -11,18 +11,18 @@ from app.serotracker_sqlalchemy import db_session, DashboardSource, ResearchSour
     TestManufacturer, AntibodyTarget, CityBridge, StateBridge, TestManufacturerBridge, AntibodyTargetBridge
 
 table_names_dict = {
-        "dashboard_source": DashboardSource,
-        "research_source": ResearchSource,
-        "city": City,
-        "state": State,
-        "test_manufacturer": TestManufacturer,
-        "antibody_target": AntibodyTarget,
-        "city_bridge": CityBridge,
-        "state_bridge": StateBridge,
-        "test_manufacturer_bridge": TestManufacturerBridge,
-        "antibody_target_bridge": AntibodyTargetBridge,
-        "country": Country
-    }
+    "dashboard_source": DashboardSource,
+    "research_source": ResearchSource,
+    "city": City,
+    "state": State,
+    "test_manufacturer": TestManufacturer,
+    "antibody_target": AntibodyTarget,
+    "city_bridge": CityBridge,
+    "state_bridge": StateBridge,
+    "test_manufacturer_bridge": TestManufacturerBridge,
+    "antibody_target_bridge": AntibodyTargetBridge,
+    "country": Country
+}
 
 
 def validate_records(source, schema):

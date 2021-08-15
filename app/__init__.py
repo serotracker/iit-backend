@@ -4,8 +4,8 @@ import logging.config
 from flask import Flask
 from flask_restplus import Api
 from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
 from .config import config_by_name
+from flask_sqlalchemy import SQLAlchemy
 
 logging.config.fileConfig(os.getenv('LOG_CONFIG_PATH'),
                           disable_existing_loggers=False,
@@ -24,7 +24,6 @@ def create_app(db):
     config_obj = config_by_name[config_name]
     app.config.from_object(config_obj)
 
-    # Connect db to app
     db.init_app(app)
 
     # Attach namespaces to api

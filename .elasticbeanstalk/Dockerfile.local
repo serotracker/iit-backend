@@ -1,0 +1,2 @@
+FROM serotracker/iit-backend
+EXPOSE 5000

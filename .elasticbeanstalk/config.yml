@@ -1,0 +1,14 @@
+global:
+  application_name: iit-backend
+  branch: null
+  default_ec2_keyname: can_ubuntu
+  default_platform: Docker running on 64bit Amazon Linux
+  default_region: ca-central-1
+  include_git_submodules: true
+  instance_profile: null
+  platform_name: null
+  platform_version: null
+  profile: null
+  repository: null
+  sc: git
+  workspace_type: Application
