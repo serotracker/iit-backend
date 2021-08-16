@@ -13,7 +13,7 @@ from app.utils import send_slack_message
 class GoogleSheetsManager:
     def __init__(self, sheet_name):
         self.scope = ['https://www.googleapis.com/auth/spreadsheets']
-        self.range = f'{sheet_name}!A1:ZZ10000'
+        self.range = f'{sheet_name}!A1:ZZ100000'
         self.client_service = self.create_service()
         return
 
