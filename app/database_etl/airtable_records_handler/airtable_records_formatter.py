@@ -1,4 +1,6 @@
 import multiprocessing
+import os
+import requests
 
 import numpy as np
 from typing import Dict
@@ -110,6 +112,49 @@ def apply_study_max_estimate_grade(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def write_test_adj_to_airtable(adj_records):
+    print("New adjusted records", len(adj_records))
+    AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+    AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+    AIRTABLE_REQUEST_URL = "https://api.airtable.com/v0/{}/Rapid%20Review%3A%20Estimates?".format(AIRTABLE_BASE_ID)
+
+    url = AIRTABLE_REQUEST_URL.format(AIRTABLE_BASE_ID)
+    headers = {'Authorization': 'Bearer {}'.format(AIRTABLE_API_KEY)}
+
+    # Loop through df and write to airtable with 10 records at a time
+    max_i = len(adj_records) // 10
+    for i in range(max_i + 1):
+        # Slice df
+        start = i * 10
+        end = start + 9
+        record_subset = adj_records.loc[start:end]
+
+        # Create request body with 10 records
+        records_body = []
+        for i, row in record_subset.iterrows():
+            print(row['airtable_record_id'])
+            body = {
+                "id": row['airtable_record_id'],
+                "fields": {
+                    "adj_prevalence": row['adj_prevalence'],
+                    "adj_sensitivity": row['adj_sensitivity'],
+                    "adj_specificity": row['adj_specificity'],
+                    "ind_eval_type": row['ind_eval_type'],
+                    "adj_prev_ci_lower": row['adj_prev_ci_lower'],
+                    "adj_prev_ci_upper": row['adj_prev_ci_upper']
+                }
+            }
+            records_body.append(body)
+
+        # Write to airtable
+        data = {"records": records_body}
+        print(data)
+        r = requests.patch(url, data=data, headers=headers)
+        response = r.json()
+        print(response)
+    return
+
+
 def add_test_adjustments(df: pd.DataFrame) -> pd.DataFrame:
     # Query record ids in our database
     with db_session() as session:
@@ -153,14 +198,6 @@ def add_test_adjustments(df: pd.DataFrame) -> pd.DataFrame:
     # Get all unique airtable_record_ids that are new/have been modified
     new_airtable_record_ids = diff['airtable_record_id'].unique()
 
-    # Add all unique airtable_record_ids for which test adjustment was unsuccessful 
-    # TODO: MUST BE COMMENTED OUT IN PROD
-    """
-    unadjusted_airtable_record_ids = total_db_records[total_db_records['adj_prevalence'].isna()]['airtable_record_id'].unique()
-    new_airtable_record_ids = set.union(set(new_airtable_record_ids), 
-                                        set(unadjusted_airtable_record_ids))
-    """
-    
     # Get all rows from airtable data that need to be test adjusted, and ones that don't
     old_airtable_test_adj_records = \
         df[~df['airtable_record_id'].isin(new_airtable_record_ids)].reset_index(
@@ -210,6 +247,9 @@ def add_test_adjustments(df: pd.DataFrame) -> pd.DataFrame:
     old_airtable_test_adj_records = \
         old_airtable_test_adj_records.join(old_db_test_adj_records.set_index('airtable_record_id'),
                                            on='airtable_record_id')
+
+    # Write new airtable test adj records to airtable
+    #write_test_adj_to_airtable(new_airtable_test_adj_records)
 
     # Concat the old and new airtable test adj records
     airtable_master_data = pd.concat([new_airtable_test_adj_records, old_airtable_test_adj_records])
