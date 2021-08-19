@@ -20,7 +20,7 @@ AIRTABLE_REQUEST_URL = app.config['AIRTABLE_REQUEST_URL']
 AIRTABLE_SAMPLE_FRAME_GOI_OPTIONS_REQUEST_URL = app.config['AIRTABLE_SAMPLE_FRAME_GOI_OPTIONS_REQUEST_URL']
 
 
-def _add_fields_to_url(url):
+def add_fields_to_url(url):
     # Add fields in config to api URL
     fields = full_airtable_fields
     for key in fields:
@@ -28,15 +28,13 @@ def _add_fields_to_url(url):
     url = url[:-1]
     return url
 
-def _airtable_get_request(url: String):
-    headers = {'Authorization': 'Bearer {}'.format(AIRTABLE_API_KEY)}
+def airtable_get_request(url: String, headers):
     # Make request and retrieve records in json format
     r = requests.get(url, headers=headers)
     data = r.json()
     return data
 
-def _handle_airtable_error(e: KeyError, data, url: String):
-    headers = {'Authorization': 'Bearer {}'.format(AIRTABLE_API_KEY)}
+def handle_airtable_error(e: KeyError, data, url: String, headers):
     body = "Results were not successfully retrieved from Airtable API. " \
             "Please check connection parameters in config.py and fields in airtable_fields_config.json."
     request_info = {
@@ -45,10 +43,10 @@ def _handle_airtable_error(e: KeyError, data, url: String):
     }
     logging.error(e)
     send_api_error_slack_notif(body, data, error=e, request_info=request_info, channel='#dev-logging-etl')
-    return request_info
+    return 
 
 
-def _get_formatted_json_records(records):
+def get_formatted_json_records(records):
     # Remove the created_at and id keys from each list item
     new_records = [record['fields'] for record in records]
 
@@ -63,7 +61,7 @@ def _get_formatted_json_records(records):
     return total_records_json
 
 
-def _get_paginated_records(data, api_request_info):
+def get_paginated_records(data, api_request_info):
     # Extract API request parameters
     url = api_request_info[0]
     headers = api_request_info[1]
@@ -82,32 +80,33 @@ def _get_paginated_records(data, api_request_info):
 def get_all_records():
     # Get airtable API URL and add fields to be scraped to URL in HTML format
     url = AIRTABLE_REQUEST_URL.format(AIRTABLE_BASE_ID)
-    url = _add_fields_to_url(url)
+    url = add_fields_to_url(url)
     url += '&filterByFormula={ETL Included}=1'
-    data = _airtable_get_request(url)
+    data = airtable_get_request(url)
 
     # Try to get records from data if the request was successful
     try:
         # If offset was included in data, retrieve additional paginated records
         if 'offset' in list(data.keys()):
-            request_info = [url, {'Authorization': 'Bearer {}'.format()}]
-            records = _get_paginated_records(data, request_info)
+            request_info = [url, {'Authorization': 'Bearer {}'.format(AIRTABLE_API_KEY)}]
+            records = get_paginated_records(data, request_info)
         else:
             records = data['records']
-        formatted_records = _get_formatted_json_records(records)
+        formatted_records = get_formatted_json_records(records)
         return formatted_records
 
     # If request was not successful, there will be no records field in response
     # Just return what is in cached layer and log an error
     except KeyError as e:
-        _handle_airtable_error(e, data, url)
+        handle_airtable_error(e, data, url)
 
 '''
 Updates population_group_options table in whiteclaw with entries from Sample Frame GOI table in Serosurveillance Base in Airtable (name, french translation and order).
 These records will be used for the "Population group" filters on serotracker.com.
 '''
 def ingest_sample_frame_goi_filter_options():
-    data = _airtable_get_request(AIRTABLE_SAMPLE_FRAME_GOI_OPTIONS_REQUEST_URL)
+    headers = {'Authorization': 'Bearer {}'.format(AIRTABLE_API_KEY)}
+    data = airtable_get_request(AIRTABLE_SAMPLE_FRAME_GOI_OPTIONS_REQUEST_URL, headers)
     # Try to get records from data if the request was successful
     try:
         # Get sorted records
@@ -127,7 +126,7 @@ def ingest_sample_frame_goi_filter_options():
             session.commit()  
         return 
     except KeyError as e:
-       return _handle_airtable_error(e, data, AIRTABLE_SAMPLE_FRAME_GOI_OPTIONS_REQUEST_URL)
+       handle_airtable_error(e, data, AIRTABLE_SAMPLE_FRAME_GOI_OPTIONS_REQUEST_URL, headers)
 
 
 
