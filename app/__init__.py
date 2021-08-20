@@ -1,5 +1,6 @@
 import os
 import logging.config
+import multiprocessing
 
 from flask import Flask
 from flask_restplus import Api
@@ -30,7 +31,7 @@ def create_app(db):
     namespaces = config_obj.APP_NAMESPACES
     from .utils import init_namespace
     from .namespaces import airtable_scraper_ns, healthcheck_ns, data_provider_ns, cases_count_scraper_ns,\
-        meta_analysis_ns
+        meta_analysis_ns, test_adjustment_ns
     init_namespace(namespaces, api)
 
     app.app_context().push()
@@ -39,3 +40,4 @@ def create_app(db):
 
 db = SQLAlchemy()
 app = create_app(db)
+multiprocessing.set_start_method("fork")
