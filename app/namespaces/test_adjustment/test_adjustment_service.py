@@ -77,7 +77,7 @@ class TestAdjHandler:
         # Create filepath of cached model
         code_hash = md5(model_code.encode('ascii')).hexdigest()
         cache_fn = f'app/namespaces/test_adjustment/stanmodelcache-{model_name}-{code_hash}.pkl'
-        arviz
+
         # Try to load cached model
         try:
             cached_model = pickle.load(open(cache_fn, 'rb'))
