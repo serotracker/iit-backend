@@ -117,6 +117,7 @@ def write_test_adj_to_airtable(adj_records):
     AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
     AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
     AIRTABLE_REQUEST_URL = "https://api.airtable.com/v0/{}/Rapid%20Review%3A%20Estimates?".format(AIRTABLE_BASE_ID)
+    print(AIRTABLE_REQUEST_URL)
 
     url = AIRTABLE_REQUEST_URL.format(AIRTABLE_BASE_ID)
     headers = {'Authorization': 'Bearer {}'.format(AIRTABLE_API_KEY)}
@@ -152,6 +153,7 @@ def write_test_adj_to_airtable(adj_records):
         r = requests.patch(url, data=data, headers=headers)
         response = r.json()
         print(response)
+        exit()
     return
 
 
@@ -249,7 +251,7 @@ def add_test_adjustments(df: pd.DataFrame) -> pd.DataFrame:
                                            on='airtable_record_id')
 
     # Write new airtable test adj records to airtable
-    #write_test_adj_to_airtable(new_airtable_test_adj_records)
+    write_test_adj_to_airtable(new_airtable_test_adj_records)
 
     # Concat the old and new airtable test adj records
     airtable_master_data = pd.concat([new_airtable_test_adj_records, old_airtable_test_adj_records])
