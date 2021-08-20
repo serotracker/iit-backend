@@ -1,5 +1,4 @@
 import logging.config
-import multiprocessing
 
 from flask_restplus import Resource, Namespace
 from flask import jsonify, make_response, request
@@ -51,7 +50,6 @@ class Records(Resource):
         serum_pos_prevalence = data.get('serum_pos_prevalence')
 
         # Apply test adjustment
-        multiprocessing.set_start_method("fork")
         test_adj_handler = TestAdjHandler()
         adj_prevalence, adj_sensitivity, adj_specificity, ind_eval_type, adj_prev_ci_lower, adj_prev_ci_upper = \
             test_adj_handler.get_adjusted_estimate(test_adj, ind_se, ind_sp, ind_se_n, ind_sp_n, se_n, sp_n,

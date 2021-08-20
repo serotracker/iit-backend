@@ -1,5 +1,6 @@
 import os
 import logging.config
+import multiprocessing
 
 from flask import Flask
 from flask_restplus import Api
@@ -39,3 +40,4 @@ def create_app(db):
 
 db = SQLAlchemy()
 app = create_app(db)
+multiprocessing.set_start_method("fork")

@@ -192,7 +192,6 @@ class TestAdjHandler:
             # Independent evaluation is available
             if pd.notna(ind_se) and pd.notna(ind_sp):
                 adj_type = 'FINDDx / MUHC independent evaluation'
-                # Also note these must be divided by 100
                 se = ind_se
                 sp = ind_sp
                 output_se_n = float(ind_se_n) * 100 if ind_se_n is not None else 30
