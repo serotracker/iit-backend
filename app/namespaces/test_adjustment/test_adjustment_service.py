@@ -67,7 +67,6 @@ class TestAdjHandler:
         self.n_chains = execution_params.get('n_chains', 4)
         self.return_fit = execution_params.get('return_fit', False)
         self.trials_lim = execution_params.get('trials_lim', 5)
-        self.modelsets_lim = execution_params.get('modelsets_lim', 3)
 
     # make sure to gitignore model caches, because the model needs to be compiled separately
     # on each machine - it is system-specific C++ code
@@ -141,22 +140,18 @@ class TestAdjHandler:
             print("Error: ", err.messages)
             return None, None, None
 
-        satisfactory_model_set_found = False
-        n_modelsets = 0
+        satisfactory_model_found = False
+        n_trials = 0
 
-        while not satisfactory_model_set_found:
+        while not satisfactory_model_found:
+            # If number of attempts exceeded, return Nones
+            n_trials += 1
+            if n_trials >= self.trials_lim:
+                print('no models met the HMC diagnostics in {trials_lim} trials')
+                return None, None, None
+
             # Attempt to fit a model
-            summary_df_parsed, satisfactory_model_found = self.fit_one_pystan_model(model_params)
-
-            # If model is not satisfactory, try 4 more times
-            n_trials = 1
-            while not satisfactory_model_found:
-                summary_df_parsed, satisfactory_model_found = self.fit_one_pystan_model(model_params)
-                # If number of attempts exceeded, return Nones
-                n_trials += 1
-                if n_trials >= self.trials_lim:
-                    print('no models met the HMC diagnostics in {trials_lim} trials')
-                    return None, None, None
+            summary_df_parsed, hmc_diagnostics_passed = self.fit_one_pystan_model(model_params)
 
             # get model result
             model_result = summary_df_parsed
@@ -169,11 +164,7 @@ class TestAdjHandler:
             except (ZeroDivisionError, ValueError):
                 return None, None, None
 
-            satisfactory_model_set_found = bounded
-
-            n_modelsets += 1
-            if n_modelsets > self.modelsets_lim:
-                return None, None, None
+            satisfactory_model_found = bounded and hmc_diagnostics_passed
 
         if self.return_fit:
             return best_fit
