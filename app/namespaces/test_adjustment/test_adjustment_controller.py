@@ -8,13 +8,13 @@ from .test_adjustment_schema import TestAdjustmentSchema
 from .test_adjustment_service import TestAdjHandler
 
 
-test_adjustment_ns = Namespace('test_adjustment', description='Endpoints for updating airtable records via scripting.')
+test_adjustment_ns = Namespace('test_adjustment', description='Endpoints for running test adjustment model.')
 logging.getLogger(__name__)
 
 
 @test_adjustment_ns.route('/get_adjusted', methods=['POST'])
 class Records(Resource):
-    @test_adjustment_ns.doc('An endpoint for getting all records from database with or without filters.')
+    @test_adjustment_ns.doc('An endpoint for getting test adjusted seroprevalence.')
     def post(self):
         # Convert input payload to json and throw error if it doesn't exist
         data = request.get_json()
@@ -34,7 +34,7 @@ class Records(Resource):
             # If there was an error with the input payload, return the error and 422 response
             return make_response(payload, status_code)
 
-        # All of these params can be empty, in which case, our utility functions will just return all records
+        # All of these params can be null
         test_adj = data.get('test_adj')
         ind_se = data.get('ind_se')
         ind_sp = data.get('ind_sp')
