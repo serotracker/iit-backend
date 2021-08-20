@@ -63,11 +63,10 @@ class TestAdjHandler:
         self.TESTADJ_MODEL = self.get_stan_model_cache(model_code=model_code, model_name=model_name)
         self.TESTADJ_MODEL_NAME = model_name
         # Parse execution params
-        self.n_iter = execution_params.get('n_iter', 4000)
-        self.n_chains = execution_params.get('n_chains', 3)
+        self.n_iter = execution_params.get('n_iter', 2000)
+        self.n_chains = execution_params.get('n_chains', 4)
         self.return_fit = execution_params.get('return_fit', False)
-        self.n_replicates = execution_params.get('n_replicates', 5)
-        self.trials_lim = execution_params.get('trials_lim', 100)
+        self.trials_lim = execution_params.get('trials_lim', 5)
         self.modelsets_lim = execution_params.get('modelsets_lim', 3)
 
     # make sure to gitignore model caches, because the model needs to be compiled separately
@@ -77,8 +76,8 @@ class TestAdjHandler:
 
         # Create filepath of cached model
         code_hash = md5(model_code.encode('ascii')).hexdigest()
-        cache_fn = f'stanmodelcache-{model_name}-{code_hash}.pkl'
-
+        cache_fn = f'app/namespaces/test_adjustment/stanmodelcache-{model_name}-{code_hash}.pkl'
+        arviz
         # Try to load cached model
         try:
             cached_model = pickle.load(open(cache_fn, 'rb'))
@@ -92,16 +91,29 @@ class TestAdjHandler:
         return cached_model
 
     def fit_one_pystan_model(self, model_params: Dict) -> Tuple:
-        if model_params['n_sp' < 10] or model_params['n_se' < 10]  \
-                or model_params['y_sp' < 5]  or model_params['y_se' < 5]:
+        # Calculate adapt_delta param
+        if model_params['n_sp'] < 10 or model_params['n_se'] < 10  \
+                or model_params['y_sp'] < 5 or model_params['y_se'] < 5:
             adapt_delta = 0.99
         else:
             adapt_delta = 0.8
+
+        # Construct init param dict
+        init_one_chain = {
+            'prev': model_params['y_prev_obs'] / model_params['n_prev_obs'],
+            'sens': model_params['y_se'] / model_params['n_se'],
+            'spec': model_params['y_sp'] / model_params['n_sp']
+        }
+
+        # pystan requires initial values to be expressed in a list of dicts, one dict for each chain
+        init = [init_one_chain] * self.n_chains
+
         fit = self.TESTADJ_MODEL.sampling(data=model_params,
                                           iter=self.n_iter,
                                           chains=self.n_chains,
                                           control={'adapt_delta': adapt_delta},
-                                          check_hmc_diagnostics=False)
+                                          check_hmc_diagnostics=False,
+                                          init=init)
 
         summary = fit.summary()
         summary_df = pd.DataFrame(data=summary['summary'],
@@ -116,12 +128,10 @@ class TestAdjHandler:
 
         diagnostics = pystan.diagnostics.check_hmc_diagnostics(fit)
 
-        satisfactory_model_found = all(diagnostics.values())
+        satisfactory_model_found = diagnostics['n_eff'] and diagnostics['Rhat']
         return summary_df_parsed, satisfactory_model_found
 
     def pystan_adjust(self, model_params: Dict, execution_params: Dict = {}) -> Union[Tuple, pystan.StanModel]:
-        if self.n_replicates % 2 != 1:
-            raise ValueError(f'n_replicates must be odd')
         credible_interval_size = execution_params.get('credible_interval_size', 0.95)
 
         # Validate model_params using marshmallow
@@ -135,40 +145,31 @@ class TestAdjHandler:
         n_modelsets = 0
 
         while not satisfactory_model_set_found:
-            satisfactory_model_set = []
-            for _ in range(self.n_replicates):
-                n_trials = 0
-                satisfactory_model_found = False
+            # Attempt to fit a model
+            summary_df_parsed, satisfactory_model_found = self.fit_one_pystan_model(model_params)
 
-                while not satisfactory_model_found:
-                    # Attempt to fit a model
-                    summary_df_parsed, satisfactory_model_found = self.fit_one_pystan_model(model_params)
-                    # If number of attempts exceeded, return Nones
-                    n_trials += 1
-                    if n_trials >= self.trials_lim:
-                        print('no models met the HMC diagnostics in {trials_lim} trials')
-                        return None, None, None
+            # If model is not satisfactory, try 4 more times
+            n_trials = 1
+            while not satisfactory_model_found:
+                summary_df_parsed, satisfactory_model_found = self.fit_one_pystan_model(model_params)
+                # If number of attempts exceeded, return Nones
+                n_trials += 1
+                if n_trials >= self.trials_lim:
+                    print('no models met the HMC diagnostics in {trials_lim} trials')
+                    return None, None, None
 
-                satisfactory_model_set.append(summary_df_parsed)
-
-            satisfactory_models_df = pd.DataFrame(satisfactory_model_set)
-
-            # see whether all results are within 10% of median; if not, rerun
-            model_medians = satisfactory_models_df['50%']
-            median = model_medians.median()
-            consistent_results_found = model_medians.between(0.9 * median, 1.1 * median).all()
-            median_run = satisfactory_models_df[satisfactory_models_df['50%'] == median].iloc[0]
-
-            lower, upper = arviz.hdi(median_run['samples'], credible_interval_size)
-            best_fit = median_run['fit']
+            # get model result
+            model_result = summary_df_parsed
+            lower, upper = arviz.hdi(model_result['samples'], credible_interval_size)
+            best_fit = model_result['fit']
 
             try:
                 raw_prev = model_params['y_prev_obs'] / model_params['n_prev_obs']
-                bounded = result_is_bounded(median, raw_prev)
+                bounded = result_is_bounded(model_result, raw_prev)
             except (ZeroDivisionError, ValueError):
                 return None, None, None
 
-            satisfactory_model_set_found = consistent_results_found and bounded
+            satisfactory_model_set_found = bounded
 
             n_modelsets += 1
             if n_modelsets > self.modelsets_lim:
@@ -177,7 +178,7 @@ class TestAdjHandler:
         if self.return_fit:
             return best_fit
         else:
-            return lower, median, upper
+            return lower, model_result, upper
 
     def get_adjusted_estimate(self, test_adj, ind_se, ind_sp, ind_se_n, ind_sp_n,
                               se_n, sp_n, sensitivity, specificity, test_validation,
@@ -234,7 +235,6 @@ class TestAdjHandler:
                         break
                 if not found_test_type:
                     adj_type = 'No data altogether'
-
             if adj_type == 'No data altogether':
                 adj_prev = None
                 se = None
