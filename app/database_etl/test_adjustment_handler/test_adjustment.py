@@ -13,6 +13,7 @@ from marshmallow import Schema, fields, ValidationError
 
 from app.database_etl.test_adjustment_handler import bastos_estimates, testadj_model_code
 
+
 def logit(p, tol = 1e-3):
     # logit function; well defined for p in open interval (0,1)
     
@@ -23,6 +24,7 @@ def logit(p, tol = 1e-3):
     
     # return the logit of the constrained probability
     return log(p / (1 - p))
+
 
 def result_is_bounded(median_adj_prev, raw_prev):
     
@@ -37,6 +39,7 @@ def result_is_bounded(median_adj_prev, raw_prev):
     both_above_minbig = (median_adj_prev >= 0.5) and (raw_prev >= 0.5)
     
     return (adjusted_closeto_raw or both_below_maxsmall or both_above_minbig)
+
 
 def validate_against_schema(input_payload, schema):
     try:
