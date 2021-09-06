@@ -6,7 +6,6 @@ services:
       context: .
       dockerfile: Dockerfile-app
     restart: always
-    image: "iit-backend/app"
     ports:
       - "5000:5000"
     env_file:
