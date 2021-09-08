@@ -127,6 +127,7 @@ def ingest_sample_frame_goi_filter_options():
         return 
     except KeyError as e:
        handle_airtable_error(e, data, AIRTABLE_SAMPLE_FRAME_GOI_OPTIONS_REQUEST_URL, headers)
+       return
 
 
 
