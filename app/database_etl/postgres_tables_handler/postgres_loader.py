@@ -1,3 +1,4 @@
+from app.serotracker_sqlalchemy.models import PopulationGroupOptions
 import logging
 
 import pandas as pd
@@ -21,7 +22,8 @@ table_names_dict = {
     "state_bridge": StateBridge,
     "test_manufacturer_bridge": TestManufacturerBridge,
     "antibody_target_bridge": AntibodyTargetBridge,
-    "country": Country
+    "country": Country,
+    "population_group_options": PopulationGroupOptions,
 }
 
 
