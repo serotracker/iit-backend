@@ -175,7 +175,6 @@ def add_test_adjustments(df: pd.DataFrame) -> pd.DataFrame:
     # Only proceed with test adjustment if there are new unadjusted records
     if not new_airtable_test_adj_records.empty:
         # Apply test adjustment to the new_test_adj_records and add 6 new columns
-        multiprocessing.set_start_method("fork")
         test_adj_handler = TestAdjHandler()
         new_airtable_test_adj_records['adj_prevalence'], \
         new_airtable_test_adj_records['adj_sensitivity'], \
