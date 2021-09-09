@@ -1,4 +1,4 @@
-import multiprocessing
+import json
 import os
 import requests
 
@@ -133,23 +133,26 @@ def write_test_adj_to_airtable(adj_records):
         # Create request body with 10 records
         records_body = []
         for i, row in record_subset.iterrows():
-            print(row['airtable_record_id'])
             body = {
                 "id": row['airtable_record_id'],
                 "fields": {
-                    "adj_prevalence": row['adj_prevalence'],
-                    "adj_sensitivity": row['adj_sensitivity'],
-                    "adj_specificity": row['adj_specificity'],
-                    "ind_eval_type": row['ind_eval_type'],
-                    "adj_prev_ci_lower": row['adj_prev_ci_lower'],
-                    "adj_prev_ci_upper": row['adj_prev_ci_upper']
+                    "Adjusted serum positive prevalence": row['adj_prevalence'],
+                    "Adjusted sensitivity": row['adj_sensitivity'],
+                    "Adjusted specificity": row['adj_specificity'],
+                    "Independent evaluation type": row['ind_eval_type'],
+                    "Adjusted serum pos prevalence, 95pct CI Lower": row['adj_prev_ci_lower'],
+                    "Adjusted serum pos prevalence, 95pct CI Upper": row['adj_prev_ci_upper']
                 }
             }
             records_body.append(body)
 
         # Write to airtable
-        data = {"records": records_body}
+        data = {"records": [records_body[0]]}
         print(data)
+        print(type(data))
+        # data = json.dumps(data)
+        # print(data)
+        # print(type(data))
         r = requests.patch(url, data=data, headers=headers)
         response = r.json()
         print(response)
@@ -214,7 +217,7 @@ def add_test_adjustments(df: pd.DataFrame) -> pd.DataFrame:
     # Only proceed with test adjustment if there are new unadjusted records
     if not new_airtable_test_adj_records.empty:
         # Apply test adjustment to the new_test_adj_records and add 6 new columns
-        multiprocessing.set_start_method("fork")
+        #multiprocessing.set_start_method("fork")
         test_adj_handler = TestAdjHandler()
         new_airtable_test_adj_records['adj_prevalence'], \
         new_airtable_test_adj_records['adj_sensitivity'], \
