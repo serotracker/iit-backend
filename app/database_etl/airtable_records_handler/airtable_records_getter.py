@@ -79,10 +79,11 @@ def get_paginated_records(data, api_request_info):
 
 def get_all_records():
     # Get airtable API URL and add fields to be scraped to URL in HTML format
+    headers = {'Authorization': 'Bearer {}'.format(AIRTABLE_API_KEY)}
     url = AIRTABLE_REQUEST_URL.format(AIRTABLE_BASE_ID)
     url = add_fields_to_url(url)
     url += '&filterByFormula={ETL Included}=1'
-    data = airtable_get_request(url)
+    data = airtable_get_request(url, headers)
 
     # Try to get records from data if the request was successful
     try:
