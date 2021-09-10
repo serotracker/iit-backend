@@ -1,4 +1,4 @@
-Code,Country,GBD Region,GBD Subregion,WHO region
+ï»¿Code,Country,GBD Region,GBD Subregion,WHO region
 AFG,Afghanistan,North Africa and Middle East,North Africa and Middle East,EMR
 ALB,Albania,"Central Europe, Eastern Europe, and Central Asia",Central Europe,EUR
 DZA,Algeria,North Africa and Middle East,North Africa and Middle East,AFR
@@ -50,10 +50,10 @@ COM,Comoros,Sub-Saharan Africa,Eastern Sub-Saharan Africa,AFR
 COG,Congo,Sub-Saharan Africa,Central Sub-Saharan Africa,AFR
 COK,Cook Islands,"Southeast Asia, East Asia, and Oceania",Oceania,WPR
 CRI,Costa Rica,Latin America and Caribbean,Central Latin America,AMR
-CIV,Côte d'Ivoire,Sub-Saharan Africa,Western Sub-Saharan Africa,AFR
+CIV,CÃ´te d'Ivoire,Sub-Saharan Africa,Western Sub-Saharan Africa,AFR
 HRV,Croatia,"Central Europe, Eastern Europe, and Central Asia",Central Europe,EUR
 CUB,Cuba,Latin America and Caribbean,Caribbean,AMR
-CUW,Curaçao,Latin America and Caribbean,Caribbean,AMR
+CUW,CuraÃ§ao,Latin America and Caribbean,Caribbean,AMR
 CYP,Cyprus,High-income,Western Europe,EUR
 CZE,Czechia,"Central Europe, Eastern Europe, and Central Asia",Central Europe,EUR
 PRK,Democratic People's Republic of Korea,"Southeast Asia, East Asia, and Oceania",East Asia,SEAR
