@@ -82,18 +82,15 @@ class TestAdjHandler:
         code_hash = md5(model_code.encode('ascii')).hexdigest()
         cache_fn = f'{proj_root_abs_path}iit-backend/app/namespaces/test_adjustment/stanmodelcache-{model_name}-{code_hash}.pkl'
 
-        # Get relative path of model cache (necessary because funtion will be called from different files)
-        rel_path = os.path.relpath(cache_fn, abs_filepath_curr_dir)
-
         # Try to load cached model
         try:
-            cached_model = pickle.load(open(rel_path, 'rb'))
+            cached_model = pickle.load(open(cache_fn, 'rb'))
             print(f"Using cached StanModel at filepath {cache_fn}")
 
         # Otherwise create the model and cache it
         except FileNotFoundError:
             cached_model = pystan.StanModel(model_code=model_code, model_name=model_name, **kwargs)
-            with open(rel_path, 'wb') as f:
+            with open(cache_fn, 'wb') as f:
                 pickle.dump(cached_model, f)
         return cached_model
 
@@ -104,16 +101,6 @@ class TestAdjHandler:
             adapt_delta = 0.99
         else:
             adapt_delta = 0.8
-
-        # Construct init param dict
-        init_one_chain = {
-            'prev': model_params['y_prev_obs'] / model_params['n_prev_obs'],
-            'sens': model_params['y_se'] / model_params['n_se'],
-            'spec': model_params['y_sp'] / model_params['n_sp']
-        }
-
-        # pystan requires initial values to be expressed in a list of dicts, one dict for each chain
-        init = [init_one_chain] * self.n_chains
 
         fit = self.TESTADJ_MODEL.sampling(data=model_params,
                                           iter=self.n_iter,
@@ -158,7 +145,10 @@ class TestAdjHandler:
                 return None, None, None
 
             # Attempt to fit a model
-            summary_df_parsed, hmc_diagnostics_passed = self.fit_one_pystan_model(model_params)
+            try:
+                summary_df_parsed, hmc_diagnostics_passed = self.fit_one_pystan_model(model_params)
+            except ZeroDivisionError:
+                return None, None, None
 
             # get model result
             model_result = summary_df_parsed['50%']
@@ -248,10 +238,10 @@ class TestAdjHandler:
                     logging.error("sp is not between 0.005 and 1")
                     lower, adj_prev, upper = None, None, None
                 elif output_se_n and output_se_n <= 1:
-                    logging.error("se_n is not between 1 and 100")
+                    logging.error("se_n is not greater than 1")
                     lower, adj_prev, upper = None, None, None
                 elif output_sp_n and output_sp_n <= 1:
-                    logging.error("sp_n is not between 1 and 100")
+                    logging.error("sp_n is not greater than 1")
                     lower, adj_prev, upper = None, None, None
                 else:
                     model_params = dict(
