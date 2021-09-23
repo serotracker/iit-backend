@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 
 import pandas as pd
 from sqlalchemy import create_engine
+
+
 from app.serotracker_sqlalchemy import DashboardSourceSchema, ResearchSourceSchema
 from app.database_etl.postgres_tables_handler import create_dashboard_source_df, create_bridge_tables,\
     create_multi_select_tables, create_country_df, create_research_source_df, format_dashboard_source,\
@@ -15,6 +17,7 @@ from app.database_etl.airtable_records_handler import get_all_records, apply_stu
 from app.database_etl.tableau_data_connector import upload_analyze_csv
 from app.database_etl.summary_report_generator import SummaryReport
 from app.database_etl.location_utils import compute_pin_info
+from app.utils import full_airtable_fields
 
 load_dotenv()
 
@@ -36,7 +39,7 @@ def main():
             host_address=os.getenv('DATABASE_HOST_ADDRESS')))
 
         # Get all records with airtable API request and load into dataframe
-        json = get_all_records()
+        json = get_all_records(full_airtable_fields)
         etl_report.set_num_airtable_records(len(json))
         airtable_master_data = pd.DataFrame(json)
 

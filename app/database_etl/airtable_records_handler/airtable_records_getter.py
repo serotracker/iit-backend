@@ -1,18 +1,16 @@
-from sqlalchemy.sql.sqltypes import String
-from app.serotracker_sqlalchemy.models import PopulationGroupOptions
-import os
 import requests
 import json
 import logging
 from uuid import uuid4
 
+import pandas as pd
+from sqlalchemy.sql.sqltypes import String
+from flask import current_app as app
+
 from app.utils import full_airtable_fields, send_api_error_slack_notif
 from datetime import datetime
 from app.serotracker_sqlalchemy import db_session
 from app.serotracker_sqlalchemy.models import PopulationGroupOptions
-
-import pandas as pd
-from flask import current_app as app
 
 AIRTABLE_API_KEY = app.config['AIRTABLE_API_KEY']
 AIRTABLE_BASE_ID = app.config['AIRTABLE_BASE_ID']
@@ -20,13 +18,13 @@ AIRTABLE_REQUEST_URL = app.config['AIRTABLE_REQUEST_URL']
 AIRTABLE_SAMPLE_FRAME_GOI_OPTIONS_REQUEST_URL = app.config['AIRTABLE_SAMPLE_FRAME_GOI_OPTIONS_REQUEST_URL']
 
 
-def add_fields_to_url(url):
-    # Add fields in config to api URL
-    fields = full_airtable_fields
+def add_fields_to_url(url, fields):
+    # Add fields to api URL
     for key in fields:
         url += 'fields%5B%5D={}&'.format(key)
     url = url[:-1]
     return url
+
 
 def airtable_get_request(url: String, headers):
     # Make request and retrieve records in json format
@@ -34,16 +32,17 @@ def airtable_get_request(url: String, headers):
     data = r.json()
     return data
 
+
 def handle_airtable_error(e: KeyError, data, url: String, headers):
     body = "Results were not successfully retrieved from Airtable API. " \
-            "Please check connection parameters in config.py and fields in airtable_fields_config.json."
+           "Please check connection parameters in config.py and fields in airtable_fields_config.json."
     request_info = {
         "url": url,
         "headers": json.dumps(headers)
     }
     logging.error(e)
     send_api_error_slack_notif(body, data, error=e, request_info=request_info, channel='#dev-logging-etl')
-    return 
+    return
 
 
 def get_formatted_json_records(records):
@@ -77,11 +76,11 @@ def get_paginated_records(data, api_request_info):
     return records
 
 
-def get_all_records():
+def get_all_records(fields):
     # Get airtable API URL and add fields to be scraped to URL in HTML format
     headers = {'Authorization': 'Bearer {}'.format(AIRTABLE_API_KEY)}
     url = AIRTABLE_REQUEST_URL.format(AIRTABLE_BASE_ID)
-    url = add_fields_to_url(url)
+    url = add_fields_to_url(url, fields)
     url += '&filterByFormula={ETL Included}=1'
     data = airtable_get_request(url, headers)
 
@@ -99,12 +98,16 @@ def get_all_records():
     # If request was not successful, there will be no records field in response
     # Just return what is in cached layer and log an error
     except KeyError as e:
-        handle_airtable_error(e, data, url)
+        handle_airtable_error(e, data, url, headers)
+    return
+
 
 '''
 Updates population_group_options table in whiteclaw with entries from Sample Frame GOI table in Serosurveillance Base in Airtable (name, french translation and order).
 These records will be used for the "Population group" filters on serotracker.com.
 '''
+
+
 def ingest_sample_frame_goi_filter_options():
     headers = {'Authorization': 'Bearer {}'.format(AIRTABLE_API_KEY)}
     data = airtable_get_request(AIRTABLE_SAMPLE_FRAME_GOI_OPTIONS_REQUEST_URL, headers)
@@ -112,28 +115,20 @@ def ingest_sample_frame_goi_filter_options():
     try:
         # Get sorted records
         records = data["records"]
-
         current_time = datetime.now()
-
         # Add records to table 
         with db_session() as session:
-            records_to_add = [PopulationGroupOptions(id=uuid4(), 
-                                                    name=record['fields']['Name'], 
-                                                    french_name=record['fields']['French Name'] if 'French Name' in record['fields'] else None, 
-                                                    order=record['fields']['Order'] if 'Order' in record['fields'] else None, 
-                                                    created_at=current_time) 
-                             for record in records if record['fields']]
+            records_to_add = [PopulationGroupOptions(id=uuid4(),
+                                                     name=record['fields']['Name'],
+                                                     french_name=record['fields']['French Name'] if 'French Name' in
+                                                                 record['fields'] else None,
+                                                     order=record['fields']['Order'] if 'Order' in record[
+                                                         'fields'] else None,
+                                                     created_at=current_time)
+                              for record in records if record['fields']]
             session.bulk_save_objects(records_to_add)
-            session.commit()  
-        return 
+            session.commit()
+        return
     except KeyError as e:
-       handle_airtable_error(e, data, AIRTABLE_SAMPLE_FRAME_GOI_OPTIONS_REQUEST_URL, headers)
-       return
-
-
-
-
-
-    
-
-
+        handle_airtable_error(e, data, AIRTABLE_SAMPLE_FRAME_GOI_OPTIONS_REQUEST_URL, headers)
+        return
