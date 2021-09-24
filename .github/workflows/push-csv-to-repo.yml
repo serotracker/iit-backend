@@ -20,8 +20,8 @@ jobs:
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
         with:
-          source-directory: 'test-output'
-          destination-github-username: 'annoyingpr'
+          source-directory: 'output'
+          destination-github-username: 'serotracker'
           destination-repository-name: 'sars-cov-2-data'
           user-email: prannoylal@gmail.com
           commit-message: See ORIGIN_COMMIT from $GITHUB_REF
