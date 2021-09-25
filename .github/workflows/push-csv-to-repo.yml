@@ -1,12 +1,11 @@
-# This is a basic workflow to help you get started with Actions
 
 name: Push CSV to Repo
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   build:
