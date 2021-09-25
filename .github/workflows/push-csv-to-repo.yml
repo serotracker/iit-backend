@@ -3,18 +3,16 @@ name: Push CSV to Repo
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     container: pandoc/latex
     steps:
-      - uses: actions/checkout@v2
       - name: Pushes to another repository
-        id: push_directory
         uses: cpina/github-action-push-to-another-repository@main
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
@@ -25,5 +23,5 @@ jobs:
           user-email: prannoylal@gmail.com
           commit-message: See ORIGIN_COMMIT from $GITHUB_REF
           target-branch: main
-      - name: Test mock.csv exported by push-to-another-repository
+      - name: Test test.csv exported by push-to-another-repository
         run: echo $DESTINATION_CLONED_DIRECTORY
