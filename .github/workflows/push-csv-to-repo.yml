@@ -18,9 +18,8 @@ jobs:
         uses: andstor/copycat-action@v3
         with:
           personal_token: ${{ secrets.API_TOKEN_GITHUB }}
-          src_path: /output
+          src_path: /output/test.csv
           dst_path: /
-          exclude: "*.py"
           dst_owner: serotracker
           dst_repo_name: sars-cov-2-data
           dst_branch: main
@@ -29,4 +28,19 @@ jobs:
           dst_wiki: false
           username: annoyingpr
           email: prannoylal@gmail.com
+      - name: Copy README.md
+        uses: andstor/copycat-action@v3
+        with:
+          personal_token: ${{ secrets.API_TOKEN_GITHUB }}
+          src_path: /output/README.md
+          dst_path: /
+          dst_owner: serotracker
+          dst_repo_name: sars-cov-2-data
+          dst_branch: main
+          src_branch: master
+          src_wiki: false
+          dst_wiki: false
+          username: annoyingpr
+          email: prannoylal@gmail.com
+     
 
