@@ -24,7 +24,6 @@ prioritization_criteria_full = {
         lambda estimate: estimate['estimate_grade'] == 'National',
         lambda estimate: estimate['estimate_grade'] == 'Regional',
         lambda estimate: estimate['estimate_grade'] == 'Local',
-        lambda estimate: estimate['estimate_grade'] == 'Sublocal',
     ],
     'age': [
         lambda estimate: estimate['age'] == 'Multiple groups'
