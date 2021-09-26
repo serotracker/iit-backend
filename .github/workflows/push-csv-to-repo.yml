@@ -14,16 +14,19 @@ jobs:
     container: pandoc/latex
     steps:
       - uses: actions/checkout@v2
-      - name: Pushes to another repository
-        uses: cpina/github-action-push-to-another-repository@main
-        env:
-          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+      - name: Copy CSV
+        uses: andstor/copycat-action@v3
         with:
-          source-directory: 'output'
-          destination-github-username: 'serotracker'
-          destination-repository-name: 'sars-cov-2-data'
-          user-email: prannoylal@gmail.com
-          commit-message: See ORIGIN_COMMIT from $GITHUB_REF
-          target-branch: main
-      - name: Test test.csv exported by push-to-another-repository
-        run: echo $DESTINATION_CLONED_DIRECTORY
+          personal_token: ${{ secrets.API_TOKEN_GITHUB }}
+          src_path: output/test.csv
+          dst_path: /
+          dst_owner: serotracker
+          dst_repo_name: sars-cov-2-data
+      - name: Copy README
+        uses: andstor/copycat-action@v3
+        with:
+          personal_token: ${{ secrets.API_TOKEN_GITHUB }}
+          src_path: output/README.md
+          dst_path: /
+          dst_owner: serotracker
+          dst_repo_name: sars-cov-2-data
