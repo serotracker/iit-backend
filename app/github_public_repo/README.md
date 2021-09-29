@@ -18,3 +18,9 @@ Please see our [Data Dictionary]([https://docs.google.com/spreadsheets/d/1KQbp5T
 In order to keep up to date with important changes to our dataset, please consult our [Change Log](https://airtable.com/shrxpAlF6v0LeRYkA/tblC6jj904WXUzwVY) regularly.
 
 For more information about how we collect, extract and use our data, please see the [Data page]([https://serotracker.com/en/Data](https://serotracker.com/en/Data)) on our website.
+
+If you have a SARS-CoV-2 seroprevalence study that has not yet been captured by serotracker.com, please submit the source using this [form](https://docs.google.com/forms/d/e/1FAIpQLSdvNJReektutfMT-5bOTjfnvaY_pMAy8mImpQBAW-3v7_B2Bg/viewform). Our research team will review each submission to evaluate whether it meets our inclusion criteria.
+
+If you are open to being contacted about your use case for our data, please fill out this [form](https://forms.gle/gqi3kvKQgasYCrQE9). This helps us create datasets that are most useful to you.
+
+Our data can be cited as this [Lancet Inf Dis article](https://www.thelancet.com/journals/laninf/article/PIIS1473-3099(20)30631-9/fulltext#%20).
