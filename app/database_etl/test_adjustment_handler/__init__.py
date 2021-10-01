@@ -1,2 +1,2 @@
 from .test_adjustment_constants import bastos_estimates, testadj_model_code
-from .test_adjustment import TestAdjHandler
+from .test_adjustment import add_test_adjustments

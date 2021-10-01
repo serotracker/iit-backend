@@ -13,7 +13,8 @@ from app.database_etl.postgres_tables_handler import create_dashboard_source_df,
     add_mapped_variables, validate_records, load_postgres_tables, drop_table_entries, check_filter_options, \
     validate_pooling_function_columns
 from app.database_etl.airtable_records_handler import get_all_records, apply_study_max_estimate_grade,\
-    apply_min_risk_of_bias, standardize_airtable_data, add_test_adjustments, ingest_sample_frame_goi_filter_options
+    apply_min_risk_of_bias, standardize_airtable_data, ingest_sample_frame_goi_filter_options
+from app.database_etl.test_adjustment_handler import add_test_adjustments
 from app.database_etl.tableau_data_connector import upload_analyze_csv
 from app.database_etl.summary_report_generator import SummaryReport
 from app.database_etl.location_utils import compute_pin_info
