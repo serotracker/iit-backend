@@ -102,6 +102,7 @@ protobuf==3.15.3
 psycopg2-binary==2.8.5
 ptyprocess==0.7.0
 py==1.9.0
+pyairtable==1.0.0.post1
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pyclipper==1.2.1
