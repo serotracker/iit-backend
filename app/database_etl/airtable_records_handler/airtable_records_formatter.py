@@ -7,8 +7,6 @@ from typing import Dict
 import pandas as pd
 
 from ..location_utils import get_city
-from app.serotracker_sqlalchemy import db_session, ResearchSource, DashboardSource
-from app.database_etl.test_adjustment_handler import TestAdjHandler
 
 
 def get_most_recent_publication_info(row: Dict) -> Dict:
@@ -73,7 +71,8 @@ def standardize_airtable_data(df: pd.DataFrame) -> pd.DataFrame:
     df.replace({'nr': None, 'NR': None, 'Not Reported': None, 'Not reported': None,
                 'Not available': None, 'NA': None}, inplace=True)
 
-    # Replace columns that should be floats with NaN from None and rescale to percentage
+    # Replace columns that should be floats with NaN from None
+    # IMPORTANT: ind_sp and ind_se are percentages but stored as ints in airtable so must convert to decimal!
     df[['ind_sp', 'ind_se']] = df[['ind_sp', 'ind_se']].replace({None: np.nan}) / 100
 
     # Get index of most recent publication date

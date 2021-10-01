@@ -222,3 +222,13 @@ class AntibodyTargetBridge(db.Model):
     source_id = Column(UUID(as_uuid=True))
     antibody_target_id = Column(UUID(as_uuid=True))
     created_at = Column(DateTime)
+
+
+class PopulationGroupOptions(db.Model):
+    __tablename__ = 'population_group_options'
+
+    id = Column(UUID(as_uuid=True), primary_key=True)
+    name = Column(String())
+    french_name = Column(String())
+    order = Column(Integer)
+    created_at = Column(DateTime)

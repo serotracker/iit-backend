@@ -1,5 +1,7 @@
 # monte-carlo version of RG estimator,
 # accounting for uncertainty in se and sp estimates
+import logging
+import os
 import pickle
 from math import log
 from hashlib import md5
@@ -36,7 +38,6 @@ def result_is_bounded(median_adj_prev, raw_prev):
     # or if both are > 0.5
     both_below_maxsmall = (median_adj_prev <= 0.5) and (raw_prev <= 0.5)
     both_above_minbig = (median_adj_prev >= 0.5) and (raw_prev >= 0.5)
-
     return (adjusted_closeto_raw or both_below_maxsmall or both_above_minbig)
 
 
@@ -73,9 +74,13 @@ class TestAdjHandler:
     def get_stan_model_cache(self, model_code: str, model_name: str = 'anon_model', **kwargs: Dict) -> pystan.StanModel:
         """Use just as you would `pystan.StanModel`"""
 
-        # Create filepath of cached model
+        # Get working directory and extract system path of iit-backend from it
+        abs_filepath_curr_dir = os.getcwd()
+        proj_root_abs_path = abs_filepath_curr_dir.split("iit-backend")[0]
+
+        # Create model absolute path
         code_hash = md5(model_code.encode('ascii')).hexdigest()
-        cache_fn = f'app/namespaces/test_adjustment/stanmodelcache-{model_name}-{code_hash}.pkl'
+        cache_fn = f'{proj_root_abs_path}iit-backend/app/namespaces/test_adjustment/stanmodelcache-{model_name}-{code_hash}.pkl'
 
         # Try to load cached model
         try:
@@ -97,22 +102,11 @@ class TestAdjHandler:
         else:
             adapt_delta = 0.8
 
-        # Construct init param dict
-        init_one_chain = {
-            'prev': model_params['y_prev_obs'] / model_params['n_prev_obs'],
-            'sens': model_params['y_se'] / model_params['n_se'],
-            'spec': model_params['y_sp'] / model_params['n_sp']
-        }
-
-        # pystan requires initial values to be expressed in a list of dicts, one dict for each chain
-        init = [init_one_chain] * self.n_chains
-
         fit = self.TESTADJ_MODEL.sampling(data=model_params,
                                           iter=self.n_iter,
                                           chains=self.n_chains,
                                           control={'adapt_delta': adapt_delta},
-                                          check_hmc_diagnostics=False,
-                                          init=init)
+                                          check_hmc_diagnostics=False)
 
         summary = fit.summary()
         summary_df = pd.DataFrame(data=summary['summary'],
@@ -151,12 +145,15 @@ class TestAdjHandler:
                 return None, None, None
 
             # Attempt to fit a model
-            summary_df_parsed, hmc_diagnostics_passed = self.fit_one_pystan_model(model_params)
+            try:
+                summary_df_parsed, hmc_diagnostics_passed = self.fit_one_pystan_model(model_params)
+            except ZeroDivisionError:
+                return None, None, None
 
             # get model result
-            model_result = summary_df_parsed
-            lower, upper = arviz.hdi(model_result['samples'], credible_interval_size)
-            best_fit = model_result['fit']
+            model_result = summary_df_parsed['50%']
+            lower, upper = arviz.hdi(summary_df_parsed['samples'], credible_interval_size)
+            best_fit = summary_df_parsed['fit']
 
             try:
                 raw_prev = model_params['y_prev_obs'] / model_params['n_prev_obs']
@@ -185,8 +182,8 @@ class TestAdjHandler:
                 adj_type = 'FINDDx / MUHC independent evaluation'
                 se = ind_se
                 sp = ind_sp
-                output_se_n = float(ind_se_n) * 100 if ind_se_n is not None else 30
-                output_sp_n = float(ind_sp_n) * 100 if ind_sp_n is not None else 80
+                output_se_n = float(ind_se_n) if ind_se_n is not None else 30
+                output_sp_n = float(ind_sp_n) if ind_sp_n is not None else 80
 
             # Author evaluation is available
             elif pd.notna(se_n) and pd.notna(sp_n) and \
@@ -233,19 +230,32 @@ class TestAdjHandler:
                 upper = None
             else:
                 print('ADJUSTING ESTIMATE', adj_type)
-                model_params = dict(
-                    n_prev_obs=int(denominator_value),
-                    y_prev_obs=int(
-                        serum_pos_prevalence * denominator_value),
-                    n_se=int(output_se_n),
-                    y_se=int(output_se_n * se),
-                    n_sp=int(output_sp_n),
-                    y_sp=int(output_sp_n * sp)
-                )
-                lower, adj_prev, upper = self.pystan_adjust(model_params)
-                if pd.isna(adj_prev):
-                    print(f'FAILED TO ADJUST ESTIMATE')
-
+                # Check bounds of se, se_n, sp, sp_n
+                if se and not (se <= 1 and se >= 0.005):
+                    logging.error("se is not between 0.005 and 1")
+                    lower, adj_prev, upper = None, None, None
+                elif sp and not (sp <= 1 and sp >= 0.005):
+                    logging.error("sp is not between 0.005 and 1")
+                    lower, adj_prev, upper = None, None, None
+                elif output_se_n and output_se_n <= 1:
+                    logging.error("se_n is not greater than 1")
+                    lower, adj_prev, upper = None, None, None
+                elif output_sp_n and output_sp_n <= 1:
+                    logging.error("sp_n is not greater than 1")
+                    lower, adj_prev, upper = None, None, None
+                else:
+                    model_params = dict(
+                        n_prev_obs=int(denominator_value),
+                        y_prev_obs=int(
+                            serum_pos_prevalence * denominator_value),
+                        n_se=int(output_se_n),
+                        y_se=int(output_se_n * se),
+                        n_sp=int(output_sp_n),
+                        y_sp=int(output_sp_n * sp)
+                    )
+                    lower, adj_prev, upper = self.pystan_adjust(model_params)
+                    if pd.isna(adj_prev):
+                        print(f'FAILED TO ADJUST ESTIMATE')
         else:
             adj_type = 'Used author-adjusted estimate'
             adj_prev = serum_pos_prevalence
