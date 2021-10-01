@@ -1,12 +1,22 @@
-import json
 import os
-import requests
+import json
+from typing import Dict
 
 import numpy as np
-from typing import Dict
 import pandas as pd
+from pyairtable import Table
 
 from ..location_utils import get_city
+from app.utils import airtable_fields_config
+
+
+# Converts a dict with single to double quotes: dict needs to be in this format for Airtable API to work
+class doubleQuoteDict(dict):
+    def __str__(self):
+        return json.dumps(self)
+
+    def __repr__(self):
+        return json.dumps(self)
 
 
 def get_most_recent_publication_info(row: Dict) -> Dict:
@@ -19,7 +29,7 @@ def get_most_recent_publication_info(row: Dict) -> Dict:
     # If pub date is None set to index to 0
     except AttributeError:
         max_index = 0
-        
+
     # If source type exists, get element at that index
     if row['source_type']:
         # We should take either the max_index based on the latest pub date,
@@ -60,7 +70,8 @@ def standardize_airtable_data(df: pd.DataFrame) -> pd.DataFrame:
                                 'study_type', 'lead_organization', 'age_variation', 'age_variation_measure',
                                 'ind_eval_lab', 'ind_eval_link', 'ind_se', 'ind_se_n', 'ind_sp', 'ind_sp_n',
                                 'jbi_1', 'jbi_2', 'jbi_3', 'jbi_4', 'jbi_5', 'jbi_6', 'jbi_7', 'jbi_8', 'jbi_9',
-                                'measure_of_age', 'number_of_females', 'number_of_males', 'test_linked_uid', 'average_age',
+                                'measure_of_age', 'number_of_females', 'number_of_males', 'test_linked_uid',
+                                'average_age',
                                 'test_not_linked_reason', 'include_in_srma', 'is_unity_aligned']
 
     # Remove lists from single select columns
@@ -111,150 +122,19 @@ def apply_study_max_estimate_grade(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def write_test_adj_to_airtable(adj_records):
-    print("New adjusted records", len(adj_records))
+def batch_update_airtable_records(records_to_update, field_names):
     AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
     AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
-    AIRTABLE_REQUEST_URL = "https://api.airtable.com/v0/{}/Rapid%20Review%3A%20Estimates?".format(AIRTABLE_BASE_ID)
-    print(AIRTABLE_REQUEST_URL)
 
-    url = AIRTABLE_REQUEST_URL.format(AIRTABLE_BASE_ID)
-    headers = {'Authorization': 'Bearer {}'.format(AIRTABLE_API_KEY)}
+    # Create table object
+    table = Table(AIRTABLE_API_KEY, AIRTABLE_BASE_ID, 'Rapid Review: Estimates')
 
-    # Loop through df and write to airtable with 10 records at a time
-    max_i = len(adj_records) // 10
-    for i in range(max_i + 1):
-        # Slice df
-        start = i * 10
-        end = start + 9
-        record_subset = adj_records.loc[start:end]
-
-        # Create request body with 10 records
-        records_body = []
-        for i, row in record_subset.iterrows():
-            body = {
-                "id": row['airtable_record_id'],
-                "fields": {
-                    "Adjusted serum positive prevalence": row['adj_prevalence'],
-                    "Adjusted sensitivity": row['adj_sensitivity'],
-                    "Adjusted specificity": row['adj_specificity'],
-                    "Independent evaluation type": row['ind_eval_type'],
-                    "Adjusted serum pos prevalence, 95pct CI Lower": row['adj_prev_ci_lower'],
-                    "Adjusted serum pos prevalence, 95pct CI Upper": row['adj_prev_ci_upper']
-                }
-            }
-            records_body.append(body)
-
-        # Write to airtable
-        data = {"records": [records_body[0]]}
-        print(data)
-        print(type(data))
-        # data = json.dumps(data)
-        # print(data)
-        # print(type(data))
-        r = requests.patch(url, data=data, headers=headers)
-        response = r.json()
-        print(response)
-        exit()
+    # Cycle through all the records to update
+    for i, row in records_to_update.iterrows():
+        # For each record, create a dict where the key is the field name and the value is the new field value
+        # If the value is NaN, convert to None because NaN throws error with Airtable API
+        fields = {x: row[airtable_fields_config[x]] if not pd.isna(row[airtable_fields_config[x]]) else None for x in field_names}
+        fields = doubleQuoteDict(fields)
+        id = row['airtable_record_id']
+        table.update(id, fields)
     return
-
-
-def add_test_adjustments(df: pd.DataFrame) -> pd.DataFrame:
-    # Query record ids in our database
-    with db_session() as session:
-        total_db_records = session.query(DashboardSource.serum_pos_prevalence,
-                                         DashboardSource.test_adj,
-                                         DashboardSource.sensitivity,
-                                         DashboardSource.specificity,
-                                         DashboardSource.test_type,
-                                         DashboardSource.denominator_value,
-                                         DashboardSource.adj_prevalence,
-                                         ResearchSource.ind_se,
-                                         ResearchSource.ind_sp,
-                                         ResearchSource.ind_se_n,
-                                         ResearchSource.ind_sp_n,
-                                         ResearchSource.se_n,
-                                         ResearchSource.sp_n,
-                                         ResearchSource.test_validation,
-                                         ResearchSource.airtable_record_id) \
-            .join(ResearchSource, ResearchSource.source_id == DashboardSource.source_id, isouter=True).all()
-        total_db_records = [q._asdict() for q in total_db_records]
-        total_db_records = pd.DataFrame(data=total_db_records)
-
-    # Concat old and new records and fillna with 0 (NaN and None become 0 so it is standardized)
-    diff = pd.concat([df, total_db_records])
-    diff.fillna(0, inplace=True)
-
-    # Convert numeric cols to float (some of these come out of airtable as strings so need to standardize types)
-    float_cols = ['ind_se', 'ind_sp', 'ind_se_n', 'ind_sp_n', 'se_n', 'sp_n', 'sensitivity', 'specificity',
-                  'denominator_value', 'serum_pos_prevalence']
-    diff[float_cols] = diff[float_cols].astype(float)
-
-    # Round float columns to a consistent number of decimal places to ensure consistent float comparisons
-    diff[float_cols] = diff[float_cols].round(5)
-
-    # Drop duplicates based on these cols
-    duplicate_cols = ['airtable_record_id', 'test_adj', 'ind_se', 'ind_sp', 'ind_se_n', 'ind_sp_n',
-                      'se_n', 'sp_n', 'sensitivity', 'specificity', 'test_validation', 'test_type', 'denominator_value',
-                      'serum_pos_prevalence']
-    diff = diff.drop_duplicates(subset=duplicate_cols, keep=False)
-
-    # Get all unique airtable_record_ids that are new/have been modified
-    new_airtable_record_ids = diff['airtable_record_id'].unique()
-
-    # Get all rows from airtable data that need to be test adjusted, and ones that don't
-    old_airtable_test_adj_records = \
-        df[~df['airtable_record_id'].isin(new_airtable_record_ids)].reset_index(
-            drop=True)
-    new_airtable_test_adj_records = \
-        df[df['airtable_record_id'].isin(new_airtable_record_ids)].reset_index(
-            drop=True)
-    # Add temporary boolean column if record will be test adjusted or not
-    old_airtable_test_adj_records['test_adjusted_record'] = False
-    new_airtable_test_adj_records['test_adjusted_record'] = True
-
-    # Only proceed with test adjustment if there are new unadjusted records
-    if not new_airtable_test_adj_records.empty:
-        # Apply test adjustment to the new_test_adj_records and add 6 new columns
-        #multiprocessing.set_start_method("fork")
-        test_adj_handler = TestAdjHandler()
-        new_airtable_test_adj_records['adj_prevalence'], \
-        new_airtable_test_adj_records['adj_sensitivity'], \
-        new_airtable_test_adj_records['adj_specificity'], \
-        new_airtable_test_adj_records['ind_eval_type'], \
-        new_airtable_test_adj_records['adj_prev_ci_lower'], \
-        new_airtable_test_adj_records['adj_prev_ci_upper'] = \
-            zip(*new_airtable_test_adj_records.apply(lambda x: test_adj_handler.get_adjusted_estimate(x), axis=1))
-
-    # If there are no old test adjusted records, just return the new ones
-    if old_airtable_test_adj_records.empty:
-        return new_airtable_test_adj_records
-
-    # Add test adjustment data to old_test_adj_records from database
-    old_airtable_record_ids = old_airtable_test_adj_records['airtable_record_id'].unique()
-
-    # Query record ids in our database
-    with db_session() as session:
-        old_db_test_adj_records = session.query(DashboardSource.adj_prevalence,
-                                                DashboardSource.adj_prev_ci_lower,
-                                                DashboardSource.adj_prev_ci_upper,
-                                                ResearchSource.adj_sensitivity,
-                                                ResearchSource.adj_specificity,
-                                                ResearchSource.ind_eval_type,
-                                                ResearchSource.airtable_record_id) \
-            .join(ResearchSource, ResearchSource.source_id == DashboardSource.source_id, isouter=True) \
-            .filter(ResearchSource.airtable_record_id.in_(old_airtable_record_ids)).all()
-        old_db_test_adj_records = [q._asdict() for q in old_db_test_adj_records]
-        old_db_test_adj_records = pd.DataFrame(data=old_db_test_adj_records)
-
-    # Join old_airtable_test_adj_records with old_db_adjusted_records
-    old_airtable_test_adj_records = \
-        old_airtable_test_adj_records.join(old_db_test_adj_records.set_index('airtable_record_id'),
-                                           on='airtable_record_id')
-
-    # Write new airtable test adj records to airtable
-    write_test_adj_to_airtable(new_airtable_test_adj_records)
-
-    # Concat the old and new airtable test adj records
-    airtable_master_data = pd.concat([new_airtable_test_adj_records, old_airtable_test_adj_records])
-    return airtable_master_data
