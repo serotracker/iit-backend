@@ -1,5 +1,5 @@
 import logging
-
+import os
 import pandas as pd
 from flask import current_app as app
 
@@ -26,7 +26,9 @@ try:
     # Convert to df, reorder cols alphabetically and as save as csv
     csv_records_df = pd.DataFrame.from_dict(csv_records)
     csv_records_df = csv_records_df.reindex(sorted(csv_records_df.columns), axis=1)
-    csv_records_df.to_csv('GitHub CSV.csv', index=False)
+    abs_filepath_curr_dir = os.getcwd()
+    proj_root_abs_path = abs_filepath_curr_dir.split("iit-backend")[0]
+    csv_records_df.to_csv(f'{proj_root_abs_path}iit-backend/app/github_public_repo/serotracker_dataset.csv', index=False)
 
 except KeyError as e:
     logging.error(f"Failed to retrieve field names and load estimates. Error: {e}")
