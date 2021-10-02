@@ -11,10 +11,10 @@ RUN apt-get update && \
         libhdf5-serial-dev \
         netcdf-bin \
         libnetcdf-dev \
+        python3-dev \
     && pip install --upgrade pip \
     && pip install psycopg2 \
     && pip install -r requirements.txt \
-    && apt-get remove -y --purge make gcc build-essential \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
