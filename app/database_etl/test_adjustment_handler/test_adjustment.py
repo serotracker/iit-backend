@@ -5,6 +5,7 @@ from math import log
 import pandas as pd
 from marshmallow import Schema, fields, ValidationError
 
+from app import app
 from app.database_etl.test_adjustment_handler import testadj_model_code
 from app.namespaces.test_adjustment import TestAdjHandler
 from app.serotracker_sqlalchemy import db_session, ResearchSource, DashboardSource
@@ -184,10 +185,12 @@ def add_test_adjustments(df: pd.DataFrame) -> pd.DataFrame:
     airtable_master_data = pd.concat([new_airtable_test_adj_records, old_airtable_test_adj_records])
 
     # Write any newly test adjusted records back to airtable
-    batch_update_airtable_records(new_airtable_test_adj_records, ['Adjusted serum positive prevalence',
-                                                                  'Adjusted serum pos prevalence, 95pct CI Lower',
-                                                                  'Adjusted serum pos prevalence, 95pct CI Upper',
-                                                                  'Adjusted sensitivity',
-                                                                  'Adjusted specificity',
-                                                                  'Independent evaluation type'])
+    # Only want to write back to airtable in prod! Don't want to mess up AT if devs make a mistake on local
+    if app.config['WRITE_TO_AIRTABLE']:
+        batch_update_airtable_records(new_airtable_test_adj_records, ['Adjusted serum positive prevalence',
+                                                                      'Adjusted serum pos prevalence, 95pct CI Lower',
+                                                                      'Adjusted serum pos prevalence, 95pct CI Upper',
+                                                                      'Adjusted sensitivity',
+                                                                      'Adjusted specificity',
+                                                                      'Independent evaluation type'])
     return airtable_master_data
