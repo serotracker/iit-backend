@@ -183,5 +183,11 @@ def add_test_adjustments(df: pd.DataFrame) -> pd.DataFrame:
     # Concat the old and new airtable test adj records
     airtable_master_data = pd.concat([new_airtable_test_adj_records, old_airtable_test_adj_records])
 
-    batch_update_airtable_records(new_airtable_test_adj_records, ['Adjusted serum positive prevalence', ])
+    # Write any newly test adjusted records back to airtable
+    batch_update_airtable_records(new_airtable_test_adj_records, ['Adjusted serum positive prevalence',
+                                                                  'Adjusted serum pos prevalence, 95pct CI Lower',
+                                                                  'Adjusted serum pos prevalence, 95pct CI Upper',
+                                                                  'Adjusted sensitivity',
+                                                                  'Adjusted specificity',
+                                                                  'Independent evaluation type'])
     return airtable_master_data
