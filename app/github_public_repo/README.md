@@ -10,7 +10,7 @@ Our complete SARS-Cov-2 dataset can be scraped programmatically from this reposi
 
 Our dataset can also be downloaded directly from our [Airtable view]([https://airtable.com/shraXWPJ9Yu7ybowM/tbljN2mhRVfSlZv2d?backgroundColor=blue&viewControls=on](https://airtable.com/shraXWPJ9Yu7ybowM/tbljN2mhRVfSlZv2d?backgroundColor=blue&viewControls=on)).
 
-The CSV file follows the format of 1 row per serosurveillance study.
+The CSV file follows the format of 1 row per estimate. 
  
 ### Additional Information
 Please see our [Data Dictionary]([https://docs.google.com/spreadsheets/d/1KQbp5T9Cq_HnNpmBTWY1iKs6Etu1-qJcnhdJ5eyw7N8/edit#gid=0](https://docs.google.com/spreadsheets/d/1KQbp5T9Cq_HnNpmBTWY1iKs6Etu1-qJcnhdJ5eyw7N8/edit#gid=0)) for explanations of our variables, data types, and descriptions as well as insight into how our data is collected by our research team.
@@ -24,3 +24,6 @@ If you have a SARS-CoV-2 seroprevalence study that has not yet been captured by 
 If you are open to being contacted about your use case for our data, please fill out this [form](https://forms.gle/gqi3kvKQgasYCrQE9). This helps us create datasets that are most useful to you.
 
 Our data can be cited as this [Lancet Inf Dis article](https://www.thelancet.com/journals/laninf/article/PIIS1473-3099(20)30631-9/fulltext#%20).
+
+### Change Log
+- Oct 3, 2021: We created `serotracker_dataset.csv` containing the following columns: Prevalence Estimate Name, Publication Date, Grade of Estimate Scope, Country, Specific Geography, Sampling Start Date, Sampling End Date, Sample Frame (groups of interest), Sample Frame (age), Sub-grouping Variable, Subgroup category for analysis, Sub-group specific category, Denominator Value, Serum positive prevalence, Serum pos prevalence, 95pct CI Lower, Serum pos prevalence, 95pct CI Upper, Test Adjustment, Population Adjustment, Sampling Method, Test Manufacturer, Test Type, Isotype(s) Reported, Antibody Target, Specimen Type, Sensitivity, Specificity, Overall Risk of Bias (JBI), JBI 1, JBI 2, JBI 3, JBI 4, JBI 5, JBI 6, JBI 7, JBI 8, JBI 9, Source Type, First Author Full Name, Lead Institution, UNITY: Criteria, URL, Date Created, Last modified time, Data Quality Status.
