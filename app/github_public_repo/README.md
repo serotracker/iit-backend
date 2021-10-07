@@ -5,7 +5,7 @@
 
 ### Download
 Our complete SARS-Cov-2 dataset can be scraped programmatically from this repository in the following ways:
-1. Using the command: `curl https://raw.githubusercontent.com/serotracker/sars-cov-2-data/main/test.csv`.
+1. Using the command: `curl https://raw.githubusercontent.com/serotracker/sars-cov-2-data/main/serotracker_dataset.csv` in the terminal.
 2. Using a GET request through REST API protocol.
 
 Our dataset can also be downloaded directly from our [Airtable view]([https://airtable.com/shraXWPJ9Yu7ybowM/tbljN2mhRVfSlZv2d?backgroundColor=blue&viewControls=on](https://airtable.com/shraXWPJ9Yu7ybowM/tbljN2mhRVfSlZv2d?backgroundColor=blue&viewControls=on)).
@@ -13,11 +13,11 @@ Our dataset can also be downloaded directly from our [Airtable view]([https://ai
 The CSV file follows the format of 1 row per estimate. 
  
 ### Additional Information
-Please see our [Data Dictionary]([https://docs.google.com/spreadsheets/d/1KQbp5T9Cq_HnNpmBTWY1iKs6Etu1-qJcnhdJ5eyw7N8/edit#gid=0](https://docs.google.com/spreadsheets/d/1KQbp5T9Cq_HnNpmBTWY1iKs6Etu1-qJcnhdJ5eyw7N8/edit#gid=0)) for explanations of our variables, data types, and descriptions as well as insight into how our data is collected by our research team.
+Please see our [Data Dictionary](https://docs.google.com/spreadsheets/d/1KQbp5T9Cq_HnNpmBTWY1iKs6Etu1-qJcnhdJ5eyw7N8/edit#gid=0) for explanations of our variables, data types, and descriptions as well as insight into how our data is collected by our research team.
 
 In order to keep up to date with important changes to our dataset, please consult our [Change Log](https://airtable.com/shrxpAlF6v0LeRYkA/tblC6jj904WXUzwVY) regularly.
 
-For more information about how we collect, extract and use our data, please see the [Data page]([https://serotracker.com/en/Data](https://serotracker.com/en/Data)) on our website.
+For more information about how we collect, extract and use our data, please see the [Data page](https://serotracker.com/en/Data) on our website.
 
 If you have a SARS-CoV-2 seroprevalence study that has not yet been captured by serotracker.com, please submit the source using this [form](https://docs.google.com/forms/d/e/1FAIpQLSdvNJReektutfMT-5bOTjfnvaY_pMAy8mImpQBAW-3v7_B2Bg/viewform). Our research team will review each submission to evaluate whether it meets our inclusion criteria.
 
