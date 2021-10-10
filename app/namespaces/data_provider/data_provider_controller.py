@@ -52,7 +52,7 @@ class Records(Resource):
 
         columns = columns_requested
         # If we intend to calculate country summaries we will need certain columns
-        if calculate_country_seroprev_summaries:
+        if calculate_country_seroprev_summaries and columns:
             COUNTRY_SEROPREV_SUMMARY_COLS = ['country', 'country_iso3', 'denominator_value', 'serum_pos_prevalence',
                                              'estimate_grade']
             columns = list(set(COUNTRY_SEROPREV_SUMMARY_COLS).union(set(columns)))
@@ -81,7 +81,8 @@ class Records(Resource):
             country_seroprev_summaries = get_country_seroprev_summaries(records)
             result["country_seroprev_summary"] = country_seroprev_summaries
             # Ensure that we only return the requested columns to streamline data sent over HTTP
-            result["records"] = filter_columns(result["records"], columns_requested)
+            if columns_requested:
+                result["records"] = filter_columns(result["records"], columns_requested)
 
         return jsonify(result)
 
