@@ -5,7 +5,7 @@ from flask import jsonify, make_response, request
 
 from .data_provider_service import get_record_details, get_country_seroprev_summaries, jitter_pins, get_all_filter_options
 from .data_provider_schema import RecordDetailsSchema, RecordsSchema, PaginatedRecordsSchema, StudyCountSchema
-from app.utils import validate_request_input_against_schema, get_filtered_records, get_paginated_records, convert_start_end_dates
+from app.utils import validate_request_input_against_schema, get_filtered_records, get_paginated_records, convert_start_end_dates, filter_columns
 
 data_provider_ns = Namespace('data_provider', description='Endpoints for getting database records.')
 logging.getLogger(__name__)
@@ -36,7 +36,7 @@ class Records(Resource):
             # If there was an error with the input payload, return the error and 422 response
             return make_response(payload, status_code)
 
-        columns = data.get('columns')
+        columns_requested = data.get('columns')
         research_fields = data.get('research_fields')
         prioritize_estimates = data.get('prioritize_estimates', True)
         prioritize_estimates_mode = data.get('prioritize_estimates_mode', 'dashboard')
@@ -49,6 +49,14 @@ class Records(Resource):
         sampling_start_date, sampling_end_date = convert_start_end_dates(data, use_sampling_date=True)
         publication_start_date, publication_end_date = convert_start_end_dates(data, use_sampling_date=False)
         include_in_srma = data.get('include_in_srma', False)
+
+        columns = columns_requested
+        # If we intend to calculate country summaries we will need certain columns
+        if calculate_country_seroprev_summaries:
+            COUNTRY_SEROPREV_SUMMARY_COLS = ['country', 'country_iso3', 'denominator_value', 'serum_pos_prevalence',
+                                             'estimate_grade']
+            columns = list(set(COUNTRY_SEROPREV_SUMMARY_COLS).union(set(columns)))
+
         records = get_filtered_records(research_fields,
                                       filters,
                                       columns,
@@ -72,6 +80,8 @@ class Records(Resource):
             # Compute seroprevalence summaries per country per estimate grade level
             country_seroprev_summaries = get_country_seroprev_summaries(records)
             result["country_seroprev_summary"] = country_seroprev_summaries
+            # Ensure that we only return the requested columns to streamline data sent over HTTP
+            result["records"] = filter_columns(result["records"], columns_requested)
 
         return jsonify(result)
 
