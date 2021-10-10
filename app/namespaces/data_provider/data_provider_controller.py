@@ -44,11 +44,12 @@ class Records(Resource):
         include_subgeography_estimates = data.get('include_subgeography_estimates', False)
         unity_aligned_only = data.get('unity_aligned_only', False)
         include_records_without_latlngs = data.get('include_records_without_latlngs', False)
+        calculate_country_seroprev_summaries = data.get('calculate_country_seroprev_summaries', True)
 
         sampling_start_date, sampling_end_date = convert_start_end_dates(data, use_sampling_date=True)
         publication_start_date, publication_end_date = convert_start_end_dates(data, use_sampling_date=False)
         include_in_srma = data.get('include_in_srma', False)
-        result = get_filtered_records(research_fields,
+        records = get_filtered_records(research_fields,
                                       filters,
                                       columns,
                                       sampling_start_date=sampling_start_date,
@@ -63,10 +64,19 @@ class Records(Resource):
                                       unity_aligned_only=unity_aligned_only,
                                       include_records_without_latlngs=include_records_without_latlngs)
         if not columns or ("pin_latitude" in columns and "pin_longitude" in columns):
-            result = jitter_pins(result)
+            records = jitter_pins(records)
+
+        result = { "records": records }
+
+        if calculate_country_seroprev_summaries:
+            # Compute seroprevalence summaries per country per estimate grade level
+            country_seroprev_summaries = get_country_seroprev_summaries(records)
+            result["country_seroprev_summary"] = country_seroprev_summaries
+
         return jsonify(result)
 
 
+# TODO: Deprecate
 @data_provider_ns.route('/records/paginated', methods=['POST'])
 class PaginatedRecords(Resource):
     @data_provider_ns.doc('An endpoint for getting all paginated records from database with or without filters.')
@@ -150,6 +160,7 @@ class RecordDetails(Resource):
         return jsonify(record_details)
 
 
+# TODO: Deprecate
 @data_provider_ns.route('/country_seroprev_summary', methods=['GET', 'POST'])
 class GeogStudyCount(Resource):
     @data_provider_ns.doc('An endpoint for summarizing the seroprevalence data of a country.')
