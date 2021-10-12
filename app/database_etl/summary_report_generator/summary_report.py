@@ -43,6 +43,9 @@ class SummaryReport:
     def set_num_test_adjusted_records(self, num_records: int):
         self.num_test_adjusted_records = num_records
 
+    def set_test_adjusted_record_ids(self, record_ids: list):
+        self.test_adjusted_record_ids = record_ids
+
     def set_num_divergent_estimates(self, num_divergent_estimates: int):
         self.num_divergent_estimates = num_divergent_estimates
 
@@ -105,6 +108,8 @@ class SummaryReport:
             body += f"Number of airtable records queried: {self.num_airtable_records}\n"
         if hasattr(self, 'num_test_adjusted_records'):
             body += f"Number of estimates test adjusted: {self.num_test_adjusted_records}\n"
+        if hasattr(self, 'test_adjusted_record_ids'):
+            body += f"Airtable record ids of test adjusted estimates: {self.test_adjusted_record_ids}\n"
         if hasattr(self, 'test_adjusted_time'):
             body += f"Time to run test adjustment: {self.test_adjusted_time} minutes\n"
         if hasattr(self, 'num_divergent_estimates'):

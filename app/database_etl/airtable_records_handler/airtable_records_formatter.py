@@ -129,14 +129,17 @@ def batch_update_airtable_records(records_to_update, field_names):
     # Create table object
     table = Table(AIRTABLE_API_KEY, AIRTABLE_BASE_ID, 'Rapid Review: Estimates')
 
-    # Cycle through all the records to update
-    for i, row in records_to_update.iterrows():
+    def update_single_record(row):
         # For each record, create a dict where the key is the field name and the value is the new field value
         # airtable_fields_config converts a readable english column name into a codified column name
         # e.g. x = 'Adjusted sensitivity', airtable_fields_config[x] = 'adj_sensitivity', row['adj_sensitivity'] = 0.9
         # If the value is NaN, convert to None because NaN throws error with Airtable API
-        fields = {x: row[full_airtable_fields[x]] if not pd.isna(row[full_airtable_fields[x]]) else None for x in field_names}
+        fields = {x: row[full_airtable_fields[x]] if not pd.isna(row[full_airtable_fields[x]]) else None for x in
+                  field_names}
         fields = doubleQuoteDict(fields)
         id = row['airtable_record_id']
         table.update(id, fields)
+        return
+
+    records_to_update.apply(lambda x: update_single_record(x), axis=1)
     return
