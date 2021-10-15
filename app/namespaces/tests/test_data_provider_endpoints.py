@@ -31,7 +31,7 @@ def test_get_record_details(client):
 
 # Test get records with an empty request body
 def test_get_records_basic(client):
-    response = client.post('/data_provider/records', json={
+    response = client.post('/data_provider/dashboard_records', json={
 	    "filters": {}
     })
     status_code = response.status_code
@@ -45,7 +45,7 @@ def test_get_records_basic(client):
 
 # Test get records with no estimate prioritization
 def test_get_records_no_estimate_prioritization(client):
-    response = client.post('/data_provider/records', json={
+    response = client.post('/data_provider/dashboard_records', json={
 	    "filters": {},
         "prioritize_estimates": False
     })
@@ -58,7 +58,7 @@ def test_get_records_no_estimate_prioritization(client):
 
 # Test get records with country filters
 def test_get_records_country_filter(client):
-    response = client.post('/data_provider/records', json={
+    response = client.post('/data_provider/dashboard_records', json={
 	    "filters": {
             "country": ["country_name_1", "country_name_2"]
         }
@@ -72,7 +72,7 @@ def test_get_records_country_filter(client):
 
 # Test get records with research fields
 def test_get_records_research_fields(client):
-    response = client.post('/data_provider/records', json={
+    response = client.post('/data_provider/dashboard_records', json={
 	    "filters": {},
         "research_fields": True
     })
