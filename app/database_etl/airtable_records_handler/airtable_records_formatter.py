@@ -1,8 +1,22 @@
-import numpy as np
+import os
+import json
 from typing import Dict
+
+import numpy as np
 import pandas as pd
+from pyairtable import Table
 
 from ..location_utils import get_city
+from app.utils import full_airtable_fields
+
+
+# Converts a dict with single to double quotes: dict needs to be in this format for Airtable API to work
+class doubleQuoteDict(dict):
+    def __str__(self):
+        return json.dumps(self)
+
+    def __repr__(self):
+        return json.dumps(self)
 
 
 def get_most_recent_publication_info(row: Dict) -> Dict:
@@ -15,7 +29,7 @@ def get_most_recent_publication_info(row: Dict) -> Dict:
     # If pub date is None set to index to 0
     except AttributeError:
         max_index = 0
-        
+
     # If source type exists, get element at that index
     if row['source_type']:
         # We should take either the max_index based on the latest pub date,
@@ -56,7 +70,8 @@ def standardize_airtable_data(df: pd.DataFrame) -> pd.DataFrame:
                                 'study_type', 'lead_organization', 'age_variation', 'age_variation_measure',
                                 'ind_eval_lab', 'ind_eval_link', 'ind_se', 'ind_se_n', 'ind_sp', 'ind_sp_n',
                                 'jbi_1', 'jbi_2', 'jbi_3', 'jbi_4', 'jbi_5', 'jbi_6', 'jbi_7', 'jbi_8', 'jbi_9',
-                                'measure_of_age', 'number_of_females', 'number_of_males', 'test_linked_uid', 'average_age',
+                                'measure_of_age', 'number_of_females', 'number_of_males', 'test_linked_uid',
+                                'average_age',
                                 'test_not_linked_reason', 'include_in_srma', 'is_unity_aligned']
 
     # Remove lists from single select columns
@@ -105,3 +120,26 @@ def apply_study_max_estimate_grade(df: pd.DataFrame) -> pd.DataFrame:
                 subset['estimate_grade'] = level
                 continue
     return df
+
+
+def batch_update_airtable_records(records_to_update, field_names):
+    AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+    AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+
+    # Create table object
+    table = Table(AIRTABLE_API_KEY, AIRTABLE_BASE_ID, 'Rapid Review: Estimates')
+
+    def update_single_record(row):
+        # For each record, create a dict where the key is the field name and the value is the new field value
+        # airtable_fields_config converts a readable english column name into a codified column name
+        # e.g. x = 'Adjusted sensitivity', airtable_fields_config[x] = 'adj_sensitivity', row['adj_sensitivity'] = 0.9
+        # If the value is NaN, convert to None because NaN throws error with Airtable API
+        fields = {x: row[full_airtable_fields[x]] if not pd.isna(row[full_airtable_fields[x]]) else None for x in
+                  field_names}
+        fields = doubleQuoteDict(fields)
+        id = row['airtable_record_id']
+        table.update(id, fields)
+        return
+
+    records_to_update.apply(lambda x: update_single_record(x), axis=1)
+    return

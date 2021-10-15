@@ -43,6 +43,9 @@ class SummaryReport:
     def set_num_test_adjusted_records(self, num_records: int):
         self.num_test_adjusted_records = num_records
 
+    def set_test_adjusted_record_ids(self, record_ids: list):
+        self.test_adjusted_record_ids = record_ids
+
     def set_num_divergent_estimates(self, num_divergent_estimates: int):
         self.num_divergent_estimates = num_divergent_estimates
 
@@ -98,6 +101,17 @@ class SummaryReport:
         os.remove('etl_summary_report.png')
         return
 
+    def send_adjusted_record_ids_csv(self, body):
+        # Create df based on list of airtable record ids
+        col = {'airtable_record_id': self.test_adjusted_record_ids}
+        record_id_df = pd.DataFrame(col)
+
+        # Save file locally, upload to slack, then remove file
+        record_id_df.to_csv('test_adjusted_airtable_record_ids.csv', index=False)
+        upload_slack_file(filename='test_adjusted_airtable_record_ids.csv', caption=body)
+        os.remove('test_adjusted_airtable_record_ids.csv')
+        return
+
     def send_summary_report(self):
         body = f"Summary report for ETL run at {self.get_human_readable_time(self.start_time)}:\n\n"
         body += f"Total runtime: {self.get_elapsed_time()} minutes\n"
@@ -117,6 +131,9 @@ class SummaryReport:
             body += f"Status: FAIL\n"
             summary_df = self.get_table_counts_summary_df(self.table_counts_before)
             self.send_summary_table_image(summary_df, body)
+        if hasattr(self, 'test_adjusted_record_ids'):
+            body = f"Airtable record ids of test adjusted estimates:"
+            self.send_adjusted_record_ids_csv(body)
         return
 
     def __enter__(self):

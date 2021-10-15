@@ -5,9 +5,11 @@ from math import log
 import pandas as pd
 from marshmallow import Schema, fields, ValidationError
 
+from app import app
 from app.database_etl.test_adjustment_handler import testadj_model_code
 from app.namespaces.test_adjustment import TestAdjHandler
 from app.serotracker_sqlalchemy import db_session, ResearchSource, DashboardSource
+from app.database_etl.airtable_records_handler import batch_update_airtable_records
 
 
 def logit(p, tol=1e-3):
@@ -115,6 +117,7 @@ def add_test_adjustments(df: pd.DataFrame) -> pd.DataFrame:
     new_airtable_test_adj_records = \
         df[df['airtable_record_id'].isin(new_airtable_record_ids)].reset_index(
             drop=True)
+
     # Add temporary boolean column if record will be test adjusted or not
     old_airtable_test_adj_records['test_adjusted_record'] = False
     new_airtable_test_adj_records['test_adjusted_record'] = True
@@ -166,6 +169,14 @@ def add_test_adjustments(df: pd.DataFrame) -> pd.DataFrame:
         old_db_test_adj_records = [q._asdict() for q in old_db_test_adj_records]
         old_db_test_adj_records = pd.DataFrame(data=old_db_test_adj_records)
 
+    # Drop the test adjustment data that is currently in airtable, and keep the one int he DB
+    old_airtable_test_adj_records = old_airtable_test_adj_records.drop(columns=['adj_prevalence',
+                                                                                'adj_prev_ci_lower',
+                                                                                'adj_prev_ci_upper',
+                                                                                'adj_sensitivity',
+                                                                                'adj_specificity',
+                                                                                'ind_eval_type'])
+
     # Join old_airtable_test_adj_records with old_db_adjusted_records
     old_airtable_test_adj_records = \
         old_airtable_test_adj_records.join(old_db_test_adj_records.set_index('airtable_record_id'),
@@ -173,4 +184,14 @@ def add_test_adjustments(df: pd.DataFrame) -> pd.DataFrame:
 
     # Concat the old and new airtable test adj records
     airtable_master_data = pd.concat([new_airtable_test_adj_records, old_airtable_test_adj_records])
+
+    # Write any newly test adjusted records back to airtable
+    # Only want to write back to airtable in prod! Don't want to mess up AT if devs make a mistake on local
+    if app.config['WRITE_TO_AIRTABLE']:
+        batch_update_airtable_records(new_airtable_test_adj_records, ['Adjusted serum positive prevalence',
+                                                                      'Adjusted serum pos prevalence, 95pct CI Lower',
+                                                                      'Adjusted serum pos prevalence, 95pct CI Upper',
+                                                                      'Adjusted sensitivity',
+                                                                      'Adjusted specificity',
+                                                                      'Independent evaluation type'])
     return airtable_master_data
