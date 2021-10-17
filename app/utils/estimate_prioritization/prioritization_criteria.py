@@ -20,6 +20,10 @@ prioritization_criteria_full = {
         lambda estimate: (estimate['pop_adj'] is True) and (estimate['test_adj'] is True),
         lambda estimate: (pd.isna(estimate['pop_adj'])) and (estimate['test_adj'] is True),
     ],
+    'antibody_target': [
+        lambda estimate: estimate['antibody_target'] == 'Spike',
+        lambda estimate: estimate['antibody_target'] == 'Nucleocapsid (N-protein)'
+    ],
     'estimate_grade': [
         lambda estimate: estimate['estimate_grade'] == 'National',
         lambda estimate: estimate['estimate_grade'] == 'Regional',
