@@ -21,6 +21,7 @@ prioritization_criteria_full = {
         lambda estimate: (pd.isna(estimate['pop_adj'])) and (estimate['test_adj'] is True),
     ],
     'antibody_target': [
+        lambda estimate: len(estimate['antibody_target']) > 1, # Multiple AB targets
         lambda estimate: estimate['antibody_target'] == 'Spike',
         lambda estimate: estimate['antibody_target'] == 'Nucleocapsid (N-protein)'
     ],
