@@ -1,6 +1,6 @@
 # iit-backend
 
-Server side code for the International Immunity Tracker
+Server side code for the International Immunity Tracker. Hello world!
 
 # Set up
 
