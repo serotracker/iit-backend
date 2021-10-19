@@ -2,6 +2,8 @@
 
 Server side code for the International Immunity Tracker. Hello world!
 
+I am a robot.
+
 # Set up
 
 ## Cloning
