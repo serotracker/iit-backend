@@ -47,6 +47,7 @@ class RecordsSchema(Schema):
     include_subgeography_estimates = fields.Boolean(allow_none=True)
     unity_aligned_only = fields.Boolean(allow_none=True)
     include_records_without_latlngs = fields.Boolean(allow_none=True)
+    calculate_country_seroprev_summaries = fields.Boolean(allow_none=True)
 
 
 class PaginatedRecordsSchema(RecordsSchema):
