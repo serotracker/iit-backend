@@ -108,6 +108,7 @@ class Records(Resource):
         publication_start_date, publication_end_date = convert_start_end_dates(data, use_sampling_date=False)
         include_in_srma = data.get('include_in_srma', False)
 
+        # Making a copy of columns_requested here because we will need its original value later on
         columns = columns_requested
         # If we intend to calculate country summaries we will need certain columns
         if calculate_country_seroprev_summaries and columns:
