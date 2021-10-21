@@ -232,14 +232,18 @@ def get_filtered_records(research_fields=False, filters=None, columns=None, incl
 
     # Finally, if columns have been supplied, only return those columns
     if columns is not None and len(columns) > 0:
-        def grab_cols(result, columns):
-            ret = {}
-            for col in columns:
-                ret[col] = result.get(col)
-            return ret
+        filter_columns(result, columns)
 
-        result = [grab_cols(i, columns) for i in result]
     return result
+
+def filter_columns(records, cols_to_include):
+    def grab_cols(result, columns):
+        ret = {}
+        for col in columns:
+            ret[col] = result.get(col)
+        return ret
+
+    return [grab_cols(i, cols_to_include) for i in records]
 
 '''Gets and returns a dictionary of pages of records
 

@@ -28,6 +28,7 @@ class ApiDevelopmentConfig(ApiConfig):
     DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD')
     DATABASE_HOST_ADDRESS = 'localhost'
     DATABASE_NAME = 'whiteclaw'
+    WRITE_TO_AIRTABLE = False
     SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI',
                                         'postgresql://{username}:{password}@{host_address}:5432/{database_name}'.format(
                                             username=DATABASE_USERNAME,
@@ -59,6 +60,7 @@ class ApiProductionConfig(ApiConfig):
     DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD')
     DATABASE_HOST_ADDRESS = os.getenv('DATABASE_HOST_ADDRESS')
     DATABASE_NAME = 'whiteclaw'
+    WRITE_TO_AIRTABLE = os.getenv('WRITE_TO_AIRTABLE', False)
     SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI',
                                         'postgresql://{username}:{password}@{host_address}:5432/{database_name}'.format(
                                             username=DATABASE_USERNAME,

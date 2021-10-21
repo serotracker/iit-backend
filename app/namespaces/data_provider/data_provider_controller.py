@@ -5,7 +5,7 @@ from flask import jsonify, make_response, request
 
 from .data_provider_service import get_record_details, get_country_seroprev_summaries, jitter_pins, get_all_filter_options
 from .data_provider_schema import RecordDetailsSchema, RecordsSchema, PaginatedRecordsSchema, StudyCountSchema
-from app.utils import validate_request_input_against_schema, get_filtered_records, get_paginated_records, convert_start_end_dates
+from app.utils import validate_request_input_against_schema, get_filtered_records, get_paginated_records, convert_start_end_dates, filter_columns
 
 data_provider_ns = Namespace('data_provider', description='Endpoints for getting database records.')
 logging.getLogger(__name__)
@@ -67,6 +67,86 @@ class Records(Resource):
         return jsonify(result)
 
 
+# TODO: Once we can update research code to handle schema changes in this endpoint
+# update /records with the logic featured here and deprecate this endpoint
+@data_provider_ns.route('/dashboard_records', methods=['POST'])
+class Records(Resource):
+    @data_provider_ns.doc('An endpoint for getting all records from database with or without filters.')
+    def post(self):
+        # Convert input payload to json and throw error if it doesn't exist
+        data = request.get_json()
+        if not data:
+            return {"message": "No input payload provided"}, 400
+
+        # Log request info
+        logging.info("Endpoint Type: {type}, Endpoint Path: {path}, Arguments: {args}, Payload: {payload}".format(
+            type=request.environ['REQUEST_METHOD'],
+            path=request.environ['PATH_INFO'],
+            args=dict(request.args),
+            payload=data))
+
+        # All of these params can be empty, in which case, our utility functions will just return all records
+        filters = data.get('filters')
+
+        # Validate input payload
+        payload, status_code = validate_request_input_against_schema(data, RecordsSchema())
+        if status_code != 200:
+            # If there was an error with the input payload, return the error and 422 response
+            return make_response(payload, status_code)
+
+        columns_requested = data.get('columns')
+        research_fields = data.get('research_fields')
+        prioritize_estimates = data.get('prioritize_estimates', True)
+        prioritize_estimates_mode = data.get('prioritize_estimates_mode', 'dashboard')
+        include_disputed_regions = data.get('include_disputed_regions', False)
+        include_subgeography_estimates = data.get('include_subgeography_estimates', False)
+        unity_aligned_only = data.get('unity_aligned_only', False)
+        include_records_without_latlngs = data.get('include_records_without_latlngs', False)
+        calculate_country_seroprev_summaries = data.get('calculate_country_seroprev_summaries', True)
+
+        sampling_start_date, sampling_end_date = convert_start_end_dates(data, use_sampling_date=True)
+        publication_start_date, publication_end_date = convert_start_end_dates(data, use_sampling_date=False)
+        include_in_srma = data.get('include_in_srma', False)
+
+        # Making a copy of columns_requested here because we will need its original value later on
+        columns = columns_requested
+        # If we intend to calculate country summaries we will need certain columns
+        if calculate_country_seroprev_summaries and columns:
+            COUNTRY_SEROPREV_SUMMARY_COLS = ['country', 'country_iso3', 'denominator_value', 'serum_pos_prevalence',
+                                             'estimate_grade']
+            columns = list(set(COUNTRY_SEROPREV_SUMMARY_COLS).union(set(columns)))
+
+        records = get_filtered_records(research_fields,
+                                      filters,
+                                      columns,
+                                      sampling_start_date=sampling_start_date,
+                                      sampling_end_date=sampling_end_date,
+                                      publication_start_date=publication_start_date,
+                                      publication_end_date=publication_end_date,
+                                      prioritize_estimates=prioritize_estimates,
+                                      prioritize_estimates_mode=prioritize_estimates_mode,
+                                      include_in_srma=include_in_srma,
+                                      include_disputed_regions=include_disputed_regions,
+                                      include_subgeography_estimates=include_subgeography_estimates,
+                                      unity_aligned_only=unity_aligned_only,
+                                      include_records_without_latlngs=include_records_without_latlngs)
+        if not columns or ("pin_latitude" in columns and "pin_longitude" in columns):
+            records = jitter_pins(records)
+
+        result = { "records": records }
+
+        if calculate_country_seroprev_summaries:
+            # Compute seroprevalence summaries per country per estimate grade level
+            country_seroprev_summaries = get_country_seroprev_summaries(records)
+            result["country_seroprev_summary"] = country_seroprev_summaries
+            # Ensure that we only return the requested columns to streamline data sent over HTTP
+            if columns_requested:
+                result["records"] = filter_columns(result["records"], columns_requested)
+
+        return jsonify(result)
+
+
+# TODO: Deprecate
 @data_provider_ns.route('/records/paginated', methods=['POST'])
 class PaginatedRecords(Resource):
     @data_provider_ns.doc('An endpoint for getting all paginated records from database with or without filters.')
@@ -150,6 +230,7 @@ class RecordDetails(Resource):
         return jsonify(record_details)
 
 
+# TODO: Deprecate
 @data_provider_ns.route('/country_seroprev_summary', methods=['GET', 'POST'])
 class GeogStudyCount(Resource):
     @data_provider_ns.doc('An endpoint for summarizing the seroprevalence data of a country.')

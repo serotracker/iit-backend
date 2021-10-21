@@ -3,7 +3,7 @@ name: Deploy EB Prod
 on:
   push:
     branches:
-      - master
+      - no-branch
   repository_dispatch:
     types: manual-trigger
 
