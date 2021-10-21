@@ -18,14 +18,26 @@ try:
     # Extract fields
     records = data['records']
     fields = [x['fields']['Field Name'] for x in records]
+    snake_case_col_name = [x['fields']['Snake Case Column Label'] for x in records]
     logging.info("Successfully retrieved field names from Airtable")
 
     # Get estimates from Rapid Review: Estimates table for specified fields
     csv_records = get_all_records(fields)
 
-    # Convert to df, reorder cols alphabetically and as save as csv
+    # Convert to df
     csv_records_df = pd.DataFrame.from_dict(csv_records)
-    csv_records_df = csv_records_df.reindex(sorted(csv_records_df.columns), axis=1)
+
+    # For cols where values are in lists, extract from list
+    multi_val_cols = ['isotypes', 'antibody_target', 'source_type', 'jbi_1', 'jbi_2', 'jbi_3', 'jbi_4', 'jbi_5',
+                      'jbi_6', 'jbi_7', 'jbi_8', 'jbi_9', 'source_name', 'lead_institution', 'url', 'first_author',
+                      'is_unity_aligned', 'publication_date']
+    for col in multi_val_cols:
+        csv_records_df[col] = csv_records_df[col].apply(lambda x: x[0] if x is not None else x)
+
+    # Reorder df columns based on airtable order
+    csv_records_df = csv_records_df[snake_case_col_name]
+
+    # Save as csv
     abs_filepath_curr_dir = os.getcwd()
     proj_root_abs_path = abs_filepath_curr_dir.split("iit-backend")[0]
     csv_records_df.to_csv(f'{proj_root_abs_path}iit-backend/app/github_public_repo/serotracker_dataset.csv', index=False)
