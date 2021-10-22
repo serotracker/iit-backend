@@ -13,7 +13,7 @@ Our dataset can also be downloaded directly from our [Airtable view]([https://ai
 The CSV file follows the format of 1 row per estimate. 
  
 ### Additional Information
-Please see our [Data Dictionary](https://docs.google.com/spreadsheets/d/1KQbp5T9Cq_HnNpmBTWY1iKs6Etu1-qJcnhdJ5eyw7N8/edit#gid=0) for explanations of our variables, data types, and descriptions as well as insight into how our data is collected by our research team.
+Please see our [Data Dictionary](https://airtable.com/shrz0CXeuUxlbd0Rm) for explanations of our variables, data types, and descriptions as well as insight into how our data is collected by our research team.
 
 In order to keep up to date with important changes to our dataset, please consult our [Change Log](https://airtable.com/shrxpAlF6v0LeRYkA/tblC6jj904WXUzwVY) regularly.
 
