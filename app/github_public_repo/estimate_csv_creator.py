@@ -17,7 +17,7 @@ data = airtable_get_request(AIRTABLE_GITHUB_CSV_FIELDS_REQUEST_URL, headers)
 try:
     # Extract fields
     records = data['records']
-    fields = [x['fields']['Field Name'] for x in records]
+    fields = [x['fields']['Formal Column Label'] for x in records]
     snake_case_col_name = [x['fields']['Snake Case Column Label'] for x in records]
     logging.info("Successfully retrieved field names from Airtable")
 
@@ -34,13 +34,21 @@ try:
     for col in multi_val_cols:
         csv_records_df[col] = csv_records_df[col].apply(lambda x: x[0] if x is not None else x)
 
+    # Convert elements that are "Not reported" or "Not Reported" or "NR" to None
+    csv_records_df.replace({'nr': None, 'NR': None, 'Not Reported': None, 'Not reported': None,
+                            'Not available': None, 'NA': None, 'N/A': None}, inplace=True)
+
     # Reorder df columns based on airtable order
     csv_records_df = csv_records_df[snake_case_col_name]
+
+    # Sort estimates by country, publication date, source name, study name, primary estimates first
+    csv_records_df.sort_values(by=['country', 'publication_date', 'source_name', 'study_name'], inplace=True)
 
     # Save as csv
     abs_filepath_curr_dir = os.getcwd()
     proj_root_abs_path = abs_filepath_curr_dir.split("iit-backend")[0]
-    csv_records_df.to_csv(f'{proj_root_abs_path}iit-backend/app/github_public_repo/serotracker_dataset.csv', index=False)
+    csv_records_df.to_csv(f'{proj_root_abs_path}iit-backend/app/github_public_repo/serotracker_dataset.csv',
+                          index=False)
 
 except KeyError as e:
     logging.error(f"Failed to retrieve field names and load estimates. Error: {e}")
