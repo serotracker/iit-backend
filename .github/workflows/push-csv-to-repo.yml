@@ -3,8 +3,8 @@ name: Push CSV to Repo
 
 on:
   workflow_dispatch: # manual trigger
-  schedule:
-    - cron: '0 12 * * *' # runs at 12:00 UTC everyday
+  # schedule:
+  #   - cron: '0 12 * * *' # runs at 12:00 UTC everyday
 
 jobs:
   build:
@@ -32,8 +32,8 @@ jobs:
           exclude: "*.py"
           dst_owner: serotracker
           dst_repo_name: sars-cov-2-data
-          dst_branch: main
-          src_branch: master
+          dst_branch: test
+          src_branch: simona/github_csv_driver_script
           src_wiki: false
           dst_wiki: false
           username: serosurveillance-can
