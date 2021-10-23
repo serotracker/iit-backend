@@ -2,18 +2,27 @@
 name: Push CSV to Repo
 
 on:
-  workflow_dispatch:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+  workflow_dispatch: # manual trigger
+  # schedule:
+  #   - cron: '0 12 * * *' # runs at 12:00 UTC everyday
 
 jobs:
   build:
     runs-on: ubuntu-latest
     container: pandoc/latex
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8.3' # install the python version needed
+      - name: install python packages
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Execute py script # run estimate_csv_creator.py to get CSV
+        run: python3 app/github_public_repo/estimate_csv_creator.py
       - name: Copy CSV
         uses: andstor/copycat-action@v3
         with:
@@ -23,12 +32,12 @@ jobs:
           exclude: "*.py"
           dst_owner: serotracker
           dst_repo_name: sars-cov-2-data
-          dst_branch: main
-          src_branch: master
+          dst_branch: test
+          src_branch: simona/github_csv_driver_script
           src_wiki: false
           dst_wiki: false
-          username: annoyingpr
-          email: prannoylal@gmail.com
+          username: serosurveillance-can
+          email: can.serosurveillance.dev@gmail.com
      
      
 
