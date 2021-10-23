@@ -2,7 +2,10 @@
 name: Push CSV to Repo
 
 on:
-  workflow_dispatch: # manual trigger
+  workflow_dispatch: # manual trigger 
+  push:
+    branches:
+      - prannoy/workflow-setup
   # schedule:
   #   - cron: '0 12 * * *' # runs at 12:00 UTC everyday
 
@@ -16,7 +19,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.8.3'
+          python-version: '3.8.x'
       - name: Install python packages
         run: |
           pip install -r requirements.txt
