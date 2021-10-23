@@ -30,7 +30,8 @@ try:
     # For cols where values are in lists, extract from list
     multi_val_cols = ['isotypes', 'antibody_target', 'source_type', 'jbi_1', 'jbi_2', 'jbi_3', 'jbi_4', 'jbi_5',
                       'jbi_6', 'jbi_7', 'jbi_8', 'jbi_9', 'source_name', 'lead_institution', 'url', 'first_author',
-                      'is_unity_aligned', 'publication_date']
+                      'is_unity_aligned', 'publication_date', 'study_type', 'study_inclusion_criteria',
+                      'study_exclusion_criteria']
     for col in multi_val_cols:
         csv_records_df[col] = csv_records_df[col].apply(lambda x: x[0] if x is not None else x)
 
@@ -42,7 +43,8 @@ try:
     csv_records_df = csv_records_df[snake_case_col_name]
 
     # Sort estimates by country, publication date, source name, study name, primary estimates first
-    csv_records_df.sort_values(by=['country', 'publication_date', 'source_name', 'study_name'], inplace=True)
+    csv_records_df.sort_values(by=['country', 'publication_date', 'source_name',
+                                   'study_name', 'dashboard_primary_estimate'], inplace=True)
 
     # Save as csv
     abs_filepath_curr_dir = os.getcwd()
