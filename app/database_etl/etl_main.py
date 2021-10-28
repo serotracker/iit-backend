@@ -18,7 +18,7 @@ from app.database_etl.test_adjustment_handler import add_test_adjustments
 from app.database_etl.tableau_data_connector import upload_analyze_csv
 from app.database_etl.summary_report_generator import SummaryReport
 from app.database_etl.location_utils import compute_pin_info
-from app.utils import full_airtable_fields
+from app.utils import airtable_fields_config
 
 load_dotenv()
 
@@ -40,7 +40,10 @@ def main():
             host_address=os.getenv('DATABASE_HOST_ADDRESS')))
 
         # Get all records with airtable API request and load into dataframe
-        json = get_all_records(full_airtable_fields)
+        dashboard_cols = airtable_fields_config['dashboard']
+        research_cols = airtable_fields_config['research']
+        dashboard_cols.update(research_cols)
+        json = get_all_records(dashboard_cols)
         etl_report.set_num_airtable_records(len(json))
         airtable_master_data = pd.DataFrame(json)
 
@@ -117,7 +120,6 @@ def main():
 
         # Format dashboard source table after creating research source
         dashboard_source = format_dashboard_source(dashboard_source, research_source_cols)
-
         # Validate the dashboard source df
         dashboard_source = validate_records(dashboard_source, DashboardSourceSchema())
         research_source = validate_records(research_source, ResearchSourceSchema())
@@ -128,6 +130,9 @@ def main():
                        'dashboard_source': dashboard_source,
                        'research_source': research_source,
                        'country': country_df}
+
+        print(dashboard_source.columns.values.tolist())
+        print(research_source.columns.values.tolist())
 
         # Load dataframes into postgres tables
         load_status = load_postgres_tables(tables_dict, engine)

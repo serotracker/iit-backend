@@ -22,7 +22,7 @@ try:
     logging.info("Successfully retrieved field names from Airtable")
 
     # Get estimates from Rapid Review: Estimates table for specified fields
-    csv_records = get_all_records(fields)
+    csv_records = get_all_records(fields, filters='&filterByFormula={Public CSV Included}=1')
 
     # Convert to df
     csv_records_df = pd.DataFrame.from_dict(csv_records)

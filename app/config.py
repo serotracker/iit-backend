@@ -3,7 +3,7 @@ import os
 
 class ApiConfig:
     DEBUG = True
-    APP_NAMESPACES = os.getenv('APP_NAMESPACES', ['airtable_scraper', 'healthcheck', 'data_provider',
+    APP_NAMESPACES = os.getenv('APP_NAMESPACES', ['healthcheck', 'data_provider',
                                                   'cases_count_scraper', 'meta_analysis', 'test_adjustment'])
     # Airtable config vars
     AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
