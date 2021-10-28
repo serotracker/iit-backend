@@ -131,9 +131,6 @@ def main():
                        'research_source': research_source,
                        'country': country_df}
 
-        print(dashboard_source.columns.values.tolist())
-        print(research_source.columns.values.tolist())
-
         # Load dataframes into postgres tables
         load_status = load_postgres_tables(tables_dict, engine)
 
