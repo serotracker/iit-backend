@@ -6,7 +6,9 @@ dashboard_fields = ['Source Name', 'Publication Date', 'First Author Full Name',
                     'Sensitivity', 'Specificity', 'Included?', 'Denominator Value', 'Numerator Definition',
                     'Serum positive prevalence', 'Overall Risk of Bias (JBI)', 'Grade of Estimate Scope',
                     'SeroTracker Analysis Primary Estimate', 'Most Adjusted Primary Estimate', 'Isotype combination',
-                    'Rapid Review Study Name (Text)', 'Test Adjustment', 'Population Adjustment', 'UNITY: Criteria']
+                    'Rapid Review Study Name (Text)', 'Test Adjustment', 'Population Adjustment', 'UNITY: Criteria',
+                    'Adjusted serum positive prevalence', 'Adjusted serum pos prevalence, 95pct CI Lower',
+                    'Adjusted serum pos prevalence, 95pct CI Upper']
 
 research_fields = ['2020 Population Count - Case', '2020 Population Count - Mortality', 'Age Maximum', 'Age Minimum',
                    'Age variation', 'Age variation measure', 'Antibody target', 'Average age',
@@ -21,7 +23,8 @@ research_fields = ['2020 Population Count - Case', '2020 Population Count - Mort
                    'Specificity Denominator', 'Subgroup category for analysis',
                    'Test Link Unique ID', 'Test Name', 'Test Validation', 'included in SRMA (mar 2021)',
                    'Sub-group specific category (clean)', 'Date Created', 'Last modified time', 'Record ID',
-                   'SR Clean: Test Manufacturer Searched', 'Zotero Citation Key', 'County']
+                   'SR Clean: Test Manufacturer Searched', 'Zotero Citation Key', 'County', 'Adjusted specificity',
+                   'Adjusted sensitivity', 'Independent evaluation type']
 
 full_airtable_fields = {'2020 Population Count - Case': 'case_population',
                         '2020 Population Count - Mortality': 'deaths_population',
