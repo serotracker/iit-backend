@@ -37,12 +37,12 @@ jobs:
         uses: andstor/copycat-action@v3
         with:
           personal_token: ${{ secrets.API_TOKEN_GITHUB }}
-          src_path: /output/.
+          src_path: /app/github_public_repo/.
           dst_path: /
           exclude: "*.py"
           dst_owner: serotracker
           dst_repo_name: sars-cov-2-data
-          dst_branch: test
+          dst_branch: main
           src_branch: master
           src_wiki: false
           dst_wiki: false
