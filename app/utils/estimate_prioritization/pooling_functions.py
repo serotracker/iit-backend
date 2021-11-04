@@ -124,7 +124,6 @@ pooling_function_maps = [
                                  'average_age',
                                  'ind_eval_lab',
                                  'ind_eval_link',
-                                 'test_linked_uid',
                                  'test_not_linked_reason',
                                  'test_validation',
                                  'isotypes_reported',
