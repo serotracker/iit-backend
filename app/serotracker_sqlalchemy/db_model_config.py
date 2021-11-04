@@ -27,5 +27,14 @@ db_model_config = {
     ]
 }
 
-dashboard_source_cols = [column.key for column in DashboardSource.__table__.columns]
-research_source_cols = [column.key for column in ResearchSource.__table__.columns]
+# Generate these lists programmatically
+
+# Do not include id or created_at columns
+dashboard_source_cols =\
+    [column.key for column in DashboardSource.__table__.columns if column.key not in ['source_id',
+                                                                                      'country_id',
+                                                                                      'created_at']]
+research_source_cols =\
+    [column.key for column in ResearchSource.__table__.columns if column.key not in ['source_id',
+                                                                                     'airtable_record_id',
+                                                                                     'created_at']]
