@@ -1,5 +1,5 @@
 from app.serotracker_sqlalchemy import CityBridge, City, StateBridge, State, \
-    TestManufacturerBridge, TestManufacturer, AntibodyTargetBridge, AntibodyTarget
+    TestManufacturerBridge, TestManufacturer, AntibodyTargetBridge, AntibodyTarget, DashboardSource, ResearchSource
 
 db_model_config = {
     'multi_select_columns': ['test_manufacturer', 'city', 'state', 'antibody_target'],
@@ -27,27 +27,14 @@ db_model_config = {
     ]
 }
 
-# TODO: instead of using this config, programmatically generate a list of columns for the DashboardSource table
-dashboard_source_cols = ['source_name', 'source_type', 'study_name', 'denominator_value',
-                         'overall_risk_of_bias', 'serum_pos_prevalence', 'isotype_igm', 'isotype_iga',
-                         'isotype_igg', 'sex', 'age', 'sampling_start_date', 'sampling_end_date', 'estimate_grade',
-                         'isotype_comb', 'academic_primary_estimate', 'dashboard_primary_estimate', 'pop_adj',
-                         'test_adj', 'specimen_type', 'test_type', 'population_group', 'url', 'cases_per_hundred',
-                         'tests_per_hundred', 'deaths_per_hundred', 'vaccinations_per_hundred',
-                         'full_vaccinations_per_hundred', 'publication_date', 'geo_exact_match',
-                         'sensitivity', 'specificity', 'summary', 'study_type', 'source_publisher', 'lead_organization',
-                         'first_author', 'adj_prevalence', 'adj_prev_ci_lower', 'adj_prev_ci_upper', 'pin_latitude',
-                         'pin_longitude', 'in_disputed_area', 'vaccination_policy', 'subgroup_var', 'is_unity_aligned']
+# Generate these lists programmatically
 
-research_source_cols = ['case_population', 'deaths_population', 'age_max', 'age_min', 'age_variation',
-                        'age_variation_measure', 'average_age', 'case_count_neg14', 'case_count_neg9',
-                        'case_count_0', 'death_count_plus11', 'death_count_plus4', 'ind_eval_lab',
-                        'ind_eval_link', 'ind_se', 'ind_se_n', 'ind_sp', 'ind_sp_n', 'jbi_1', 'jbi_2',
-                        'jbi_3', 'jbi_4', 'jbi_5', 'jbi_6', 'jbi_7', 'jbi_8', 'jbi_9', 'measure_of_age',
-                        'sample_frame_info', 'number_of_females', 'number_of_males', 'numerator_value',
-                        'estimate_name', 'test_not_linked_reason', 'se_n', 'seroprev_95_ci_lower',
-                        'seroprev_95_ci_upper', 'sp_n', 'subgroup_cat',
-                        'test_linked_uid', 'test_name', 'test_validation', 'gbd_region', 'gbd_subregion', 'who_region',
-                        'lmic_hic', 'genpop', 'sampling_type', 'subgroup_specific_category', 'last_modified_time',
-                        'date_created', 'adj_sensitivity', 'adj_specificity', 'ind_eval_type', 'include_in_srma',
-                        'sensspec_from_manufacturer', 'zotero_citation_key', 'county']
+# Do not include id or created_at columns
+dashboard_source_cols =\
+    [column.key for column in DashboardSource.__table__.columns if column.key not in ['source_id',
+                                                                                      'country_id',
+                                                                                      'created_at']]
+research_source_cols =\
+    [column.key for column in ResearchSource.__table__.columns if column.key not in ['source_id',
+                                                                                     'airtable_record_id',
+                                                                                     'created_at']]
