@@ -48,10 +48,13 @@ try:
     # Save as csv
     abs_filepath_curr_dir = os.getcwd()
     proj_root_abs_path = abs_filepath_curr_dir.split("iit-backend")[0]
+
+    print('CONTENTS BEFORE:')
+    print(os.listdir(f'{proj_root_abs_path}/iit-backend/iit-backend/app/github_public_repo/'))      
    
     csv_records_df.to_csv(f'{proj_root_abs_path}iit-backend/iit-backend/app/github_public_repo/serotracker_dataset.csv',
                           index=False)
-    print('CONTENTS:')
+    print('CONTENTS AFTER:')
     print(os.listdir(f'{proj_root_abs_path}/iit-backend/iit-backend/app/github_public_repo/'))           
 
 except KeyError as e:
