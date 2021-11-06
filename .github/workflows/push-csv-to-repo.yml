@@ -24,7 +24,7 @@ jobs:
         uses: BSFishy/pip-action@v1
         with:
           requirements: requirements.txt
-      - name: Execute py script # run estimate_csv_creator.py to get CSV
+      - name: Create CSV locally  # run estimate_csv_creator.py to get CSV
         run: python3 /home/runner/work/iit-backend/iit-backend/app/github_public_repo/estimate_csv_creator.py
         env:
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
@@ -33,6 +33,15 @@ jobs:
           LOG_CONFIG_PATH: '/home/runner/work/iit-backend/iit-backend/logging.cfg'
           LOG_FILE_PATH: '/home/runner/work/iit-backend/iit-backend/logfile.log'
           PYTHONPATH: '/home/runner/work/iit-backend/iit-backend'
+      - name: Commit updated CSV 
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: updated serotracker_dataset.csv
+          branch: main
+          commit_user_name: serosurveillance-can 
+          commit_user_email: can.serosurveillance.dev@gmail.com # defaults to "actions@github.com"
+          commit_author: serosurveillance-can <can.serosurveillance.dev@gmail.com> # defaults to author of the commit that triggered the run
+          status_options: '--untracked-files=no'
       - name: Copy CSV
         uses: andstor/copycat-action@v3
         with:
