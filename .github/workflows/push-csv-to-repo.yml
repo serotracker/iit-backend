@@ -25,7 +25,7 @@ jobs:
         with:
           requirements: requirements.txt
       - name: Create CSV locally  # run estimate_csv_creator.py to get CSV
-        run: python3 /home/runner/work/iit-backend/iit-backend/app/github_public_repo/estimate_csv_creator.py
+        run: python3 app/github_public_repo/estimate_csv_creator.py
         env:
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
           AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
@@ -38,7 +38,6 @@ jobs:
         with:
           commit_message: updated serotracker_dataset.csv
           branch: main
-          repository: /home/runner/work/iit-backend/iit-backend/app/github_public_repo/
           commit_user_name: serosurveillance-can 
           commit_user_email: can.serosurveillance.dev@gmail.com # defaults to "actions@github.com"
           commit_author: serosurveillance-can <can.serosurveillance.dev@gmail.com> # defaults to author of the commit that triggered the run
