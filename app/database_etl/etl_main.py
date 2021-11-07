@@ -100,13 +100,13 @@ def main():
 
         # remove state names from city name column and place them in their own column
         multi_select_tables_dict["city"]["state_name"] = multi_select_tables_dict["city"]["city_name"] \
-            .map(lambda a: a.split(",")[1] if "," in a else None)
+            .map(lambda a: a if pd.isna(a) else (a.split(",")[1] if "," in a else None))
         multi_select_tables_dict["city"]["city_name"] = multi_select_tables_dict["city"]["city_name"] \
-            .map(lambda a: a.split(",")[0] if "," in a else a)
+            .map(lambda a: a if pd.isna(a) else (a.split(",")[0] if "," in a else a))
         # do the same for the dashboard source column
         # Also standardize so the column type is always a list (None --> empty list)
         dashboard_source["city"] = dashboard_source["city"] \
-            .map(lambda cities: [city.split(",")[0] for city in cities] if cities else [])
+            .map(lambda cities: [city if pd.isna(city) else city.split(",")[0] for city in cities] if cities else [])
         dashboard_source["state"] = dashboard_source["state"] \
             .map(lambda states: states if states else [])
 
