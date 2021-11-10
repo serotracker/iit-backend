@@ -199,9 +199,10 @@ def get_all_filter_options() -> Dict[str, Any]:
         results = [q[0] for q in query if q[0] is not None]
         options["city"] = sorted(results)
 
-        # Get antibody target
+        # Only surface Spike and Nucleocapsid anitbody target options because only options that are relevant for
+        # interpreting seroprev data in the context of vaccines
         query = session.query(distinct(AntibodyTarget.antibody_target_name))
-        results = [q[0] for q in query if q[0] is not None]
+        results = [q[0] for q in query if q[0] is not None and q[0] in ['Spike', 'Nucleocapsid (N-protein)']]
         options["antibody_target"] = sorted(results)
 
         options["max_sampling_end_date"] = session.query(func.max(DashboardSource.sampling_end_date))[0][0].isoformat()

@@ -64,6 +64,11 @@ def get_most_recent_publication_info(row: Dict) -> Dict:
     return row
 
 
+def replace_null_fields(row_val):
+    null_cols = ['nr', 'NR', 'Not Reported', 'Not reported', 'Not available', 'NA', 'N/A']
+    return [i if i not in null_cols else None for i in row_val]
+
+
 def standardize_airtable_data(df: pd.DataFrame) -> pd.DataFrame:
     # List of columns that are lookup fields and therefore only have one element in the list
     single_element_list_cols = ['included', 'source_name', 'url', 'source_publisher', 'summary',
@@ -79,8 +84,12 @@ def standardize_airtable_data(df: pd.DataFrame) -> pd.DataFrame:
         df[col] = df[col].apply(lambda x: x[0] if x is not None else x)
 
     # Convert elements that are "Not reported" or "Not Reported" or "NR" to None
-    df.replace({'nr': None, 'NR': None, 'Not Reported': None, 'Not reported': None,
-                'Not available': None, 'NA': None}, inplace=True)
+    df.replace({'nr': None, 'NR': None, 'Not Reported': None, 'Not reported': None, 'Not available': None,
+                'NA': None, 'N/A': None}, inplace=True)
+
+    # Antibody target reported are multi select and will have ['Not reported'], ['NR'] - convert to None
+    # Can also have a situation with ["Spike", "Not reported"] so need to check within list
+    df['antibody_target'] = df['antibody_target'].apply(lambda x: replace_null_fields(x))
 
     # Replace columns that should be floats with NaN from None
     # IMPORTANT: ind_sp and ind_se are percentages but stored as ints in airtable so must convert to decimal!

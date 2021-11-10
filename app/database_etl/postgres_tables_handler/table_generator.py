@@ -142,10 +142,11 @@ def create_multi_select_tables(original_data, current_time):
         # its own row, then drop duplicates
         # note: drop_duplicates only drops entire duplicate rows
         # (so rows {city: c1, country_iso2: I1} and {city: c1, country_iso2: I2} would not be considered dupes)
-        temp_df = temp_df.explode(col).drop_duplicates().dropna(subset=[col])
+        temp_df = temp_df.explode(col).drop_duplicates()
 
         # Create name all df columns and add as value to dictionary
         col_specific_df[name_col] = temp_df[col].to_list()
+
         # if city or state table, add country_iso2 column to df temporarily
         if col == "state" or col == "city":
             col_specific_df["country_iso2"] = temp_df["country_iso2"].to_list()
@@ -160,8 +161,7 @@ def create_multi_select_tables(original_data, current_time):
     multi_select_tables_dict["city"] = add_latlng_to_df("place", "city_name", multi_select_tables_dict["city"])
 
     # Delete country iso2 column from original_data
-    original_data = original_data.drop(columns=['country_iso2'])
-
+    original_data.drop(columns=['country_iso2'], inplace=True)
     return multi_select_tables_dict
 
 
@@ -185,7 +185,10 @@ def create_bridge_tables(original_data, multi_select_tables, current_time):
             source_id = row['source_id']
             if col_options is not None:
                 for option in col_options:
-                    option_id = multi_select_table[multi_select_table[name_col] == option].iloc[0][id_col]
+                    if option:
+                        option_id = multi_select_table[multi_select_table[name_col] == option].iloc[0][id_col]
+                    else:
+                        option_id = multi_select_table[multi_select_table[name_col].isna()].iloc[0][id_col]
                     new_row = {'id': uuid4(), 'source_id': source_id, id_col: option_id, 'created_at': current_time}
                     bridge_table_df = bridge_table_df.append(new_row, ignore_index=True)
         bridge_tables_dict[f'{col}_bridge'] = bridge_table_df
