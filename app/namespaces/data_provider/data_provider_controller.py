@@ -98,7 +98,7 @@ class Records(Resource):
 
         columns_requested = data.get('columns')
         research_fields = data.get('research_fields')
-        prioritize_estimates = data.get('prioritize_estimates', True)
+        prioritize_estimates = data.get('prioritize_estimates', False)
         prioritize_estimates_mode = data.get('prioritize_estimates_mode', 'dashboard')
         include_disputed_regions = data.get('include_disputed_regions', False)
         include_subgeography_estimates = data.get('include_subgeography_estimates', False)
