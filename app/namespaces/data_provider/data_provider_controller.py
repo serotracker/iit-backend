@@ -3,9 +3,11 @@ import logging.config
 from flask_restplus import Resource, Namespace
 from flask import jsonify, make_response, request
 
-from .data_provider_service import get_record_details, get_country_seroprev_summaries, jitter_pins, get_all_filter_options
+from .data_provider_service import get_record_details, get_country_seroprev_summaries, jitter_pins, \
+    get_all_filter_options
 from .data_provider_schema import RecordDetailsSchema, RecordsSchema, PaginatedRecordsSchema, StudyCountSchema
-from app.utils import validate_request_input_against_schema, get_filtered_records, get_paginated_records, convert_start_end_dates, filter_columns
+from app.utils import validate_request_input_against_schema, get_filtered_records, get_paginated_records, \
+    convert_start_end_dates, filter_columns
 
 data_provider_ns = Namespace('data_provider', description='Endpoints for getting database records.')
 logging.getLogger(__name__)
@@ -117,23 +119,23 @@ class Records(Resource):
             columns = list(set(COUNTRY_SEROPREV_SUMMARY_COLS).union(set(columns)))
 
         records = get_filtered_records(research_fields,
-                                      filters,
-                                      columns,
-                                      sampling_start_date=sampling_start_date,
-                                      sampling_end_date=sampling_end_date,
-                                      publication_start_date=publication_start_date,
-                                      publication_end_date=publication_end_date,
-                                      prioritize_estimates=prioritize_estimates,
-                                      prioritize_estimates_mode=prioritize_estimates_mode,
-                                      include_in_srma=include_in_srma,
-                                      include_disputed_regions=include_disputed_regions,
-                                      include_subgeography_estimates=include_subgeography_estimates,
-                                      unity_aligned_only=unity_aligned_only,
-                                      include_records_without_latlngs=include_records_without_latlngs)
+                                       filters,
+                                       columns,
+                                       sampling_start_date=sampling_start_date,
+                                       sampling_end_date=sampling_end_date,
+                                       publication_start_date=publication_start_date,
+                                       publication_end_date=publication_end_date,
+                                       prioritize_estimates=prioritize_estimates,
+                                       prioritize_estimates_mode=prioritize_estimates_mode,
+                                       include_in_srma=include_in_srma,
+                                       include_disputed_regions=include_disputed_regions,
+                                       include_subgeography_estimates=include_subgeography_estimates,
+                                       unity_aligned_only=unity_aligned_only,
+                                       include_records_without_latlngs=include_records_without_latlngs)
         if not columns or ("pin_latitude" in columns and "pin_longitude" in columns):
             records = jitter_pins(records)
 
-        result = { "records": records }
+        result = {"records": records}
 
         if calculate_country_seroprev_summaries:
             # Compute seroprevalence summaries per country per estimate grade level
@@ -201,7 +203,7 @@ class PaginatedRecords(Resource):
             "sorting_key": sorting_key
         }
 
-        kwargs_not_none = { k:v for k, v in kwargs.items() if v is not None }
+        kwargs_not_none = {k: v for k, v in kwargs.items() if v is not None}
 
         # Only paginate if pagination params min_page_index, max_page_index and per_page are specified (sorting_key="sampling_end_date", reverse=true, per_page=5 by default)
         result = get_paginated_records(**kwargs_not_none)

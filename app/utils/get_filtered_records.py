@@ -6,46 +6,46 @@ import pandas as pd
 import numpy as np
 from app.utils.estimate_prioritization import get_prioritized_estimates, get_prioritized_estimates_without_pooling
 
-# For typing purposes
 from sqlalchemy.sql.visitors import VisitableType as SQLalchemyType
 from sqlalchemy.orm.attributes import InstrumentedAttribute as SQLalchemyExpression
 from sqlalchemy.sql.elements import Label as SQLAlchemyLabelExpression
 from typing import List, Dict, Any
 
-def _get_isotype_col_expression(label:str = "isotypes"):
+
+def _get_isotype_col_expression(label: str = "isotypes"):
     expression = case(
-                [
-                    (and_(DashboardSource.isotype_igg == 'true',
-                          DashboardSource.isotype_igm == 'true',
-                          DashboardSource.isotype_iga == 'true'), array(["IgG", "IgM", "IgA"])),
-                    (and_(DashboardSource.isotype_igg == 'true',
-                          DashboardSource.isotype_igm == 'false',
-                          DashboardSource.isotype_iga == 'true'), array(["IgG", "IgA"])),
-                    (and_(DashboardSource.isotype_igg == 'true',
-                          DashboardSource.isotype_igm == 'true',
-                          DashboardSource.isotype_iga == 'false'), array(["IgG", "IgM"])),
-                    (and_(DashboardSource.isotype_igg == 'false',
-                          DashboardSource.isotype_igm == 'true',
-                          DashboardSource.isotype_iga == 'true'), array(["IgM", "IgA"])),
-                    (and_(DashboardSource.isotype_igg == 'true',
-                          DashboardSource.isotype_igm == 'false',
-                          DashboardSource.isotype_iga == 'false'), array(["IgG"])),
-                    (and_(DashboardSource.isotype_igg == 'false',
-                          DashboardSource.isotype_igm == 'false',
-                          DashboardSource.isotype_iga == 'true'), array(["IgA"])),
-                    (and_(DashboardSource.isotype_igg == 'false',
-                          DashboardSource.isotype_igm == 'true',
-                          DashboardSource.isotype_iga == 'false'), array(["IgM"]))
-                ],
-                else_=cast(array([]), ARRAY(String))).label(label)
+        [
+            (and_(DashboardSource.isotype_igg == 'true',
+                  DashboardSource.isotype_igm == 'true',
+                  DashboardSource.isotype_iga == 'true'), array(["IgG", "IgM", "IgA"])),
+            (and_(DashboardSource.isotype_igg == 'true',
+                  DashboardSource.isotype_igm == 'false',
+                  DashboardSource.isotype_iga == 'true'), array(["IgG", "IgA"])),
+            (and_(DashboardSource.isotype_igg == 'true',
+                  DashboardSource.isotype_igm == 'true',
+                  DashboardSource.isotype_iga == 'false'), array(["IgG", "IgM"])),
+            (and_(DashboardSource.isotype_igg == 'false',
+                  DashboardSource.isotype_igm == 'true',
+                  DashboardSource.isotype_iga == 'true'), array(["IgM", "IgA"])),
+            (and_(DashboardSource.isotype_igg == 'true',
+                  DashboardSource.isotype_igm == 'false',
+                  DashboardSource.isotype_iga == 'false'), array(["IgG"])),
+            (and_(DashboardSource.isotype_igg == 'false',
+                  DashboardSource.isotype_igm == 'false',
+                  DashboardSource.isotype_iga == 'true'), array(["IgA"])),
+            (and_(DashboardSource.isotype_igg == 'false',
+                  DashboardSource.isotype_igm == 'true',
+                  DashboardSource.isotype_iga == 'false'), array(["IgM"]))
+        ],
+        else_=cast(array([]), ARRAY(String))).label(label)
     return expression
 
 
 # Query to aggregate multiple multi select options into a single array
 # Note: case statement is used so that we show [] instead of [None]
 # agg_field_exp --> sqlalchemy expression representing the field you'd like to aggregate (e.g. State.Longitude)
-def _apply_agg_query(agg_field_exp: SQLalchemyExpression, label:str,
-                     type:SQLalchemyType = String) -> SQLAlchemyLabelExpression:
+def _apply_agg_query(agg_field_exp: SQLalchemyExpression, label: str,
+                     type: SQLalchemyType = String) -> SQLAlchemyLabelExpression:
     return case([(func.array_agg(agg_field_exp).filter(agg_field_exp.isnot(None)).isnot(None),
                   cast(func.array_agg(func.distinct(agg_field_exp)).filter(agg_field_exp.isnot(None)), ARRAY(type)))],
                 else_=cast(array([]), ARRAY(type))).label(label)
@@ -81,7 +81,7 @@ def get_all_records(research_fields=False, include_disputed_regions=False,
             # The label method returns an alias for the column being queried
             # Use case: We want to get fields from the bridge table without the _name suffix
             fields_list.append(_apply_agg_query(getattr(table_info["main_table"], f"{table_info['entity']}_name"),
-                                               table_info['entity']))
+                                                table_info['entity']))
 
         query = session.query(*fields_list, _get_isotype_col_expression(label="isotypes_reported"))
 
@@ -116,7 +116,7 @@ def get_all_records(research_fields=False, include_disputed_regions=False,
 
         # Filter out records without latlngs
         if not include_records_without_latlngs:
-            query = query.filter(DashboardSource.pin_latitude.isnot(None)).\
+            query = query.filter(DashboardSource.pin_latitude.isnot(None)). \
                 filter(DashboardSource.pin_longitude.isnot(None))
 
         # Need to apply group by so that array_agg works as expected
@@ -124,26 +124,25 @@ def get_all_records(research_fields=False, include_disputed_regions=False,
 
         query = query.all()
         # Convert from sqlalchemy object to dict
-        query_dict = [ q._asdict() for q in query]
+        query_dict = [q._asdict() for q in query]
 
         return query_dict
-
-'''
-Filter are in the following format: 
-{ 
-  'age' : ['Youth (13-17)', 'All'],
-  'country' : ['United States']
-}
-
-Output: set of records represented by dicts
-'''
 
 
 def get_filtered_records(research_fields=False, filters=None, columns=None, include_disputed_regions=False,
                          sampling_start_date=None, sampling_end_date=None, include_subgeography_estimates=False,
-                         publication_start_date=None, publication_end_date=None, prioritize_estimates=True,
+                         publication_start_date=None, publication_end_date=None, prioritize_estimates=False,
                          prioritize_estimates_mode='dashboard', include_in_srma=False, unity_aligned_only=False,
                          include_records_without_latlngs=False):
+    '''
+    Filter are in the following format:
+    {
+      'age' : ['Youth (13-17)', 'All'],
+      'country' : ['United States']
+    }
+
+    Output: set of records represented by dicts
+    '''
     query_dicts = get_all_records(research_fields, include_disputed_regions, unity_aligned_only,
                                   include_records_without_latlngs)
     if query_dicts is None or len(query_dicts) == 0:
@@ -195,7 +194,7 @@ def get_filtered_records(research_fields=False, filters=None, columns=None, incl
 
     # Format dates after date filter has been applied
     for record in result:
-        isoformat_fields =\
+        isoformat_fields = \
             ['sampling_end_date', 'sampling_start_date', 'publication_date', 'date_created', 'last_modified_time']
         for field in isoformat_fields:
             if record.get(field, None) is not None:
@@ -236,6 +235,7 @@ def get_filtered_records(research_fields=False, filters=None, columns=None, incl
 
     return result
 
+
 def filter_columns(records, cols_to_include):
     def grab_cols(result, columns):
         ret = {}
@@ -245,26 +245,28 @@ def filter_columns(records, cols_to_include):
 
     return [grab_cols(i, cols_to_include) for i in records]
 
-'''Gets and returns a dictionary of pages of records
 
-:param records: list of unpaginated records
-:param min_page_index: minimum page index
-:param max_page_index: maximum page index
-:param per_page: number of records per page
-:param reverse: whether to sort list of unpaginated records in reverse order or not 
-:param sorting_key: key by which list of unpaginated records are sorted
-:returns a dictionary of lists of records (len(list) == per_page)
-'''
-def get_paginated_records(records: List[Dict[str, Any]], min_page_index: int, max_page_index: int, per_page: int = 5, reverse: bool = False, sorting_key: str = "sampling_end_date") -> Dict[int, List[Dict[str, Any]]]:
+def get_paginated_records(records: List[Dict[str, Any]], min_page_index: int, max_page_index: int, per_page: int = 5,
+                          reverse: bool = False, sorting_key: str = "sampling_end_date") -> Dict[
+    int, List[Dict[str, Any]]]:
+    '''Gets and returns a dictionary of pages of records
+    :param records: list of unpaginated records
+    :param min_page_index: minimum page index
+    :param max_page_index: maximum page index
+    :param per_page: number of records per page
+    :param reverse: whether to sort list of unpaginated records in reverse order or not
+    :param sorting_key: key by which list of unpaginated records are sorted
+    :returns a dictionary of lists of records (len(list) == per_page)
+    '''
     # Order the records first
     sorted_records = sorted(records, key=lambda x: (x[sorting_key] is None, x[sorting_key]), reverse=reverse)
-
-    # Input is non-zero indexing, but we map to zero indexing (e.g. input 1-3 maps to 0-2) but we still return non-zero indexing
+    # Input is non-zero indexing, but we map to zero indexing (e.g. input 1-3 maps to 0-2)
+    # but we still return non-zero indexing
     min_page_index -= 1
     max_page_index -= 1
 
     # Create dictionary of pages of records
-    return {i+1:sorted_records[i*per_page:i*per_page+per_page]
-            if i * per_page + per_page < len(sorted_records)
-            else sorted_records[i*per_page:]
+    return {i + 1: sorted_records[i * per_page:i * per_page + per_page]
+    if i * per_page + per_page < len(sorted_records)
+    else sorted_records[i * per_page:]
             for i in range(min_page_index, max_page_index + 1)}
