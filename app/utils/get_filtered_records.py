@@ -223,6 +223,11 @@ def get_filtered_records(research_fields=False, filters=None, columns=None, incl
             # Filling all NaN values with None: https://stackoverflow.com/questions/46283312/how-to-proceed-with-none-value-in-pandas-fillna
             prioritized_records = prioritized_records.fillna(np.nan).replace({np.nan: None})
         result = prioritized_records.to_dict('records')
+    # If prioritize_estimates is false, just return the primary estimate for each study
+    else:
+        result_df = pd.DataFrame(result)
+        primary_estimates_df = result_df.loc[result_df['dashboard_primary_estimate'] == True]
+        result = primary_estimates_df.to_dict('records')
 
     # Need to check if 'research_fields' is applied
     # because the include_in_srma field is in the ResearchSource table
