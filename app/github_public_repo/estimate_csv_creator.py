@@ -18,7 +18,7 @@ try:
     # Extract fields
     records = data['records']
     fields = [x['fields']['Formal Column Label'] for x in records]
-    snake_case_col_name = [x['fields']['Snake Case Column Label'][0] for x in records]
+    snake_case_col_name = [x['fields']['Snake Case Column Label'] for x in records]
     logging.info("Successfully retrieved field names from Airtable")
 
     # Get estimates from Rapid Review: Estimates table for specified fields
