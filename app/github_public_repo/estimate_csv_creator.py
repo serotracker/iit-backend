@@ -44,13 +44,13 @@ try:
 
     # Sort estimates by country, publication date, source name, study name, primary estimates first
     csv_records_df.sort_values(by=['country', 'publication_date', 'source_name',
-                                   'study_name', 'dashboard_primary_estimate'], inplace=True)
-    # Save as csv
+                                   'study_name', 'dashboard_primary_estimate'], inplace=True)   
+       # Save as csv
     abs_filepath_curr_dir = os.getcwd()
-    proj_root_abs_path = abs_filepath_curr_dir.split("iit-backend")[0]    
-   
-    csv_records_df.to_csv(f'serotracker_dataset.csv',
+    proj_root_abs_path = abs_filepath_curr_dir.split("iit-backend")[0]
+    csv_records_df.to_csv(f'{proj_root_abs_path}iit-backend/app/github_public_repo/serotracker_dataset.csv',
                           index=False)
+    print(os.listdir('{proj_root_abs_path}iit-backend/app/github_public_repo/serotracker_dataset.csv'))
 
 except KeyError as e:
     logging.error(f"Failed to retrieve field names and load estimates. Error: {e}")
