@@ -23,12 +23,9 @@ jobs:
         with:
           repository: serotracker/sars-cov-2-data
           path: sars-cov-2-data
-      
+          
       - name: List contents master
-        run: "ls $GITHUB_WORKSPACE/master"
-        
-      - name: List contents main
-        run: "ls $GITHUB_WORKSPACE/main"
+        run: "ls $GITHUB_WORKSPACE/iit-backend"
 
       - name: Setup python
         uses: actions/setup-python@v2
@@ -48,6 +45,15 @@ jobs:
           LOG_CONFIG_PATH: '$GITHUB_WORKSPACE/iit-backend/logging.cfg'
           LOG_FILE_PATH: '$GITHUB_WORKSPACE/iit-backend/logfile.log'
           PYTHONPATH: '$GITHUB_WORKSPACE/iit-backend'
+        
+      - name: Copy file over
+        run: cp $GITHUB_WORKSPACE/iit-backend/app/github_public_repo/serotracker_dataset.csv $GITHUB_WORKSPACE/sars-cov-2-data/copy_serotracker_dataset.csv
+      
+      - name: List contents master
+        run: "ls $GITHUB_WORKSPACE/iit-backend"
+        
+      - name: List contents main
+        run: "ls $GITHUB_WORKSPACE/sars-cov-2-data"
       # - name: Commit updated CSV 
       #   uses: stefanzweifel/git-auto-commit-action@v4
       #   with:
