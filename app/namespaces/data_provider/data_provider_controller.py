@@ -40,7 +40,7 @@ class Records(Resource):
 
         columns = data.get('columns')
         research_fields = data.get('research_fields')
-        prioritize_estimates = data.get('prioritize_estimates', True)
+        estimates_subgroup = data.get('estimates_subgroup', 'all')
         prioritize_estimates_mode = data.get('prioritize_estimates_mode', 'dashboard')
         include_disputed_regions = data.get('include_disputed_regions', False)
         include_subgeography_estimates = data.get('include_subgeography_estimates', False)
@@ -57,7 +57,7 @@ class Records(Resource):
                                       sampling_end_date=sampling_end_date,
                                       publication_start_date=publication_start_date,
                                       publication_end_date=publication_end_date,
-                                      prioritize_estimates=prioritize_estimates,
+                                      estimates_subgroup=estimates_subgroup,
                                       prioritize_estimates_mode=prioritize_estimates_mode,
                                       include_in_srma=include_in_srma,
                                       include_disputed_regions=include_disputed_regions,
@@ -98,7 +98,7 @@ class Records(Resource):
 
         columns_requested = data.get('columns')
         research_fields = data.get('research_fields')
-        prioritize_estimates = data.get('prioritize_estimates', False)
+        estimates_subgroup = data.get('estimates_subgroup', 'all')
         prioritize_estimates_mode = data.get('prioritize_estimates_mode', 'dashboard')
         include_disputed_regions = data.get('include_disputed_regions', False)
         include_subgeography_estimates = data.get('include_subgeography_estimates', False)
@@ -125,7 +125,7 @@ class Records(Resource):
                                        sampling_end_date=sampling_end_date,
                                        publication_start_date=publication_start_date,
                                        publication_end_date=publication_end_date,
-                                       prioritize_estimates=prioritize_estimates,
+                                       estimates_subgroup=estimates_subgroup,
                                        prioritize_estimates_mode=prioritize_estimates_mode,
                                        include_in_srma=include_in_srma,
                                        include_disputed_regions=include_disputed_regions,
@@ -144,7 +144,6 @@ class Records(Resource):
             # Ensure that we only return the requested columns to streamline data sent over HTTP
             if columns_requested:
                 result["records"] = filter_columns(result["records"], columns_requested)
-
         return jsonify(result)
 
 

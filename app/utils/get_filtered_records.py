@@ -131,7 +131,7 @@ def get_all_records(research_fields=False, include_disputed_regions=False,
 
 def get_filtered_records(research_fields=False, filters=None, columns=None, include_disputed_regions=False,
                          sampling_start_date=None, sampling_end_date=None, include_subgeography_estimates=False,
-                         publication_start_date=None, publication_end_date=None, prioritize_estimates=False,
+                         publication_start_date=None, publication_end_date=None, estimates_subgroup='all',
                          prioritize_estimates_mode='dashboard', include_in_srma=False, unity_aligned_only=False,
                          include_records_without_latlngs=False):
     '''
@@ -202,7 +202,7 @@ def get_filtered_records(research_fields=False, filters=None, columns=None, incl
 
     # TODO: Determine whether to update get_prioritized_estimates to work on dictionaries
     # or keep everything in dataframes (don't want to have this conversion here long term)
-    if prioritize_estimates:
+    if estimates_subgroup == 'estimate_prioritization':
         result_df = pd.DataFrame(result)
         if include_subgeography_estimates:
             prioritized_records = get_prioritized_estimates_without_pooling(result_df,
@@ -224,7 +224,7 @@ def get_filtered_records(research_fields=False, filters=None, columns=None, incl
             prioritized_records = prioritized_records.fillna(np.nan).replace({np.nan: None})
         result = prioritized_records.to_dict('records')
     # If prioritize_estimates is false, just return the primary estimate for each study
-    else:
+    elif estimates_subgroup == 'primary_estimates':
         result_df = pd.DataFrame(result)
         primary_estimates_df = result_df.loc[result_df['dashboard_primary_estimate'] == True]
         result = primary_estimates_df.to_dict('records')
