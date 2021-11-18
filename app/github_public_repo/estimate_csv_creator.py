@@ -48,10 +48,8 @@ try:
        # Save as csv
     abs_filepath_curr_dir = os.getcwd()
     proj_root_abs_path = abs_filepath_curr_dir.split("iit-backend")[0]
-    csv_records_df.to_csv(f'{proj_root_abs_path}iit-backend/iit-backend/app/github_public_repo/serotracker_dataset.csv',
+    csv_records_df.to_csv(f'{proj_root_abs_path}iit-backend/app/github_public_repo/serotracker_dataset.csv',
                           index=False)
-
-    print(os.listdir('{proj_root_abs_path}iit-backend/iit-backend/app/github_public_repo/serotracker_dataset.csv'))
 
 except KeyError as e:
     logging.error(f"Failed to retrieve field names and load estimates. Error: {e}")
