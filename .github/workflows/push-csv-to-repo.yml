@@ -24,8 +24,11 @@ jobs:
           repository: serotracker/sars-cov-2-data
           path: main
       
-      - name: List contents
-        run: "ls"
+      - name: List contents master
+        run: "ls $GITHUB_WORKSPACE/master"
+        
+      - name: List contents main
+        run: "ls $GITHUB_WORKSPACE/main"
       #   uses: actions/setup-python@v2
       #   with:
       #     python-version: '3.8.3' # Version range or exact version of a Python version to use, using SemVer's version range syntax
