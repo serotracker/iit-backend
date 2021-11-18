@@ -37,7 +37,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: updated serotracker_dataset.csv
-          branch: main
+          branch: master
           commit_user_name: serosurveillance-can 
           commit_user_email: can.serosurveillance.dev@gmail.com # defaults to "actions@github.com"
           commit_author: serosurveillance-can <can.serosurveillance.dev@gmail.com> # defaults to author of the commit that triggered the run
