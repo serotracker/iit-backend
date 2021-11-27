@@ -6,8 +6,8 @@ on:
   push:
     branches:
       - prannoy/workflow-setup
-  # schedule:
-  #   - cron: '0 12 * * *' # runs at 12:00 UTC everyday
+  schedule:
+    - cron: '0 12 * * *' # runs at 12:00 UTC everyday
 
 jobs:
   build:
@@ -17,15 +17,6 @@ jobs:
         uses: actions/checkout@v2
         with:
           path: iit-backend
-
-      - name: Checkout sars-cov-2-data
-        uses: actions/checkout@v2
-        with:
-          repository: serotracker/sars-cov-2-data
-          path: sars-cov-2-data
-
-      - name: List contents master
-        run: "ls /home/runner/work/iit-backend/iit-backend"
 
       - name: Setup python
         uses: actions/setup-python@v2
@@ -47,18 +38,6 @@ jobs:
           LOG_CONFIG_PATH: 'iit-backend/logging.cfg'
           LOG_FILE_PATH: 'iit-backend/logfile.log'
           PYTHONPATH: 'iit-backend'
-      
-      - name: List contents GITHUB_WORKSPACE/iit-backend
-        run: "ls /home/runner/work/iit-backend/iit-backend"
-      
-      - name: Copy file over
-        run: cp /home/runner/work/iit-backend/iit-backend/serotracker_dataset.csv $GITHUB_WORKSPACE/sars-cov-2-data/serotracker_dataset.csv
-      
-      - name: List contents main
-        run: "ls $GITHUB_WORKSPACE/sars-cov-2-data"
-      
-      # - name: List contents GITHUB_WOKRSPACE/iit-backend/app/github_public_repo
-      #   run: "ls $GITHUB_WORKSPACE/iit-backend/app/github_public_repo/"
     
       - name: Copies CSV to sars-cov-2-data
         uses: dmnemec/copy_file_to_another_repo_action@main
