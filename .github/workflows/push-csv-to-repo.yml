@@ -52,43 +52,25 @@ jobs:
         run: "ls /home/runner/work/iit-backend/iit-backend"
       
       - name: Copy file over
-        run: cp /home/runner/work/iit-backend/iit-backend/serotracker_dataset.csv $GITHUB_WORKSPACE/sars-cov-2-data/serotracker_dataset_copy.csv
+        run: cp /home/runner/work/iit-backend/iit-backend/serotracker_dataset.csv $GITHUB_WORKSPACE/sars-cov-2-data/serotracker_dataset.csv
       
       - name: List contents main
         run: "ls $GITHUB_WORKSPACE/sars-cov-2-data"
       
       # - name: List contents GITHUB_WOKRSPACE/iit-backend/app/github_public_repo
       #   run: "ls $GITHUB_WORKSPACE/iit-backend/app/github_public_repo/"
-      
-      # - name: List contents iit-backend
-      #   run: "ls iit-backend"
-        
-      # - name: List contents main
-      #   run: "ls $GITHUB_WORKSPACE/sars-cov-2-data"
-      # - name: Commit updated CSV 
-      #   uses: stefanzweifel/git-auto-commit-action@v4
-      #   with:
-      #     commit_message: updated serotracker_dataset.csv
-      #     branch: master
-      #     commit_user_name: serosurveillance-can 
-      #     commit_user_email: can.serosurveillance.dev@gmail.com # defaults to "actions@github.com"
-      #     commit_author: serosurveillance-can <can.serosurveillance.dev@gmail.com> # defaults to author of the commit that triggered the run
-      #     status_options: '--untracked-files=no'
-      # - name: Copy CSV
-      #   uses: andstor/copycat-action@v3
-      #   with:
-      #     personal_token: ${{ secrets.API_TOKEN_GITHUB }}
-      #     src_path: app/github_public_repo/.
-      #     dst_path: / 
-      #     exclude: "*.py"
-      #     dst_owner: serotracker
-      #     dst_repo_name: sars-cov-2-data
-      #     dst_branch: main
-      #     src_branch: master
-      #     src_wiki: false
-      #     dst_wiki: false
-      #     username: serosurveillance-can
-      #     email: can.serosurveillance.dev@gmail.com
-     
+    
+      - name: Copies CSV to sars-cov-2-data
+        uses: dmnemec/copy_file_to_another_repo_action@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+        with:
+          source_file: '/home/runner/work/iit-backend/iit-backend/serotracker_dataset.csv'
+          destination_repo: 'serotracker/sars-cov-2-data'
+          user_email: 'can.serosurveillance.dev@gmail.com'
+          user_name: 'serosurveillance-can '
+          commit_message: 'Updated serotracker_dataset.csv'
+
+
      
 
