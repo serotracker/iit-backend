@@ -47,7 +47,7 @@ jobs:
           PYTHONPATH: '$GITHUB_WORKSPACE/iit-backend'
         
       - name: Copy file over
-        run: cp $GITHUB_WORKSPACE/iit-backend/app/github_public_repo/serotracker_dataset.csv $GITHUB_WORKSPACE/sars-cov-2-data/copy_serotracker_dataset.csv
+        run: cp $GITHUB_WORKSPACE/iit-backend/app/github_public_repo/serotracker_dataset.csv $GITHUB_WORKSPACE/sars-cov-2-data/serotracker_dataset_copy.csv
       
       - name: List contents master
         run: "ls $GITHUB_WORKSPACE/iit-backend"
