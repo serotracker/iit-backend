@@ -3,9 +3,6 @@ name: Push CSV to Repo
 
 on:
   workflow_dispatch: # manual trigger 
-  push:
-    branches:
-      - prannoy/workflow-setup
   schedule:
     - cron: '0 12 * * *' # runs at 12:00 UTC everyday
 

@@ -8,10 +8,9 @@ from flask_cors import CORS
 from .config import config_by_name
 from flask_sqlalchemy import SQLAlchemy
 
-if os.getenv('LOG_CONFIG_PATH') and os.getenv('LOG_FILE_PATH'):
-    logging.config.fileConfig(os.getenv('LOG_CONFIG_PATH'),
-                            disable_existing_loggers=False,
-                            defaults={'logfilename': os.getenv('LOG_FILE_PATH')})
+logging.config.fileConfig(os.getenv('LOG_CONFIG_PATH'),
+                        disable_existing_loggers=False,
+                        defaults={'logfilename': os.getenv('LOG_FILE_PATH')})
 logging.getLogger(__name__)
 
 
