@@ -200,8 +200,7 @@ def get_filtered_records(research_fields=False, filters=None, columns=None, incl
             if record.get(field, None) is not None:
                 record[field] = record[field].isoformat()
 
-    # TODO: Determine whether to update get_prioritized_estimates to work on dictionaries
-    # or keep everything in dataframes (don't want to have this conversion here long term)
+    # If estimates_subgroup is 'estimate_prioritization', perform estimate prioritization
     if estimates_subgroup == 'estimate_prioritization':
         result_df = pd.DataFrame(result)
         if include_subgeography_estimates:
@@ -220,10 +219,11 @@ def get_filtered_records(research_fields=False, filters=None, columns=None, incl
                 # True/False have dtype="object" instead of "bool"
                 if True in prioritized_records[col].values:
                     prioritized_records[col] = prioritized_records[col].fillna(False)
-            # Filling all NaN values with None: https://stackoverflow.com/questions/46283312/how-to-proceed-with-none-value-in-pandas-fillna
             prioritized_records = prioritized_records.fillna(np.nan).replace({np.nan: None})
         result = prioritized_records.to_dict('records')
-    # If prioritize_estimates is false, just return the primary estimate for each study
+
+    # If estimates_subgroup is 'primary_estimates', just return the primary estimate for each study
+    # Otherwise, estimates_subgroup = 'all' so just return all estimates
     elif estimates_subgroup == 'primary_estimates':
         result_df = pd.DataFrame(result)
         primary_estimates_df = result_df.loc[result_df['dashboard_primary_estimate'] == True]
