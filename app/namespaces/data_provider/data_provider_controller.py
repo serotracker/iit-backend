@@ -122,14 +122,15 @@ class PaginatedRecords(Resource):
         reverse = data.get('reverse', None)
         columns = data.get('columns')
         research_fields = data.get('research_fields')
-        prioritize_estimates = data.get('prioritize_estimates', True)
+        estimates_subgroup = data.get('estimates_subgroup', 'all')
         prioritize_estimates_mode = data.get('prioritize_estimates_mode', 'dashboard')
         sampling_start_date, sampling_end_date = convert_start_end_dates(data, use_sampling_date=True)
         include_in_srma = data.get('include_in_srma', False)
 
-        result = get_filtered_records(research_fields, filters, columns, sampling_start_date=sampling_start_date,
+        result = get_filtered_records(research_fields, filters, columns,
+                                      sampling_start_date=sampling_start_date,
                                       sampling_end_date=sampling_end_date,
-                                      prioritize_estimates=prioritize_estimates,
+                                      estimates_subgroup=estimates_subgroup,
                                       prioritize_estimates_mode=prioritize_estimates_mode,
                                       include_in_srma=include_in_srma)
         if not columns or ("pin_latitude" in columns and "pin_longitude" in columns):
