@@ -134,19 +134,40 @@ def get_filtered_records(research_fields=False, filters=None, columns=None, incl
                          publication_start_date=None, publication_end_date=None, estimates_subgroup='all',
                          prioritize_estimates_mode='dashboard', include_in_srma=False, unity_aligned_only=False,
                          include_records_without_latlngs=False):
-    '''
-    Filter are in the following format:
-    {
-      'age' : ['Youth (13-17)', 'All'],
-      'country' : ['United States']
-    }
-
-    Output: set of records represented by dicts
-    '''
+    # Get all records from the database as a list of records represented by dicts
     query_dicts = get_all_records(research_fields, include_disputed_regions, unity_aligned_only,
                                   include_records_without_latlngs)
+
     if query_dicts is None or len(query_dicts) == 0:
         return []
+
+    # If estimates_subgroup is 'estimate_prioritization', perform estimate prioritization
+    if estimates_subgroup == 'prioritize_estimates':
+        result_df = pd.DataFrame(query_dicts)
+        if include_subgeography_estimates:
+            prioritized_records = get_prioritized_estimates_without_pooling(result_df,
+                                                                            subgroup_var="Geographical area",
+                                                                            mode=prioritize_estimates_mode)
+        else:
+            prioritized_records = get_prioritized_estimates(result_df, mode=prioritize_estimates_mode)
+        # If records exist, clean dataframe
+        if not prioritized_records.empty:
+            # Convert from True/None to True/False
+            for col in prioritized_records.columns:
+                # Note purpose of this line is to check if the col in question is a boolean col
+                # Can't simply check the dtype because cols with True/None instead of
+                # True/False have dtype="object" instead of "bool"
+                if True in prioritized_records[col].values:
+                    prioritized_records[col] = prioritized_records[col].fillna(False)
+            prioritized_records = prioritized_records.fillna(np.nan).replace({np.nan: None})
+        query_dicts = prioritized_records.to_dict('records')
+
+    # If estimates_subgroup is 'primary_estimates', just return the primary estimate for each study
+    # Otherwise, estimates_subgroup = 'all' so just return all estimates
+    elif estimates_subgroup == 'primary_estimates':
+        result_df = pd.DataFrame(query_dicts)
+        primary_estimates_df = result_df.loc[result_df['dashboard_primary_estimate'] == True]
+        query_dicts = primary_estimates_df.to_dict('records')
 
     result = []
 
@@ -199,35 +220,6 @@ def get_filtered_records(research_fields=False, filters=None, columns=None, incl
         for field in isoformat_fields:
             if record.get(field, None) is not None:
                 record[field] = record[field].isoformat()
-
-    # If estimates_subgroup is 'estimate_prioritization', perform estimate prioritization
-    if estimates_subgroup == 'estimate_prioritization':
-        result_df = pd.DataFrame(result)
-        if include_subgeography_estimates:
-            prioritized_records = get_prioritized_estimates_without_pooling(result_df,
-                                                                            subgroup_var="Geographical area",
-                                                                            mode=prioritize_estimates_mode)
-        else:
-            prioritized_records = get_prioritized_estimates(result_df, mode=prioritize_estimates_mode)
-        # If records exist, clean dataframe
-        if not prioritized_records.empty:
-            # Convert from True/None to True/False
-            # TODO: maybe this is something we enforce in the ETL moving fwd
-            for col in prioritized_records.columns:
-                # Note purpose of this line is to check if the col in question is a boolean col
-                # Can't simply check the dtype because cols with True/None instead of
-                # True/False have dtype="object" instead of "bool"
-                if True in prioritized_records[col].values:
-                    prioritized_records[col] = prioritized_records[col].fillna(False)
-            prioritized_records = prioritized_records.fillna(np.nan).replace({np.nan: None})
-        result = prioritized_records.to_dict('records')
-
-    # If estimates_subgroup is 'primary_estimates', just return the primary estimate for each study
-    # Otherwise, estimates_subgroup = 'all' so just return all estimates
-    elif estimates_subgroup == 'primary_estimates':
-        result_df = pd.DataFrame(result)
-        primary_estimates_df = result_df.loc[result_df['dashboard_primary_estimate'] == True]
-        result = primary_estimates_df.to_dict('records')
 
     # Need to check if 'research_fields' is applied
     # because the include_in_srma field is in the ResearchSource table

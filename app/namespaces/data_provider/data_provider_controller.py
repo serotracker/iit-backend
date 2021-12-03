@@ -40,7 +40,7 @@ class Records(Resource):
 
         columns_requested = data.get('columns')
         research_fields = data.get('research_fields')
-        estimates_subgroup = data.get('estimates_subgroup', 'all')
+        estimates_subgroup = data.get('estimates_subgroup', 'all_estimates')
         prioritize_estimates_mode = data.get('prioritize_estimates_mode', 'dashboard')
         include_disputed_regions = data.get('include_disputed_regions', False)
         include_subgeography_estimates = data.get('include_subgeography_estimates', False)
@@ -122,7 +122,7 @@ class PaginatedRecords(Resource):
         reverse = data.get('reverse', None)
         columns = data.get('columns')
         research_fields = data.get('research_fields')
-        estimates_subgroup = data.get('estimates_subgroup', 'all')
+        estimates_subgroup = data.get('estimates_subgroup', 'all_estimates')
         prioritize_estimates_mode = data.get('prioritize_estimates_mode', 'dashboard')
         sampling_start_date, sampling_end_date = convert_start_end_dates(data, use_sampling_date=True)
         include_in_srma = data.get('include_in_srma', False)

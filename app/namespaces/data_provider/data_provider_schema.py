@@ -10,8 +10,8 @@ class RecordsSchema(Schema):
     per_page = fields.Integer(allow_none=True)
     reverse = fields.Boolean(allow_none=True)
     research_fields = fields.Boolean(allow_none=True)
-    estimates_subgroup = fields.String(validate=validate.OneOf(['all',
-                                                                'estimate_prioritization',
+    estimates_subgroup = fields.String(validate=validate.OneOf(['all_estimates',
+                                                                'prioritize_estimates',
                                                                 'primary_estimates']), allow_none=True)
     prioritize_estimates_mode = fields.String(validate=validate.OneOf(['analysis_dynamic',
                                                                        'analysis_static',
