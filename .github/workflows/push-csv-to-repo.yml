@@ -36,7 +36,7 @@ jobs:
           LOG_FILE_PATH: 'iit-backend/logfile.log'
           PYTHONPATH: 'iit-backend'
     
-      - name: Copies CSV to sars-cov-2-data
+      - name: Copies and pushes CSV to sars-cov-2-data (main branch)
         uses: dmnemec/copy_file_to_another_repo_action@main
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
