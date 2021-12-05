@@ -12,11 +12,11 @@ load_dotenv()
 
 def upload_analyze_csv(canadian_data):
     # Get records
-    prioritize_estimates = True if canadian_data else False
+    estimates_subgroup = 'estimate_prioritization' if canadian_data else 'all'
     include_subgeography_estimates = True if canadian_data else False
     filters = {'country': ['Canada']} if canadian_data else None
     records = get_filtered_records(research_fields=True, filters=filters, columns=None, sampling_start_date=None,
-                                   sampling_end_date=None, prioritize_estimates=prioritize_estimates,
+                                   sampling_end_date=None, estimates_subgroup=estimates_subgroup,
                                    include_subgeography_estimates=include_subgeography_estimates)
     records = jitter_pins(records)
     records_df = pd.DataFrame(records)
