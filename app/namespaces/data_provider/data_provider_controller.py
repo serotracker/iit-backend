@@ -40,7 +40,7 @@ class Records(Resource):
 
         columns_requested = data.get('columns')
         research_fields = data.get('research_fields')
-        estimates_subgroup = data.get('estimates_subgroup', 'primary_estimates')
+        estimates_subgroup = data.get('estimates_subgroup', 'all_estimates')
         prioritize_estimates_mode = data.get('prioritize_estimates_mode', 'dashboard')
         include_disputed_regions = data.get('include_disputed_regions', False)
         include_subgeography_estimates = data.get('include_subgeography_estimates', False)
