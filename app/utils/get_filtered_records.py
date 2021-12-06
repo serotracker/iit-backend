@@ -167,6 +167,7 @@ def get_filtered_records(research_fields=False, filters=None, columns=None, incl
     elif estimates_subgroup == 'primary_estimates':
         result_df = pd.DataFrame(query_dicts)
         primary_estimates_df = result_df.loc[result_df['dashboard_primary_estimate'] == True]
+        primary_estimates_df = primary_estimates_df.fillna(np.nan).replace({np.nan: None})
         query_dicts = primary_estimates_df.to_dict('records')
 
     result = []
