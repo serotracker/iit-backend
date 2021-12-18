@@ -232,5 +232,6 @@ class PopulationGroupOptions(db.Model):
     id = Column(UUID(as_uuid=True), primary_key=True)
     name = Column(String())
     french_name = Column(String())
+    german_name = Column(String())
     order = Column(Integer)
     created_at = Column(DateTime)
