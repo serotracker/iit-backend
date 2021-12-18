@@ -65,6 +65,11 @@ def get_most_recent_publication_info(row: Dict) -> Dict:
 
 
 def replace_null_fields(row_val):
+    # If we somehow get None values
+    # return a one element array containing None
+    # to keep the format consistent
+    if row_val == None:
+        return [None]
     null_cols = ['nr', 'NR', 'Not Reported', 'Not reported', 'Not available', 'NA', 'N/A']
     return [i if i not in null_cols else None for i in row_val]
 

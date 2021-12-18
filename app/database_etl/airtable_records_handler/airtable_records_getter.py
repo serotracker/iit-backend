@@ -122,6 +122,8 @@ def ingest_sample_frame_goi_filter_options():
                                                      name=record['fields']['Name'],
                                                      french_name=record['fields']['French Name'] if 'French Name' in
                                                                  record['fields'] else None,
+                                                     german_name=record['fields']['German Name'] if 'German Name' in
+                                                                 record['fields'] else None,
                                                      order=record['fields']['Order'] if 'Order' in record[
                                                          'fields'] else None,
                                                      created_at=current_time)
