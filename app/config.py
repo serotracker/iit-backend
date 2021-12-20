@@ -9,7 +9,7 @@ class ApiConfig:
     AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
     AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
     AIRTABLE_REQUEST_URL = "https://api.airtable.com/v0/{}/Rapid%20Review%3A%20Estimates?".format(AIRTABLE_BASE_ID)
-    AIRTABLE_SAMPLE_FRAME_GOI_OPTIONS_REQUEST_URL = "https://api.airtable.com/v0/{}/Sample%20Frame%20GOI?fields=Order&fields=Name&sort%5B0%5D%5Bfield%5D=Order&fields=French%20Name".format(AIRTABLE_BASE_ID)
+    AIRTABLE_SAMPLE_FRAME_GOI_OPTIONS_REQUEST_URL = "https://api.airtable.com/v0/{}/Sample%20Frame%20GOI?fields=Order&fields=Name&sort%5B0%5D%5Bfield%5D=Order&fields=French%20Name&fields=German%20Name".format(AIRTABLE_BASE_ID)
     AIRTABLE_GITHUB_CSV_FIELDS_REQUEST_URL = "https://api.airtable.com/v0/{}/Airtable%20SOP?view=viwJSA16MpcZtfYt5".format(AIRTABLE_BASE_ID)
     AIRTABLE_TIME_DIFF = os.getenv('AIRTABLE_TIME_DIFF', 24)
     AIRTABLE_CACHED_RESULTS_PATH = 'app/namespaces/data_provider/cached_results.json'
