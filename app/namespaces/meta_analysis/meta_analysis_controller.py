@@ -1,6 +1,6 @@
 import logging
 
-from flask_restplus import Resource, Namespace
+from flask_restx import Resource, Namespace
 from flask import make_response, request
 
 from app.utils import validate_request_input_against_schema, get_filtered_records, convert_start_end_dates

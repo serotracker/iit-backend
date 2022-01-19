@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 
-from flask_restplus import Resource, Namespace
+from flask_restx import Resource, Namespace
 from flask import jsonify, current_app as app
 
 from .cases_count_scraper_service import get_all_records
