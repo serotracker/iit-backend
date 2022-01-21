@@ -144,7 +144,7 @@ tomlkit==0.7.0
 tornado==6.1
 traitlets==5.0.5
 typing-extensions==3.7.4.3
-ujson==4.0.2
+ujson==5.1.0
 uritemplate==3.0.1
 urllib3==1.25.9
 wcwidth==0.2.5
