@@ -42,3 +42,6 @@ push_csvs.py
 
 # Data dump for docker postgres
 docker_postgres_dump.sql
+
+# Dataset CSV
+app/github_public_repo/serotracker_dataset.csv
