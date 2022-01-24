@@ -9,8 +9,8 @@ from .config import config_by_name
 from flask_sqlalchemy import SQLAlchemy
 
 logging.config.fileConfig(os.getenv('LOG_CONFIG_PATH'),
-                        disable_existing_loggers=False,
-                        defaults={'logfilename': os.getenv('LOG_FILE_PATH')})
+                          disable_existing_loggers=False,
+                          defaults={'logfilename': os.getenv('LOG_FILE_PATH')})
 logging.getLogger(__name__)
 
 
@@ -30,7 +30,7 @@ def create_app(db):
     # Attach namespaces to api
     namespaces = config_obj.APP_NAMESPACES
     from .utils import init_namespace
-    from .namespaces import healthcheck_ns, data_provider_ns, cases_count_scraper_ns,\
+    from .namespaces import healthcheck_ns, data_provider_ns, cases_count_scraper_ns, \
         meta_analysis_ns, test_adjustment_ns
     init_namespace(namespaces, api)
 
@@ -40,4 +40,8 @@ def create_app(db):
 
 db = SQLAlchemy()
 app = create_app(db)
-multiprocessing.set_start_method("fork")
+
+if os.name == 'nt':
+    multiprocessing.set_start_method("spawn")
+else:
+    multiprocessing.set_start_method("fork")
