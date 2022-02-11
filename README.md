@@ -81,7 +81,7 @@ LOG_CONFIG_PATH=./logging.cfg
 LOG_FILE_PATH=./logfile.log
 SLACKBOT_TOKEN=___
 ANALYZE_SPREADSHEET_ID=___
-PYTHONPATH='$PYTHONPATH:$PWD:$PWD/app/'
+PYTHONPATH=$PYTHONPATH:$PWD:$PWD/app/
 ```
 
 6. Activate the virtualenv
