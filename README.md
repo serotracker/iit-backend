@@ -51,11 +51,12 @@ Server side code for the International Immunity Tracker.
 
 ## Terminal-based installation
 
-If using Windows Subsystem for Linux (WSL) it is recommended that you clone `iit-backend` into a directory within your Windows User profile. In WSL, your Windows home directory is located under `/mnt/c/Users/<YOUR_USERNAME>/`. For example, the following two paths point to the same location
-- Windows: `C:\Users\<USERNAME>\Documents`
-- WSL: `/mnt/c/Users/<USERNAME>/Documents/`
+If using Windows Subsystem for Linux (WSL) it is recommended that you clone `iit-backend` into your home directory *within* WSL. This will improve performance and Visual Sutdio Code compatibility. If you do this, you can still access your files using the Windows File Explorer. The following are the paths to your home directory in Windows and WSL. Here, Ubuntu is used for WSL:
 
-Cloning to a directory in your Windows User profile will allow you to access any file in the project from File Explorer (or any other application available to your user) as you would any other file.
+- Windows: \\wsl.localhost\Ubuntu\home\<YOUR_USERNAME>
+- WSL: /home/<YOUR_USERNAME>
+
+Note that you can use `~/` as a shorthand for `/home/<YOUR_USERNAME>` e.g. `cd ~/` is equivalent to `cd /home/<YOUR_USERNAME>`.
 
 ### Dependencies
 
