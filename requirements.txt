@@ -1,5 +1,5 @@
 # PIP VERSION SPECIFIERS
-# See https://www.python.org/dev/peps/pep-0440/#version-specifiers for more details
+# For more details, see https://www.python.org/dev/peps/pep-0440/#version-specifiers
 
 # ~=: Compatible release clause
 # For example, the following are equivalent (The comma is equivalent to a logical AND operator)
