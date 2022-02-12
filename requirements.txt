@@ -1,3 +1,20 @@
+# PIP VERSION SPECIFIERS
+# See https://www.python.org/dev/peps/pep-0440/#version-specifiers for more details
+
+# ~=: Compatible release clause
+# For example, the following are equivalent (The comma is equivalent to a logical AND operator)
+# ~= 1.4.5
+# >= 1.4.5, == 1.4.*
+# In other words, version 1.4.5 or later, but not version 1.5.0 or later.
+
+# ==: Version matching clause
+# !=: Version exclusion clause
+# <=, >=: Inclusive ordered comparison clause
+# <, >: Exclusive ordered comparison clause
+# ===: Arbitrary equality clause.
+
+# REQUIREMENTS
+
 alembic~=1.4.2
 aniso8601~=8.0.0
 anyio~=2.2.0
