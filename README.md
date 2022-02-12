@@ -85,10 +85,9 @@ PYTHONPATH=$PYTHONPATH:$PWD:$PWD/app/
 ```
 
 6. Activate the virtualenv
-
-    Mac/Linux/WSL: `source bin/activate`
-
-    Windows: `Scripts\activate`
+- Linux/WSL: `source bin/activate`
+- macOS: `source venv/bin/activate`
+- Windows: `Scripts\activate`
 
 7. Load the environment variables using `set -o allexport; source .env; set +o allexport`
 8. Install required dependents by running `pip install -r requirements.txt`. This step can take up to 20 minutes.
