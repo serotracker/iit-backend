@@ -134,7 +134,7 @@ Click OK.
 
 You should now be ready to run your script!
 
-#### PyCharm on Windows
+#### PyCharm on native Windows
 
 Install Anaconda [https://docs.anaconda.com/anaconda/install/windows/](https://docs.anaconda.com/anaconda/install/windows/)
 
