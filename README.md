@@ -4,52 +4,13 @@ Server side code for the International Immunity Tracker.
 
 # Table of Contents
 
-- [iit-backend](#iit-backend)
-- [Table of Contents](#table-of-contents)
-- [Set up](#set-up)
-  - [Cloning](#cloning)
-  - [Terminal-based installation](#terminal-based-installation)
-    - [Dependencies](#dependencies)
-  - [PyCharm on MacOS](#pycharm-on-macos)
-    - [Required Software](#required-software)
-    - [Project Configuration](#project-configuration)
-      - [Creating Virtual Environment](#creating-virtual-environment)
-      - [Installing Required Packages](#installing-required-packages)
-      - [Run Configuration](#run-configuration)
-  - [PyCharm on Windows](#pycharm-on-windows)
-    - [Required Software](#required-software-1)
-    - [Project Configuration](#project-configuration-1)
-      - [Creating virtual environment](#creating-virtual-environment-1)
-      - [Installing Required Packages](#installing-required-packages-1)
-      - [Run Configuration](#run-configuration-1)
-  - [Postgres](#postgres)
-  - [Changing Alembic to use Flask SQLAlchemy](#changing-alembic-to-use-flask-sqlalchemy)
-  - [Delete Previous Tables & Migrations](#delete-previous-tables--migrations)
-  - [Upgrade to Using Newest Migrations](#upgrade-to-using-newest-migrations)
-    - [Run migrations](#run-migrations)
-    - [Populate local database](#populate-local-database)
-  - [Running test suite](#running-test-suite)
-  - [Loading Tableau CSV to Google Sheets](#loading-tableau-csv-to-google-sheets)
-- [Helpful Code Snippets](#helpful-code-snippets)
-  - [Working With Postgres](#working-with-postgres)
-  - [Running ETL and Local Server](#running-etl-and-local-server)
-  - [Export and Import](#export-and-import)
-  - [Running Dockerized Flask App](#running-dockerized-flask-app)
-- [Infrastructure Documentation (Current - Vanilla EC2)](#infrastructure-documentation-current---vanilla-ec2)
-  - [CI/CD](#cicd)
-    - [Continuous Integration](#continuous-integration)
-    - [Continuous Deployment](#continuous-deployment)
-    - [Results](#results)
-  - [Cronjobs](#cronjobs)
-  - [`tmux` sessions](#tmux-sessions)
-- [Infrastructure Documentation (Future - Elastic Beanstalk)](#infrastructure-documentation-future---elastic-beanstalk)
+[TODO] I NEED TO UPDATE THIS.
+
 # Set up
 
 ## Cloning
 
-`git clone https://github.com/serotracker/iit-backend.git`
-
-## Terminal-based installation
+Using a terminal application, clone the repository using `git clone https://github.com/serotracker/iit-backend.git`.
 
 If using Windows Subsystem for Linux (WSL) it is recommended that you clone `iit-backend` into your home directory *within* WSL. This will improve performance and Visual Sutdio Code compatibility. If you do this, you can still access your files using the Windows File Explorer. The following are the paths to your home directory in Windows and WSL. Here, Ubuntu is used for WSL:
 
@@ -58,9 +19,11 @@ If using Windows Subsystem for Linux (WSL) it is recommended that you clone `iit
 
 Note that you can use `~/` as a shorthand for `/home/<YOUR_USERNAME>` e.g. `cd ~/` is equivalent to `cd /home/<YOUR_USERNAME>`.
 
-### Dependencies
+## Environment Configuration
 
-1. Setup `pip` package manager.
+### Using the Terminal
+
+1. Setup `pip` package manager with `python -m ensurepip --upgrade`. For more details, see the official [pip documentation](https://pip.pypa.io/en/stable/installation/).
 2. Install the `virtualenv` package with `pip install virtualenv`.
 3. Inside the iit-backend directory, create a python virtualenv with `virtualenv .`
 4. Run `touch .env` to create a `.env` file to store environment variables.
@@ -93,28 +56,25 @@ PYTHONPATH=$PYTHONPATH:$PWD:$PWD/app/
 8. Install required dependents by running `pip install -r requirements.txt`. This step can take up to 20 minutes.
 9. Run your script using `python path/to/your/script.py run`
 
-## PyCharm on MacOS
-
-### Required Software
+### Using PyCharm
 
 Install PyCharm Community [https://www.jetbrains.com/pycharm/download/](https://www.jetbrains.com/pycharm/download/)
 
-### Project Configuration
+#### PyCharm for macOS
+
 In PyCharm, open iit-backend using `File > Open`.
-#### Creating Virtual Environment
 
 When opening the project, PyCharm should detect the requirements.txt file and automatically prompt you to create a virtual environment for the project. The prompt should look like the picture below. Select your base interpreter and click `OK`. If this prompt doesn't appear, create a virtualenv interpreter manually [https://www.jetbrains.com/help/pycharm/project-interpreter.html#3b6542ac](https://www.jetbrains.com/help/pycharm/project-interpreter.html#3b6542ac)
 
-
 ![Setup Prompt Window](pictures/setup_prompt.png "Setup Prompt Window")
 
-#### Installing Required Packages
+##### Installing Required Packages
 
 Using the steps above, PyCharm should automatically install all of the packages listed in `requirements.txt`. If you created your virtualenv manually or if PyCharm returns an error, try closing and reopening a `.py` file inside the project and click on the "install requirements" pop up. Alternatively, you can open the terminal in PyCharm and run `pip install -r requirements`.
 
 If you encounter any errors installing packages, try installing them manually via the terminal with no version requirements.
 
-#### Run Configuration
+##### Run Configuration
 
 In the menu bar, select `Run > Edit Configuration`.
 
@@ -134,33 +94,26 @@ Click OK.
 
 You should now be ready to run your script!
 
-## PyCharm on Windows
-
-### Required Software
-
-Install PyCharm Community [https://www.jetbrains.com/pycharm/download/](https://www.jetbrains.com/pycharm/download/)
+#### PyCharm on Windows
 
 Install Anaconda [https://docs.anaconda.com/anaconda/install/windows/](https://docs.anaconda.com/anaconda/install/windows/)
 
-### Project Configuration
-
 In PyCharm, open iit-backend using `File > Open`. Click *Cancel* if prompted to create a virtual environment.
 
-#### Creating virtual environment
+##### Creating virtual environment
 Create a virtualenv interpreter manually [https://www.jetbrains.com/help/pycharm/project-interpreter.html#3b6542ac](https://www.jetbrains.com/help/pycharm/project-interpreter.html#3b6542ac).
 
 When adding your python interpreter, select *Conda environment* in the lefthand side. Make sure *New environment* is selected. Give *Location* a memorable name e.g. iit-backend. Click *OK* twice to return to the main PyCharm window.
 
-
-#### Installing Required Packages
+##### Installing Required Packages
 
 Click *install requirements* from the PyCharm prompt or run `conda install --file requirements.txt` in the terminal. This will install some of the packages using the `conda` package manager.
 
-Many packages will fail to install using `conda`. To install the rest of the packages, use `pip` instead of `conda`. To do this, run `pip install -r requirements.txt`.
+Many packages will fail to install using `conda`, this is expected behaviour. To install the rest of the packages, use `pip` instead of `conda`. To do this, run `pip install -r requirements.txt`.
 
 It's likely that you'll run into issues installing the `Fiona` package. To install it, run `conda install fiona` in the terminal.
 
-#### Run Configuration
+##### Run Configuration
 
 In the menu bar, select `Run > Edit Configuration`.
 
