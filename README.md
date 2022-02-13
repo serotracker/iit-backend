@@ -98,7 +98,7 @@ PYTHONPATH=$PYTHONPATH:$PWD:$PWD/app/
 
 ### Using PyCharm
 
-Install PyCharm Community [https://www.jetbrains.com/pycharm/download/](https://www.jetbrains.com/pycharm/download/)
+Install [PyCharm Community Edition](https://www.jetbrains.com/pycharm/download/).
 
 #### PyCharm for macOS
 
