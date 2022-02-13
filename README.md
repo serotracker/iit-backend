@@ -137,7 +137,7 @@ You should now be ready to run your script!
 
 #### PyCharm on Windows
 
-Note that this method will only work if the repository has been cloned within your Windows user profile and NOT your WSL user profile. PyCharm WSL compatibility is only available with [PyCharm Pro Edition](https://www.jetbrains.com/help/pycharm/using-wsl-as-a-remote-interpreter.html).
+Note that this method can work using either native Windows or WSL. However, if you are using PyCharm, it is strongly recommended that you clone the repository within your **Windows user profile** and **NOT your WSL user profile**. PyCharm WSL compatibility is only available with [PyCharm Pro Edition](https://www.jetbrains.com/help/pycharm/using-wsl-as-a-remote-interpreter.html) and the workarounds for the Community Edition are not documented here. 
 
 ##### Anaconda
 
