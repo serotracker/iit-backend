@@ -16,6 +16,7 @@ Server side code for the International Immunity Tracker.
         - [Installing Required Packages](#installing-required-packages)
         - [Run Configuration](#run-configuration)
       - [PyCharm on Windows](#pycharm-on-windows)
+        - [Anaconda](#anaconda)
         - [Creating virtual environment](#creating-virtual-environment)
         - [Installing Required Packages](#installing-required-packages-1)
         - [Run Configuration](#run-configuration-1)
@@ -134,13 +135,18 @@ Click OK.
 
 You should now be ready to run your script!
 
-#### PyCharm on native Windows
+#### PyCharm on Windows
+
+Note that this method will only work if the repository has been cloned within your Windows user profile and NOT your WSL user profile. PyCharm WSL compatibility is only available with [PyCharm Pro Edition](https://www.jetbrains.com/help/pycharm/using-wsl-as-a-remote-interpreter.html).
+
+##### Anaconda
 
 Install Anaconda [https://docs.anaconda.com/anaconda/install/windows/](https://docs.anaconda.com/anaconda/install/windows/)
 
+##### Creating virtual environment
+
 In PyCharm, open iit-backend using `File > Open`. Click *Cancel* if prompted to create a virtual environment.
 
-##### Creating virtual environment
 Create a virtualenv interpreter manually [https://www.jetbrains.com/help/pycharm/project-interpreter.html#3b6542ac](https://www.jetbrains.com/help/pycharm/project-interpreter.html#3b6542ac).
 
 When adding your python interpreter, select *Conda environment* in the lefthand side. Make sure *New environment* is selected. Give *Location* a memorable name e.g. iit-backend. Click *OK* twice to return to the main PyCharm window.
