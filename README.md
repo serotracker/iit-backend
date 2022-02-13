@@ -4,7 +4,42 @@ Server side code for the International Immunity Tracker.
 
 # Table of Contents
 
-[TODO] I NEED TO UPDATE THIS.
+- [iit-backend](#iit-backend)
+- [Table of Contents](#table-of-contents)
+- [Set up](#set-up)
+  - [Cloning](#cloning)
+    - [WSL Recommendations](#wsl-recommendations)
+  - [Environment Configuration](#environment-configuration)
+    - [Using the Terminal](#using-the-terminal)
+    - [Using PyCharm](#using-pycharm)
+      - [PyCharm for macOS](#pycharm-for-macos)
+        - [Installing Required Packages](#installing-required-packages)
+        - [Run Configuration](#run-configuration)
+      - [PyCharm on Windows](#pycharm-on-windows)
+        - [Creating virtual environment](#creating-virtual-environment)
+        - [Installing Required Packages](#installing-required-packages-1)
+        - [Run Configuration](#run-configuration-1)
+  - [Postgres](#postgres)
+  - [Changing Alembic to use Flask SQLAlchemy](#changing-alembic-to-use-flask-sqlalchemy)
+  - [Delete Previous Tables & Migrations](#delete-previous-tables--migrations)
+  - [Upgrade to Using Newest Migrations](#upgrade-to-using-newest-migrations)
+    - [Run migrations](#run-migrations)
+    - [Populate local database](#populate-local-database)
+  - [Running test suite](#running-test-suite)
+  - [Loading Tableau CSV to Google Sheets](#loading-tableau-csv-to-google-sheets)
+- [Helpful Code Snippets](#helpful-code-snippets)
+  - [Working With Postgres](#working-with-postgres)
+  - [Running ETL and Local Server](#running-etl-and-local-server)
+  - [Export and Import](#export-and-import)
+  - [Running Dockerized Flask App](#running-dockerized-flask-app)
+- [Infrastructure Documentation (Current - Vanilla EC2)](#infrastructure-documentation-current---vanilla-ec2)
+  - [CI/CD](#cicd)
+    - [Continuous Integration](#continuous-integration)
+    - [Continuous Deployment](#continuous-deployment)
+    - [Results](#results)
+  - [Cronjobs](#cronjobs)
+  - [`tmux` sessions](#tmux-sessions)
+- [Infrastructure Documentation (Future - Elastic Beanstalk)](#infrastructure-documentation-future---elastic-beanstalk)
 
 # Set up
 
@@ -12,12 +47,17 @@ Server side code for the International Immunity Tracker.
 
 Using a terminal application, clone the repository using `git clone https://github.com/serotracker/iit-backend.git`.
 
-If using Windows Subsystem for Linux (WSL) it is recommended that you clone `iit-backend` into your home directory *within* WSL. This will improve performance and Visual Sutdio Code compatibility. If you do this, you can still access your files using the Windows File Explorer. The following are the paths to your home directory in Windows and WSL. Here, Ubuntu is used for WSL:
+### WSL Recommendations
+
+If using Windows Subsystem for Linux (WSL) it is recommended that you clone `iit-backend` into your homminore directory *within* WSL. This will improve performance and Visual Sutdio Code compatibility. If you do this, you can still access your files using the Windows File Explorer. The following are the paths to your home directory in Windows and WSL. Here, Ubuntu is used for WSL:
 
 - Windows: \\wsl.localhost\Ubuntu\home\<YOUR_USERNAME>
 - WSL: /home/<YOUR_USERNAME>
 
 Note that you can use `~/` as a shorthand for `/home/<YOUR_USERNAME>` e.g. `cd ~/` is equivalent to `cd /home/<YOUR_USERNAME>`.
+
+Make sure to check out [this guide](https://code.visualstudio.com/docs/remote/troubleshooting#_resolving-git-line-ending-issues-in-containers-resulting-in-many-modified-files) to avoid Git reporting a large number of modified files that have no actual differences. In short, by running `git config --global core.autocrlf input` in a WSL terminal, you can avoid a known issue where Visual Studio Code's version control tools show an excessive number of modified lines.
+Alternatively, you can simply use the [Github Desktop app](https://desktop.github.com/) instead of the built source control tools built into Visual Studio Code.
 
 ## Environment Configuration
 
