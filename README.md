@@ -50,14 +50,14 @@ Using a terminal application, clone the repository using `git clone https://gith
 
 ### WSL Recommendations
 
-If using Windows Subsystem for Linux (WSL) it is recommended that you clone `iit-backend` into your homminore directory *within* WSL. This will improve performance and Visual Sutdio Code compatibility. If you do this, you can still access your files using the Windows File Explorer. The following are the paths to your home directory in Windows and WSL. Here, Ubuntu is used for WSL:
+If using Windows Subsystem for Linux (WSL) it is recommended that you clone `iit-backend` into your home directory *within* WSL. This will improve performance and Visual Studio Code compatibility. If you do this, you can still access your files using the Windows File Explorer. The following are the paths to your home directory in Windows and WSL. Here, Ubuntu is used for WSL:
 
 - Windows: \\wsl.localhost\Ubuntu\home\<YOUR_USERNAME>
 - WSL: /home/<YOUR_USERNAME>
 
 Note that you can use `~/` as a shorthand for `/home/<YOUR_USERNAME>` e.g. `cd ~/` is equivalent to `cd /home/<YOUR_USERNAME>`.
 
-If you plan on using Visual Sutdio Code as your editor, make sure to look at this [this guide](https://code.visualstudio.com/docs/remote/troubleshooting#_resolving-git-line-ending-issues-in-containers-resulting-in-many-modified-files) to avoid Git reporting a large number of modified files that have no actual differences. In short, by running `git config --global core.autocrlf input` in a WSL terminal, you can avoid a known issue where Visual Studio Code's version control tools show an excessive number of modified lines.
+If you plan on using Visual Studio Code as your editor, make sure to look at this [this guide](https://code.visualstudio.com/docs/remote/troubleshooting#_resolving-git-line-ending-issues-in-containers-resulting-in-many-modified-files) to avoid Git reporting a large number of modified files that have no actual differences. In short, by running `git config --global core.autocrlf input` in a WSL terminal, you can avoid a known issue where Visual Studio Code's version control tools show an excessive number of modified lines.
 
 ## Environment Configuration
 
