@@ -156,7 +156,7 @@ Click *install requirements* from the PyCharm prompt or run `conda install --fil
 
 Many packages will fail to install using `conda`, this is expected behaviour. To install the rest of the packages, use `pip` instead of `conda`. To do this, run `pip install -r requirements.txt`.
 
-It's likely that you'll run into issues installing the `Fiona` package. To install it, run `conda install fiona` in the terminal.
+It's likely that you'll run into issues installing the `Fiona` package. To install it, run `conda install fiona` in the terminal (package names are case-sensitive).
 
 ##### Run Configuration
 
