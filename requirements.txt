@@ -7,12 +7,6 @@
 # >= 1.4.5, == 1.4.*
 # In other words, version 1.4.5 or later, but not version 1.5.0 or later.
 
-# ==: Version matching clause
-# !=: Version exclusion clause
-# <=, >=: Inclusive ordered comparison clause
-# <, >: Exclusive ordered comparison clause
-# ===: Arbitrary equality clause.
-
 # REQUIREMENTS
 
 alembic~=1.4.2
