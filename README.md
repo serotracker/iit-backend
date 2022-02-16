@@ -13,11 +13,12 @@ Server side code for the International Immunity Tracker.
     - [Using the Terminal](#using-the-terminal)
     - [Using PyCharm](#using-pycharm)
       - [PyCharm for macOS](#pycharm-for-macos)
+        - [Creating a Virtual Environment](#creating-a-virtual-environment)
         - [Installing Required Packages](#installing-required-packages)
         - [Run Configuration](#run-configuration)
       - [PyCharm on Windows](#pycharm-on-windows)
         - [Anaconda](#anaconda)
-        - [Creating virtual environment](#creating-virtual-environment)
+        - [Creating a Virtual Environment](#creating-a-virtual-environment-1)
         - [Installing Required Packages](#installing-required-packages-1)
         - [Run Configuration](#run-configuration-1)
   - [Postgres](#postgres)
@@ -102,17 +103,19 @@ Install [PyCharm Community Edition](https://www.jetbrains.com/pycharm/download/)
 
 #### PyCharm for macOS
 
+##### Creating a Virtual Environment
+
 In PyCharm, open iit-backend using `File > Open`.
 
-When opening the project, PyCharm should detect the requirements.txt file and automatically prompt you to create a virtual environment for the project. The prompt should look like the picture below. Select your base interpreter and click `OK`. If this prompt doesn't appear, create a virtualenv interpreter manually [https://www.jetbrains.com/help/pycharm/project-interpreter.html#3b6542ac](https://www.jetbrains.com/help/pycharm/project-interpreter.html#3b6542ac)
+When opening the project, PyCharm should detect the `requirements.txt` file and automatically prompt you to create a virtual environment for the project. The prompt should look like the picture below. Select your base interpreter and click `OK`. If this prompt doesn't appear, [create a virtualenv interpreter manually](https://www.jetbrains.com/help/pycharm/project-interpreter.html#3b6542ac)
 
-![Setup Prompt Window](pictures/setup_prompt.png "Setup Prompt Window")
+![Setup Prompt Window](pictures/setup_prompt_macos.png "Setup Prompt Window")
+
+You'll like get an error from pycharm saying that the `setup.py` file couldn't be located. You can safely ignore this message and close the prompt.
 
 ##### Installing Required Packages
 
-Using the steps above, PyCharm should automatically install all of the packages listed in `requirements.txt`. If you created your virtualenv manually or if PyCharm returns an error, try closing and reopening a `.py` file inside the project and click on the "install requirements" pop up. Alternatively, you can open the terminal in PyCharm and run `pip install -r requirements`.
-
-If you encounter any errors installing packages, try installing them manually via the terminal with no version requirements.
+Using PyCharm's built-in terminal located in the bottom lefthand side of the PyCharm window, run the command `pip install -r requirement.txt`. This will install all of the packages specified in the `requirements.txt` file in the root of the project.
 
 ##### Run Configuration
 
@@ -136,27 +139,35 @@ You should now be ready to run your script!
 
 #### PyCharm on Windows
 
-Note that this method can work using either native Windows or WSL. However, if you are using PyCharm, it is strongly recommended that you clone the repository within your **Windows user profile** and **NOT your WSL user profile**. PyCharm WSL compatibility is only available with [PyCharm Pro Edition](https://www.jetbrains.com/help/pycharm/using-wsl-as-a-remote-interpreter.html) and the workarounds for the Community Edition are not documented here. 
+Note that this method can work using either native Windows or WSL. However, it is **strongly** recommended that you clone the repository within your **Windows user profile** and **NOT your WSL user profile**. PyCharm WSL compatibility is only available with [PyCharm Pro Edition](https://www.jetbrains.com/help/pycharm/using-wsl-as-a-remote-interpreter.html) and the workarounds for the Community Edition are unstable and not documented here.
 
 ##### Anaconda
 
-Install Anaconda [https://docs.anaconda.com/anaconda/install/windows/](https://docs.anaconda.com/anaconda/install/windows/)
+Install [Anaconda](https://docs.anaconda.com/anaconda/install/windows/)
 
-##### Creating virtual environment
+##### Creating a Virtual Environment
 
-In PyCharm, open iit-backend using `File > Open`. Click *Cancel* if prompted to create a virtual environment.
+In PyCharm, open iit-backend using `File > Open`.
 
-Create a virtualenv interpreter manually [https://www.jetbrains.com/help/pycharm/project-interpreter.html#3b6542ac](https://www.jetbrains.com/help/pycharm/project-interpreter.html#3b6542ac).
+When opening the project, PyCharm should detect the `requirements.txt` file and automatically prompt you to create a virtual environment for the project. This prompt does not give you all the options necessary to configure your conda environment successfully, so click *Cancel* to return to the main PyCharm window.
 
-When adding your python interpreter, select *Conda environment* in the lefthand side. Make sure *New environment* is selected. Give *Location* a memorable name e.g. iit-backend. Click *OK* twice to return to the main PyCharm window.
+To create your virtual environment, open any python file (*e.g.* `manage.py`) and click on `<No interpreter>` on the bottom right of your PyCharm window. Click *Add interpreter...*
+
+Select *Conda environment* in the lefthand side. Make sure *New environment* is selected. Give *Location* a memorable name *e.g.* iit-backend. Your configuration should look similar to the picture below.
+
+![Setup Prompt Window](pictures/setup_prompt_windows.png "Setup Prompt Window")
+
+Click *OK* to return to the main PyCharm window.
+
 
 ##### Installing Required Packages
 
-Click *install requirements* from the PyCharm prompt or run `conda install --file requirements.txt` in the terminal. This will install some of the packages using the `conda` package manager.
+Click *install requirements* from the yellow PyCharm prompt. If you don't see the prompt, try closing and reopening `manage.py`. This will install some of the packages using the `conda` package manager. Many packages will fail to install using `conda`, this is expected behaviour.
 
-Many packages will fail to install using `conda`, this is expected behaviour. To install the rest of the packages, use `pip` instead of `conda`. To do this, run `pip install -r requirements.txt`.
+Next, run `conda install fiona` in the terminal (case sensitive). The terminal is located in the bottom lefthand side of the PyCharm window. `fiona` is an anaconda-specific repackaging of the `Fiona` package that allows us to skip the complicated native Windows installation process for `Fiona`.
 
-It's likely that you'll run into issues installing the `Fiona` package. To install it, run `conda install fiona` in the terminal (package names are case-sensitive).
+To install the rest of the packages, use `pip` instead of `conda`. To do this, run `pip install -r requirements.txt` in the terminal.
+
 
 ##### Run Configuration
 
