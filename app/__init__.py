@@ -40,4 +40,9 @@ def create_app(db):
 
 db = SQLAlchemy()
 app = create_app(db)
-multiprocessing.set_start_method("fork")
+
+# Check that the multiprocessing method being used is one compatible with the OS
+if os.name == 'nt': # If on Windows
+    multiprocessing.set_start_method("spawn")
+else:
+    multiprocessing.set_start_method("fork")

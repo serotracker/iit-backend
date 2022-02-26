@@ -1,49 +1,193 @@
 # iit-backend
 
-Server side code for the International Immunity Tracker
+Server side code for the International Immunity Tracker.
+
+# Table of Contents
+
+- [iit-backend](#iit-backend)
+- [Table of Contents](#table-of-contents)
+- [Set up](#set-up)
+  - [Cloning](#cloning)
+    - [WSL Recommendations](#wsl-recommendations)
+  - [Environment Configuration](#environment-configuration)
+    - [Using the Terminal](#using-the-terminal)
+    - [Using PyCharm](#using-pycharm)
+      - [PyCharm for macOS](#pycharm-for-macos)
+        - [Creating a Virtual Environment](#creating-a-virtual-environment)
+        - [Installing Required Packages](#installing-required-packages)
+        - [Run Configuration](#run-configuration)
+      - [PyCharm on Windows](#pycharm-on-windows)
+        - [Anaconda](#anaconda)
+        - [Creating a Virtual Environment](#creating-a-virtual-environment-1)
+        - [Installing Required Packages](#installing-required-packages-1)
+        - [Run Configuration](#run-configuration-1)
+  - [Postgres](#postgres)
+  - [Changing Alembic to use Flask SQLAlchemy](#changing-alembic-to-use-flask-sqlalchemy)
+  - [Delete Previous Tables & Migrations](#delete-previous-tables--migrations)
+  - [Upgrade to Using Newest Migrations](#upgrade-to-using-newest-migrations)
+    - [Run migrations](#run-migrations)
+    - [Populate local database](#populate-local-database)
+  - [Running test suite](#running-test-suite)
+  - [Loading Tableau CSV to Google Sheets](#loading-tableau-csv-to-google-sheets)
+- [Helpful Code Snippets](#helpful-code-snippets)
+  - [Working With Postgres](#working-with-postgres)
+  - [Running ETL and Local Server](#running-etl-and-local-server)
+  - [Export and Import](#export-and-import)
+  - [Running Dockerized Flask App](#running-dockerized-flask-app)
+- [Infrastructure Documentation (Current - Vanilla EC2)](#infrastructure-documentation-current---vanilla-ec2)
+  - [CI/CD](#cicd)
+    - [Continuous Integration](#continuous-integration)
+    - [Continuous Deployment](#continuous-deployment)
+    - [Results](#results)
+  - [Cronjobs](#cronjobs)
+  - [`tmux` sessions](#tmux-sessions)
+- [Infrastructure Documentation (Future - Elastic Beanstalk)](#infrastructure-documentation-future---elastic-beanstalk)
 
 # Set up
 
 ## Cloning
 
-`git clone https://github.com/serotracker/iit-backend.git`
+Using a terminal application, clone the repository using `git clone https://github.com/serotracker/iit-backend.git`.
 
-## Dependencies
+### WSL Recommendations
 
-1. Setup pip package manager.
-2. Install the virtualenv package with `pip install virtualenv`.
-3. Inside the iit-backend dir, create a python virtualenv with `virtualenv .`
-4. Activate the virtualenv
+If using Windows Subsystem for Linux (WSL) it is recommended that you clone `iit-backend` into your home directory *within* WSL. This will improve performance and Visual Studio Code compatibility. If you do this, you can still access your files using the Windows File Explorer. The following are the paths to your home directory in Windows and WSL. Here, Ubuntu is used for WSL:
 
-   Mac: `source iit-backend/bin/activate`
+- Windows: \\wsl.localhost\Ubuntu\home\<YOUR_USERNAME>
+- WSL: /home/<YOUR_USERNAME>
 
-   Windows: `iit-backend\Scripts\activate`
+Note that you can use `~/` as a shorthand for `/home/<YOUR_USERNAME>` e.g. `cd ~/` is equivalent to `cd /home/<YOUR_USERNAME>`.
 
-5. Install required dependents by running `pip install -r requirements.txt`
+If you plan on using Visual Studio Code as your editor, make sure to look at this [this guide](https://code.visualstudio.com/docs/remote/troubleshooting#_resolving-git-line-ending-issues-in-containers-resulting-in-many-modified-files) to avoid Git reporting a large number of modified files that have no actual differences. In short, by running `git config --global core.autocrlf input` in a WSL terminal, you can avoid a known issue where Visual Studio Code's version control tools show an excessive number of modified lines.
 
-## Environment Variables
+## Environment Configuration
 
-Add a `.env` file to the top level of the repository to store environment variables. This file should be formatted as follows:
+### Using the Terminal
+
+1. Setup `pip` package manager with `python -m ensurepip --upgrade`. For more details, see the official [pip documentation](https://pip.pypa.io/en/stable/installation/).
+2. Install the `virtualenv` package with `pip install virtualenv`.
+3. Inside the iit-backend directory, create a python virtualenv with `virtualenv .`
+4. Run `touch .env` to create a `.env` file to store environment variables.
+5. Use `nano .env` to format `.env` as follows (ask someone on the Data team for the actual environment variables you'll need):
 
 ```bash
-FLASK_ENV=test
+PYTHONUNBUFFERED=1
+FLASK_ENV=___
 AIRTABLE_API_KEY=___
 AIRTABLE_BASE_ID=___
 GMAIL_PASS=___
-PYTHONUNBUFFERED=1
 DATABASE_USERNAME=___
 DATABASE_PASSWORD=___
 DATABASE_NAME=___
 DATABASE_HOST_ADDRESS=___
 MAPBOX_API_KEY=___
-LOG_CONFIG_PATH=___
-LOG_FILE_PATH=___
-PYTHONPATH=___
+LOG_CONFIG_PATH=./logging.cfg
+LOG_FILE_PATH=./logfile.log
 SLACKBOT_TOKEN=___
 ANALYZE_SPREADSHEET_ID=___
+PYTHONPATH=$PYTHONPATH:$PWD:$PWD/app/
 ```
 
-Ask someone on the Data team for the actual environment variables you'll need!
+6. Activate the virtualenv
+- Linux/WSL: `source bin/activate`
+- macOS: `source venv/bin/activate`
+- Windows: `Scripts\activate`
+
+7. Load the environment variables using `set -o allexport; source .env; set +o allexport`
+8. Install required dependents by running `pip install -r requirements.txt`. This step can take up to 20 minutes.
+9. Run your script using `python path/to/your/script.py run`
+
+### Using PyCharm
+
+Install [PyCharm Community Edition](https://www.jetbrains.com/pycharm/download/).
+
+#### PyCharm for macOS
+
+##### Creating a Virtual Environment
+
+In PyCharm, open iit-backend using `File > Open`.
+
+When opening the project, PyCharm should detect the `requirements.txt` file and automatically prompt you to create a virtual environment for the project. The prompt should look like the picture below. Select your base interpreter and click `OK`. If this prompt doesn't appear, [create a virtualenv interpreter manually](https://www.jetbrains.com/help/pycharm/project-interpreter.html#3b6542ac)
+
+![Setup Prompt Window](pictures/setup_prompt_macos.png "Setup Prompt Window")
+
+You'll like get an error from pycharm saying that the `setup.py` file couldn't be located. You can safely ignore this message and close the prompt.
+
+##### Installing Required Packages
+
+Using PyCharm's built-in terminal located in the bottom lefthand side of the PyCharm window, run the command `pip install -r requirement.txt`. This will install all of the packages specified in the `requirements.txt` file in the root of the project.
+
+##### Run Configuration
+
+In the menu bar, select `Run > Edit Configuration`.
+
+Click on the `+` symbol to add a new configuration and select Python. Configure as follows:
+
+- Name: Give your configuration any name
+- Script Path: select the script you want to run e.g. `manage.py` or `/app/github_public_repo/estimate_csv_creator.py`.
+- Parameters: `run`
+- Environment variables: Contact a team member for the complete list of environment variables
+- Python interpreter: select the python virtual environment you configured above
+- Interpreter options: leave blank
+- Working directory: This should automatically fill based on the `Script path` value
+- Add content roots to PYTHONPATH. Check this box
+- Add source roots to PYTHONPATH. Check this box
+
+Click OK.
+
+You should now be ready to run your script!
+
+#### PyCharm on Windows
+
+Note that this method can work using either native Windows or WSL. However, it is **strongly** recommended that you clone the repository within your **Windows user profile** and **NOT your WSL user profile**. PyCharm WSL compatibility is only available with [PyCharm Pro Edition](https://www.jetbrains.com/help/pycharm/using-wsl-as-a-remote-interpreter.html) and the workarounds for the Community Edition are unstable and not documented here.
+
+##### Anaconda
+
+Install [Anaconda](https://docs.anaconda.com/anaconda/install/windows/)
+
+##### Creating a Virtual Environment
+
+In PyCharm, open iit-backend using `File > Open`.
+
+When opening the project, PyCharm should detect the `requirements.txt` file and automatically prompt you to create a virtual environment for the project. This prompt does not give you all the options necessary to configure your conda environment successfully, so click *Cancel* to return to the main PyCharm window.
+
+To create your virtual environment, open any python file (*e.g.* `manage.py`) and click on `<No interpreter>` on the bottom right of your PyCharm window. Click *Add interpreter...*
+
+Select *Conda environment* in the lefthand side. Make sure *New environment* is selected. Give *Location* a memorable name *e.g.* iit-backend. Your configuration should look similar to the picture below.
+
+![Setup Prompt Window](pictures/setup_prompt_windows.png "Setup Prompt Window")
+
+Click *OK* to return to the main PyCharm window.
+
+
+##### Installing Required Packages
+
+Click *install requirements* from the yellow PyCharm prompt. If you don't see the prompt, try closing and reopening `manage.py`. This will install some of the packages using the `conda` package manager. Many packages will fail to install using `conda`, this is expected behaviour.
+
+Next, run `conda install fiona` in the terminal (case sensitive). The terminal is located in the bottom lefthand side of the PyCharm window. `fiona` is an anaconda-specific repackaging of the `Fiona` package that allows us to skip the complicated native Windows installation process for `Fiona`.
+
+To install the rest of the packages, use `pip` instead of `conda`. To do this, run `pip install -r requirements.txt` in the terminal.
+
+
+##### Run Configuration
+
+In the menu bar, select `Run > Edit Configuration`.
+
+Click on the `+` symbol to add a new configuration and select Python. Configure as follows:
+
+- Name: Give your configuration any name
+- Script Path: Select the script you want to run. This could be `manage.py` or `/app/github_public_repo/estimate_csv_creator.py` or others.
+- Parameters: `run`
+- Environment variables: Contact a team member for the complete list of environment variables
+- Python interpreter: select the conda virtual environment you configured above
+- Interpreter options: leave blank
+- Working directory: This should automatically fill based on the `Script path` value
+- Add content roots to PYTHONPATH. Check this box
+- Add source roots to PYTHONPATH. Check this box
+
+Click OK.
+
+You should now be ready to run your script!
 
 ## Postgres
 
