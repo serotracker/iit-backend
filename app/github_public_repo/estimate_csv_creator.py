@@ -21,7 +21,7 @@ try:
     snake_case_col_name = [x['fields']['Snake Case Column Label'] for x in records]
     logging.info("Successfully retrieved field names from Airtable")
 
-    # Get estimates from Rapid Review: Estimates table for specified fields
+    # Get estimates from Rapid Review: Estimates table for specified fields (Public CSV Included is an AT formula field)
     csv_records = get_all_records(fields, filters='&filterByFormula={Public CSV Included}=1')
 
     # Convert to df
