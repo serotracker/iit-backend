@@ -5,9 +5,21 @@ from flask import current_app as app
 
 from app.database_etl.airtable_records_handler import get_all_records, airtable_get_request
 
+
+# Get use case of script from environment variable
+csv_type = os.getenv('CSV_TYPE')
+print('csv_type')
+
 # Load env variables for Airtable request
 AIRTABLE_API_KEY = app.config['AIRTABLE_API_KEY']
-AIRTABLE_CSV_FIELDS_REQUEST_URL = app.config['AIRTABLE_CSV_FIELDS_REQUEST_URL']
+
+# Set URL and URL params based on script application
+if csv_type == 'github':
+    AIRTABLE_CSV_FIELDS_REQUEST_URL = app.config['GITHUB_CSV_FIELDS_REQUEST_URL']
+    filter_by_formula = '&filterByFormula={GitHub CSV Included}=1'
+else:
+    AIRTABLE_CSV_FIELDS_REQUEST_URL = app.config['BIBLIO_CSV_FIELDS_REQUEST_URL']
+    filter_by_formula = '&filterByFormula={Biblio CSV Included}=1'
 
 # Get columns that should be pulled into CSV
 headers = {'Authorization': 'Bearer {}'.format(AIRTABLE_API_KEY)}
@@ -16,22 +28,11 @@ data = airtable_get_request(AIRTABLE_CSV_FIELDS_REQUEST_URL, headers)
 # Get csv columns and create csv
 try:
     # Extract fields based on the use case of the script (github csv or biblio csv)
-    csv_type = os.getenv('CSV_TYPE')
     records = data['records']
-    if csv_type == 'github':
-        fields = [x['fields']['Formal Column Label'] for x in records if x['fields']['GitHub CSV Included'] == True]
-        snake_case_col_name =\
-            [x['fields']['Snake Case Column Label'] for x in records if x['fields']['GitHub CSV Included'] == True]
-
-        # Create filter by formula based on GitHub CSV Included column
-        filter_by_formula = '&filterByFormula={GitHub CSV Included}=1'
-    else:
-        fields = [x['fields']['Formal Column Label'] for x in records if x['fields']['Biblio CSV Included'] == True]
-        snake_case_col_name =\
-            [x['fields']['Snake Case Column Label'] for x in records if x['fields']['Biblio CSV Included'] == True]
-
-        # Create filter by formula based on Biblio CSV Included column
-        filter_by_formula = '&filterByFormula={Biblio CSV Included}=1'
+    fields = [x['fields']['Formal Column Label'] for x in records]
+    snake_case_col_name = [x['fields']['Snake Case Column Label'] for x in records]
+    print(len(fields))
+    print(filter_by_formula)
     logging.info("Successfully retrieved field names from Airtable")
 
     # Get estimates from Rapid Review: Estimates table for specified fields
@@ -63,6 +64,7 @@ try:
     proj_root_abs_path = abs_filepath_curr_dir.split("iit-backend")[0]
     csv_records_df.to_csv('serotracker_dataset.csv',
                           index=False)
+    print(csv_records_df.shape[0])
 
 except KeyError as e:
     logging.error(f"Failed to retrieve field names and load estimates. Error: {e}")
