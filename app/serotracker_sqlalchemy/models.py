@@ -129,7 +129,7 @@ class ResearchSource(db.Model):
     created_at = Column(DateTime)
     zotero_citation_key = Column(String())
     county = Column(String())
-    superseding_study = Column(String())
+    superseder_name = Column(String())
 
 
 # Create base multi select tables

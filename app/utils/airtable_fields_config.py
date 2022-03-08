@@ -25,7 +25,7 @@ research_fields = ['2020 Population Count - Case', '2020 Population Count - Mort
                    'Sub-group specific category (clean)', 'Date Created', 'Last modified time', 'Record ID',
                    'SR Clean: Test Manufacturer Searched', 'Zotero Citation Key', 'County', 'Adjusted specificity',
                    'Adjusted sensitivity', 'Independent evaluation type', 'JBI-A Outputs (v5)',
-                   'Multiple Test Gold Standard Algorithm', 'Immunoassays (Name)', 'Alpha3 Code']
+                   'Multiple Test Gold Standard Algorithm', 'Immunoassays (Name)', 'Alpha3 Code', 'Superseder Name']
 
 full_airtable_fields = {'2020 Population Count - Case': 'case_population',
                         '2020 Population Count - Mortality': 'deaths_population',
@@ -124,7 +124,7 @@ full_airtable_fields = {'2020 Population Count - Case': 'case_population',
                         'Sub-group specific category (clean)': 'subgroup_specific_category',
                         'Sub-grouping Variable': 'subgroup_var',
                         'Subgroup category for analysis': 'subgroup_cat',
-                        'Superseding Study': 'superseding_study',
+                        'Superseder Name': 'superseder_name',
                         'Test Adjustment': 'test_adj',
                         'Test Manufacturer': 'test_manufacturer',
                         'Test Name': 'test_name',

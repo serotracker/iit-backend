@@ -22,14 +22,20 @@ try:
         fields = [x['fields']['Formal Column Label'] for x in records if x['fields']['GitHub CSV Included'] == True]
         snake_case_col_name =\
             [x['fields']['Snake Case Column Label'] for x in records if x['fields']['GitHub CSV Included'] == True]
+
+        # Create filter by formula based on GitHub CSV Included column
+        filter_by_formula = '&filterByFormula={GitHub CSV Included}=1'
     else:
         fields = [x['fields']['Formal Column Label'] for x in records if x['fields']['Biblio CSV Included'] == True]
         snake_case_col_name =\
             [x['fields']['Snake Case Column Label'] for x in records if x['fields']['Biblio CSV Included'] == True]
+
+        # Create filter by formula based on Biblio CSV Included column
+        filter_by_formula = '&filterByFormula={Biblio CSV Included}=1'
     logging.info("Successfully retrieved field names from Airtable")
 
     # Get estimates from Rapid Review: Estimates table for specified fields
-    csv_records = get_all_records(fields, filters='&filterByFormula={Public CSV Included}=1')
+    csv_records = get_all_records(fields, filters=filter_by_formula)
 
     # Convert to df
     csv_records_df = pd.DataFrame.from_dict(csv_records)
