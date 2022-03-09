@@ -97,7 +97,7 @@ def create_research_source_df(dashboard_source_df):
     research_source['created_at'] = dashboard_source_df['created_at']
 
     # Drop antibody target col
-    research_source = research_source.drop(columns=['antibody_target'])
+    research_source = research_source.drop(columns=['antibody_target', 'alpha_3_code'])
 
     # Remove any null string characters
     research_source = research_source.apply(lambda col: col.apply(lambda val: replace_null_string(val)))
