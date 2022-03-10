@@ -129,6 +129,7 @@ class ResearchSource(db.Model):
     created_at = Column(DateTime)
     zotero_citation_key = Column(String())
     county = Column(String())
+    superseder_name = Column(String())
 
 
 # Create base multi select tables
@@ -139,6 +140,7 @@ class Country(db.Model):
     country_name = Column(String())
     country_iso3 = Column(String())
     country_iso2 = Column(String())
+    alpha_3_code = Column(String())
     latitude = Column(Float)
     longitude = Column(Float)
     hrp_class = Column(String())

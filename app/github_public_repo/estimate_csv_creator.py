@@ -5,24 +5,35 @@ from flask import current_app as app
 
 from app.database_etl.airtable_records_handler import get_all_records, airtable_get_request
 
+
+# Get use case of script from environment variable
+csv_type = os.getenv('CSV_TYPE')
+
 # Load env variables for Airtable request
 AIRTABLE_API_KEY = app.config['AIRTABLE_API_KEY']
-AIRTABLE_GITHUB_CSV_FIELDS_REQUEST_URL = app.config['AIRTABLE_GITHUB_CSV_FIELDS_REQUEST_URL']
+
+# Set URL and URL params based on script application
+if csv_type == 'github':
+    AIRTABLE_CSV_FIELDS_REQUEST_URL = app.config['GITHUB_CSV_FIELDS_REQUEST_URL']
+    filter_by_formula = '&filterByFormula={GitHub CSV Included}=1'
+else:
+    AIRTABLE_CSV_FIELDS_REQUEST_URL = app.config['BIBLIO_CSV_FIELDS_REQUEST_URL']
+    filter_by_formula = '&filterByFormula={Biblio CSV Included}=1'
 
 # Get columns that should be pulled into CSV
 headers = {'Authorization': 'Bearer {}'.format(AIRTABLE_API_KEY)}
-data = airtable_get_request(AIRTABLE_GITHUB_CSV_FIELDS_REQUEST_URL, headers)
+data = airtable_get_request(AIRTABLE_CSV_FIELDS_REQUEST_URL, headers)
 
 # Get csv columns and create csv
 try:
-    # Extract fields
+    # Extract fields based on the use case of the script (github csv or biblio csv)
     records = data['records']
     fields = [x['fields']['Formal Column Label'] for x in records]
     snake_case_col_name = [x['fields']['Snake Case Column Label'] for x in records]
     logging.info("Successfully retrieved field names from Airtable")
 
     # Get estimates from Rapid Review: Estimates table for specified fields
-    csv_records = get_all_records(fields, filters='&filterByFormula={Public CSV Included}=1')
+    csv_records = get_all_records(fields, filters=filter_by_formula)
 
     # Convert to df
     csv_records_df = pd.DataFrame.from_dict(csv_records)
@@ -31,7 +42,7 @@ try:
     multi_val_cols = ['isotypes', 'antibody_target', 'source_type', 'jbi_1', 'jbi_2', 'jbi_3', 'jbi_4', 'jbi_5',
                       'jbi_6', 'jbi_7', 'jbi_8', 'jbi_9', 'source_name', 'lead_institution', 'url', 'first_author',
                       'is_unity_aligned', 'publication_date', 'study_type', 'study_inclusion_criteria',
-                      'study_exclusion_criteria']
+                      'study_exclusion_criteria', 'alpha_3_code']
     for col in multi_val_cols:
         csv_records_df[col] = csv_records_df[col].apply(lambda x: x[0] if x is not None else x)
 

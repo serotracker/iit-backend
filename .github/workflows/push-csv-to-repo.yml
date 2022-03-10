@@ -1,5 +1,4 @@
-
-name: Push CSV to Repo
+name: Push GitHub CSV to Repo
 
 on:
   workflow_dispatch: # manual trigger 
@@ -35,6 +34,7 @@ jobs:
           LOG_CONFIG_PATH: 'iit-backend/logging.cfg'
           LOG_FILE_PATH: 'iit-backend/logfile.log'
           PYTHONPATH: 'iit-backend'
+          CSV_TYPE: 'github'
     
       - name: Copies and pushes CSV to sars-cov-2-data (main branch)
         uses: dmnemec/copy_file_to_another_repo_action@main

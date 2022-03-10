@@ -79,7 +79,7 @@ def add_mapped_variables(df: pd.DataFrame) -> pd.DataFrame:
 def format_dashboard_source(dashboard_source_df, research_cols):
     # Drop columns that are not needed in the dashboard source table
     dashboard_source_unused_cols = research_cols + ['organizational_author', 'city', 'state',
-                                                    'test_manufacturer', 'country', 'antibody_target']
+                                                    'test_manufacturer', 'country', 'antibody_target', 'alpha_3_code']
     dashboard_source = dashboard_source_df.drop(columns=dashboard_source_unused_cols)
 
     # Remove any null string characters from research source or dashboard source dfs

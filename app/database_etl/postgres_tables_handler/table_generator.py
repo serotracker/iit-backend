@@ -97,7 +97,7 @@ def create_research_source_df(dashboard_source_df):
     research_source['created_at'] = dashboard_source_df['created_at']
 
     # Drop antibody target col
-    research_source = research_source.drop(columns=['antibody_target'])
+    research_source = research_source.drop(columns=['antibody_target', 'alpha_3_code'])
 
     # Remove any null string characters
     research_source = research_source.apply(lambda col: col.apply(lambda val: replace_null_string(val)))
@@ -205,8 +205,11 @@ def get_income_class(iso3_code, income_class_df):
 
 
 def create_country_df(dashboard_source_df, current_time):
-    country_df = pd.DataFrame(columns=['country_name', 'country_id', 'country_iso2'])
+    country_df = pd.DataFrame(columns=['country_name', 'alpha_3_code', 'country_id', 'country_iso2'])
     country_df['country_name'] = dashboard_source_df['country'].unique()
+    country_df['alpha_3_code'] =\
+        country_df['country_name'].apply(lambda x: dashboard_source_df[dashboard_source_df['country']
+                                                                       == x]['alpha_3_code'].iloc[0])
     country_df['country_iso2'] = country_df['country_name'].map(lambda a: get_country_code(a, iso3=False))
     country_df['country_id'] = [uuid4() for _ in country_df['country_name']]
     country_df['created_at'] = current_time
