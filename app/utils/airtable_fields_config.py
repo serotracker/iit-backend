@@ -25,7 +25,8 @@ research_fields = ['2020 Population Count - Case', '2020 Population Count - Mort
                    'Sub-group specific category (clean)', 'Date Created', 'Last modified time', 'Record ID',
                    'SR Clean: Test Manufacturer Searched', 'Zotero Citation Key', 'County', 'Adjusted specificity',
                    'Adjusted sensitivity', 'Independent evaluation type', 'JBI-A Outputs (v5)',
-                   'Multiple Test Gold Standard Algorithm', 'Immunoassays (Name)', 'Alpha3 Code', 'Superseder Name']
+                   'Multiple Test Gold Standard Algorithm', 'Immunoassays (Name)', 'Alpha3 Code', 'Superseder Name',
+                   'Study Exclusion Criteria']
 
 full_airtable_fields = {'2020 Population Count - Case': 'case_population',
                         '2020 Population Count - Mortality': 'deaths_population',

@@ -130,6 +130,7 @@ class ResearchSource(db.Model):
     zotero_citation_key = Column(String())
     county = Column(String())
     superseder_name = Column(String())
+    study_exclusion_criteria = Column(String())
 
 
 # Create base multi select tables
