@@ -92,4 +92,5 @@ class ResearchSourceSchema(Schema):
     test_validation = fields.Str(allow_none=True)
     zotero_citation_key = fields.Str(allow_none=True)
     superseder_name = fields.Str(allow_none=True)
+    study_exclusion_criteria = fields.Str(allow_none=True)
 

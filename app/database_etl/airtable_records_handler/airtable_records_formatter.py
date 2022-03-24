@@ -82,7 +82,8 @@ def standardize_airtable_data(df: pd.DataFrame) -> pd.DataFrame:
                                 'jbi_a_outputs_v5', 'multiple_test_gold_standard_algorithm',
                                 'jbi_1', 'jbi_2', 'jbi_3', 'jbi_4', 'jbi_5', 'jbi_6', 'jbi_7', 'jbi_8', 'jbi_9',
                                 'measure_of_age', 'number_of_females', 'number_of_males', 'average_age',
-                                'test_not_linked_reason', 'include_in_srma', 'is_unity_aligned', 'alpha_3_code']
+                                'test_not_linked_reason', 'include_in_srma', 'is_unity_aligned', 'alpha_3_code',
+                                'study_exclusion_criteria']
 
     # Remove lists from single select columns
     for col in single_element_list_cols:
