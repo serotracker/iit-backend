@@ -22,11 +22,11 @@ Server side code for the International Immunity Tracker.
         - [Installing Required Packages](#installing-required-packages-1)
         - [Run Configuration](#run-configuration-1)
   - [Postgres](#postgres)
-  - [Changing Alembic to use Flask SQLAlchemy](#changing-alembic-to-use-flask-sqlalchemy)
-  - [Delete Previous Tables & Migrations](#delete-previous-tables--migrations)
-  - [Upgrade to Using Newest Migrations](#upgrade-to-using-newest-migrations)
-    - [Run migrations](#run-migrations)
-    - [Populate local database](#populate-local-database)
+    - [Installation](#installation)
+    - [Migrations](#migrations)
+      - [Running migrations](#running-migrations)
+      - [Creating migrations](#creating-migrations)
+    - [ETL](#ETL)
   - [Running test suite](#running-test-suite)
   - [Loading Tableau CSV to Google Sheets](#loading-tableau-csv-to-google-sheets)
 - [Helpful Code Snippets](#helpful-code-snippets)
@@ -159,7 +159,6 @@ Select *Conda environment* in the lefthand side. Make sure *New environment* is 
 
 Click *OK* to return to the main PyCharm window.
 
-
 ##### Installing Required Packages
 
 Click *install requirements* from the yellow PyCharm prompt. If you don't see the prompt, try closing and reopening `manage.py`. This will install some of the packages using the `conda` package manager. Many packages will fail to install using `conda`, this is expected behaviour.
@@ -167,7 +166,6 @@ Click *install requirements* from the yellow PyCharm prompt. If you don't see th
 Next, run `conda install fiona` in the terminal (case sensitive). The terminal is located in the bottom lefthand side of the PyCharm window. `fiona` is an anaconda-specific repackaging of the `Fiona` package that allows us to skip the complicated native Windows installation process for `Fiona`.
 
 To install the rest of the packages, use `pip` instead of `conda`. To do this, run `pip install -r requirements.txt` in the terminal.
-
 
 ##### Run Configuration
 
@@ -191,7 +189,9 @@ You should now be ready to run your script!
 
 ## Postgres
 
-1. Download and install Postgres.
+### Installation
+
+1. Download and install Postgres (make sure to install Postgres v11.13 as this is what we use in prod).
 
    From the source: [https://www.postgresql.org/download/](https://www.postgresql.org/download/)
 
@@ -203,55 +203,15 @@ You should now be ready to run your script!
 
    Or, on a Mac: `brew install --cask pgadmin4`
 
-After installation of pgAdmin 4, launch the program.
+### Migrations
 
-Verify that it was installed properly by navigating to the pgAdmin dashboard. You can do this by clicking "New pgAdmin 4 window...". (You should see the pgAdmin 4 elephant in your status bar if on Mac.) You should be brought to something like `http://127.0.0.1:63467/browser/` in your browser.
-
-Once on the pgAdmin dashboard, create a new server named `serotracker` (right click on > Servers). Set the host name/address under the Connection tab to `localhost`.
-
-Inside your new server, `serotracker`, create a new database named `whiteclaw`.
-
-## Changing Alembic to use Flask SQLAlchemy
-
-We are switching to use Flask migrations instead of just Alembic. Here is how to switch over:
-
-## Delete Previous Tables & Migrations
-
-1. Make sure you are on `architecture-v2` branch. We aren't merging to master yet due to
-   rearchitecture.
-2. Drop all the tables in the `public` schema in your local Postgres.
-
-- You can do this manually by querying `DROP TABLE public.<table_name>` in Postgres for every table in the schema EXCEPT the
-  `alembic_version` table (do not delete this!).
-
-- You can leverage the application's shell, and the attached db to drop all associated tables.
-
-      * Run ```python manage.py shell``` in your terminal. You will need all the environment variables that
-
-  you currently use to run the app through `python manage.py run`, so just start the shell like you
-  would start the app, but subsitute the `run` command for the `shell` command.
-
-      * The application's shell should start (look's like a Python console)
-
-      * Run ```from flask import current_app as app, db```
-
-      * Run ```db.drop_all()```
-
-      * Check your Postgres server to see that the only table left in the ```public``` schema is the
-
-  `alembic_version` table.
-
-FINALLY: 3. Delete the value of the `version_num` in the `alembic_version` table. Use
-`DELETE FROM alembic_version`.
-
-4. Delete your `alembic` folder where you previously stored all the migrations.
-
-## Upgrade to Using Newest Migrations
+#### Running migrations
 
 1. Make sure you are on the latest version of the branch. You should see a folder called
    `migrations` at the top level (same level as `app`)
 
-2. Move the `alembic.ini` file at the top level into your new `migrations` folder.
+2. Move the `alembic.ini` file at the top level into your new `migrations` folder. Get the contents of
+   the `alembic.ini` file from a dev team member.
 
 3. Add the following environment variables to the `.env` file at the top level:
 
@@ -259,21 +219,19 @@ FINALLY: 3. Delete the value of the `version_num` in the `alembic_version` table
 - `DATABASE_PASSWORD=your_database_password`
 - `DATABASE_NAME=whiteclaw`
 
-Finally, apply the migration to upgrade your `alembic_version` table to the latest version, and
-recreate all the tables in the schema: `flask db upgrade`
+4. Apply the migrations to upgrade your `alembic_version` to the latest version by running `flask db upgrade`. If you 
+   want to revert to a previous migration version run `flask db downgrade`.
 
-### Run migrations
+#### Creating migrations
 
-1. In the terminal, run `flask db upgrade`.
+1. Anytime you change the file `serotracker_sqlalchemy/models.py` you need to create a new migration Python file.
+   To do this, run `flask db migration -m YOUR_COMMENT_YYYY_MM_DD`. The message should describe the change you have
+   made to `models.py`, example: `adding_antibody_target_col_2022_05_23`.
+   
+2. You should see a new Python file created in `migrations/versions` that is titled with the new alembic
+   version and your migration message.
 
-   This will run the migration with the most recent version code in `migrations/versions` and bring your database
-   to the most up-to-date state with all the necessary tables.
-
-2. Check that new tables have been created in the whitelcaw database running on your local Postgres server.
-
-3. To revert a migration, run `flask db downgrade`
-
-### Populate local database
+### ETL
 
 Run the script `python app/database_etl/etl_main.py`.
 
@@ -306,14 +264,18 @@ Confirm that the data has indeed been migrated by checking pgAdmin 4.
 - Run development server: `python3 -m flask run` (without environment variables exported) or `python3 manage.py run` (with or without environment variables exported)
 - Run ETL: `python3 app/database_etl/etl_main.py` (with environment variables exported and Flask app in `PYTHONPATH`)
 
-## Export and Import
+## Restoring Database from a Dump
 
-- Export database snapshot: `pg_dump -h localhost -U USERNAME whiteclaw -f EXPORT-FILENAME.sql`
+- Export database snapshot: `pg_dump -h localhost -U USERNAME whiteclaw -f db_dump.sql`
+  - If you get an error that your postgres and pg_dump versions are incompatible, specify the exact path of pg_dump to use so it matches your postgres version
+  - Example: `/usr/lib/postgresql/11/bin/pg_dump postgresql://postgres:PASSWORD@serotracker-db.cg3y9rltha9l.ca-central-1.rds.amazonaws.com/whiteclaw > db_dump.sql`
+- Copy the database dump onto your local machine from the remote machine: `scp ubuntu@3.97.103.19:db_dump.sql ~`. This is the IP address corresponding to our machine
+  that runs the Flask app. This will copy the file into your local directory `~`.
 - Wipe the existing database:
   - Enter postgres interactively as the `postgres` user: `psql -U postgres -h localhost -W`
   - Drop the database: `drop database whiteclaw;`
   - Create the database: `create database whiteclaw;`
-- Restore the snapshot: `psql -h localhost -U USERNAME whiteclaw < EXPORT-FILENAME.sql`
+- Restore the snapshot: `psql -h localhost -U USERNAME whiteclaw < db_dump.sql`
 
 ## Running Dockerized Flask App
 
