@@ -219,7 +219,8 @@ You should now be ready to run your script!
 - `DATABASE_PASSWORD=your_database_password`
 - `DATABASE_NAME=whiteclaw`
 
-4. Apply the migrations to upgrade your `alembic_version` to the latest version by running `flask db upgrade`. If you 
+4. (For windows) install PyStan : https://pystan2.readthedocs.io/en/latest/windows.html#installing-c-compiler
+5. Apply the migrations to upgrade your `alembic_version` to the latest version by running `flask db upgrade`. If you 
    want to revert to a previous migration version run `flask db downgrade`.
 
 #### Creating migrations
