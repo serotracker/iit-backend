@@ -24,10 +24,10 @@ try:
     deaths_df = pd.read_csv('https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/'
                             'jhu/total_deaths_per_million.csv')  # per million
     vaccine_policy_rollout_df = pd.read_csv('https://raw.githubusercontent.com/OxCGRT/covid-policy-tracker/'
-                                            'master/data/OxCGRT_latest.csv')[['CountryCode',
-                                                                              'Jurisdiction',
-                                                                              'Date',
-                                                                              'H7_Vaccination policy']]
+                                            'master/data/OxCGRT_nat_latest.csv')[['CountryCode',
+                                                                                  'Jurisdiction',
+                                                                                  'Date',
+                                                                                  'H7_Vaccination policy']]
 except HTTPError as e:
     body = f'Error fetching OWID or OxCGRT data: {e}.\nOne or more of the Github file paths may have changed.'
     send_slack_message(body, channel='#dev-logging-etl')
