@@ -341,6 +341,19 @@ The tmux sessions for each machine are summarized in the below table.
 | Medium (35.182.41.225) | etl          | Run the ETL (once daily)                   |
 | Dev (35.183.11.41)     | covidence    | Run the Covidence server                   |
 
+### How to restore iitbackend EC2 in case of error
+1. Stop instance
+2. Start instance
+3. Enter into prod machine
+   - contact one of the dev team members for the `can_ubuntu.pem` key file
+   - use the following command to ssh into the prod machine
+   - `ssh -i "path to can_ubuntu.pem file" ubuntu@<prod machine ip addres>`
+   - e.g. `ssh -i "can_ubuntu.pem" ubuntu@3.97.103.19`
+4. Cd into www/iit-backend
+5. Start new session with name: tmux new -s backend
+6. Enter into venv in tmux session: source venv/bin/activate
+7. Load .env into environment variables: cd into www/iit-backend and run “set -o allexport; source .env; set +o allexport”
+8. Restart backend: cd ~/bin and update_backend
 # Infrastructure Documentation (Future - Elastic Beanstalk)
 
 See https://docs.google.com/document/d/1sItF1-I8uhfz9kQX62x2RooS4BndqnDBXH9g9TAWss0/edit#
