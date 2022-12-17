@@ -41,7 +41,7 @@ try:
 
     # List of columns that are lookup fields and therefore only have one element in the list
     single_element_list_cols = ['source_type', 'jbi_1', 'jbi_2', 'jbi_3', 'jbi_4',
-                                'jbi_5', 'jbi_6', 'jbi_7', 'jbi_8', 'jbi_9', 'source_name', 'lead_institution', 'url',
+                                'jbi_5', 'jbi_6', 'jbi_7', 'jbi_8a', 'jbi_8b', 'jbi_9', 'source_name', 'lead_institution', 'url',
                                 'first_author', 'is_unity_aligned', 'publication_date', 'study_type',
                                 'study_inclusion_criteria', 'study_exclusion_criteria', 'alpha_3_code',
                                 'zotero_citation_key']
