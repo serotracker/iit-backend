@@ -350,6 +350,7 @@ The tmux sessions for each machine are summarized in the below table.
    - use the following command to ssh into the prod machine
    - `ssh -i "path to can_ubuntu.pem file" ubuntu@<prod machine ip addres>`
    - e.g. `ssh -i "can_ubuntu.pem" ubuntu@3.97.103.19`
+   - If that does not work, get the Public IPv4 DNS from the EC2 instance console and use it instead of <prod machine ip address>
 4. Cd into www/iit-backend
 5. Start new session with name: tmux new -s backend
 6. Enter into venv in tmux session: source venv/bin/activate
