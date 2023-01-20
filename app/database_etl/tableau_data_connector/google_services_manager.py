@@ -57,3 +57,17 @@ class GoogleSheetsManager:
             body = f'Error loading Tableau CSV to google sheets: {e}'
             send_slack_message(body, channel='#dev-logging-etl')
         return
+
+    def append_sheet(self, spreadsheet_id, values, range_name):
+        sheet = self.client_service.spreadsheets()
+        body = {
+            'values': values
+        }
+        try:
+            # Not sure about the range, will have to test to see if it works
+            sheet.values().append(spreadsheetId=spreadsheet_id, range=self.range,
+                                  body=body, valueInputOption="RAW").execute()
+        except (HttpError, BatchError) as e:
+            body = f'Error loading Tableau CSV to google sheets: {e}'
+            send_slack_message(body, channel='#dev-logging-etl')
+        return
