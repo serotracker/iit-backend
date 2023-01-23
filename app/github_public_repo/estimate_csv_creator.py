@@ -9,6 +9,7 @@ from app.database_etl.airtable_records_handler.airtable_records_formatter import
 
 # Get use case of script from environment variable
 csv_type = os.getenv('CSV_TYPE')
+print(csv_type)
 
 # Load env variables for Airtable request
 AIRTABLE_API_KEY = app.config['AIRTABLE_API_KEY']
@@ -21,9 +22,12 @@ else:
     AIRTABLE_CSV_FIELDS_REQUEST_URL = app.config['BIBLIO_CSV_FIELDS_REQUEST_URL']
     filter_by_formula = '&filterByFormula={Biblio CSV Included}=1'
 
+print(AIRTABLE_API_KEY)
+
 # Get columns that should be pulled into CSV
 headers = {'Authorization': 'Bearer {}'.format(AIRTABLE_API_KEY)}
 data = airtable_get_request(AIRTABLE_CSV_FIELDS_REQUEST_URL, headers)
+print(data)
 
 # Get csv columns and create csv
 try:
