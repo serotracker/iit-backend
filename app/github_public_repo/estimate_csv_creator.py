@@ -9,6 +9,7 @@ from app.database_etl.airtable_records_handler.airtable_records_formatter import
 
 # Get use case of script from environment variable
 csv_type = os.getenv('CSV_TYPE')
+print(csv_type)
 
 # Load env variables for Airtable request
 AIRTABLE_API_KEY = app.config['AIRTABLE_API_KEY']
@@ -21,9 +22,12 @@ else:
     AIRTABLE_CSV_FIELDS_REQUEST_URL = app.config['BIBLIO_CSV_FIELDS_REQUEST_URL']
     filter_by_formula = '&filterByFormula={Biblio CSV Included}=1'
 
+print(AIRTABLE_CSV_FIELDS_REQUEST_URL)
+
 # Get columns that should be pulled into CSV
 headers = {'Authorization': 'Bearer {}'.format(AIRTABLE_API_KEY)}
 data = airtable_get_request(AIRTABLE_CSV_FIELDS_REQUEST_URL, headers)
+print(data)
 
 # Get csv columns and create csv
 try:
@@ -32,9 +36,11 @@ try:
     fields = [x['fields']['Formal Column Label'] for x in records]
     snake_case_col_name = [x['fields']['Snake Case Column Label'] for x in records]
     logging.info("Successfully retrieved field names from Airtable")
+    print("Succesfully retrieved field names")
 
     # Get estimates from Rapid Review: Estimates table for specified fields
     csv_records = get_all_records(fields, filters=filter_by_formula)
+    print("Got estimates from rapid view")
 
     # Convert to df
     csv_records_df = pd.DataFrame.from_dict(csv_records)
@@ -69,12 +75,15 @@ try:
 
     # Sort estimates by country, publication date, source name, study name, primary estimates first
     csv_records_df.sort_values(by=['country', 'publication_date', 'source_name',
-                                   'study_name', 'dashboard_primary_estimate'], inplace=True)   
+                                   'study_name', 'dashboard_primary_estimate'], inplace=True)
+    print("Sorted data")
+
     # Save as csv
     abs_filepath_curr_dir = os.getcwd()
     proj_root_abs_path = abs_filepath_curr_dir.split("iit-backend")[0]
     csv_records_df.to_csv('serotracker_dataset.csv',
                           index=False)
+    print("Saved as a CSV")
 
 except KeyError as e:
     logging.error(f"Failed to retrieve field names and load estimates. Error: {e}")
