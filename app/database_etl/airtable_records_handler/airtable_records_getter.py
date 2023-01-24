@@ -29,6 +29,10 @@ def add_fields_to_url(url, fields):
 def airtable_get_request(url: String, headers):
     # Make request and retrieve records in json format
     r = requests.get(url, headers=headers)
+    if r.status_code != 200:
+        print(r.text)
+        print(r.status_code)
+        print(r.json())
     data = r.json()
     return data
 
