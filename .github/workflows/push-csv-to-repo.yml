@@ -3,7 +3,7 @@ name: Push GitHub CSV to Repo
 on:
   workflow_dispatch: # manual trigger 
   schedule:
-    - cron: '0 12 * * *' # runs at 12:00 UTC everyday
+    - cron: '30 14 * * *' # runs at 2:30 PM UTC everyday
 
 jobs:
   build:
