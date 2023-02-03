@@ -71,6 +71,10 @@ def replace_null_fields(row_val):
     if row_val == None:
         return [None]
     null_cols = ['nr', 'NR', 'Not Reported', 'Not reported', 'Not available', 'NA', 'N/A']
+
+    if type(row_val) is str:
+        row_val = row_val.split(", ")
+
     return [i if i not in null_cols else None for i in row_val]
 
 
