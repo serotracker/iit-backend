@@ -73,9 +73,9 @@ def replace_null_fields(row_val):
     null_cols = ['nr', 'NR', 'Not Reported', 'Not reported', 'Not available', 'NA', 'N/A']
 
     if type(row_val) is str:
-        row_val = row_val.split(", ")
-
-    return [i if i not in null_cols else None for i in row_val]
+        row_val = row_val.replace(" ", ""). split(",")
+    filtered_row = [i for i in set(row_val) - set(null_cols) if i is not None]
+    return sorted(filtered_row)
 
 
 def standardize_airtable_data(df: pd.DataFrame) -> pd.DataFrame:
