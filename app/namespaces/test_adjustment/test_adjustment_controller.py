@@ -1,6 +1,6 @@
 import logging.config
 
-from flask_restplus import Resource, Namespace
+from flask_restx import Resource, Namespace
 from flask import jsonify, make_response, request
 
 from app.utils import validate_request_input_against_schema

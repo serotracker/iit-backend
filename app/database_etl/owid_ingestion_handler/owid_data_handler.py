@@ -45,6 +45,8 @@ def _get_alt_name(country_name: str, df: pd.DataFrame):
 
 
 def get_midpoint(start_date: datetime, end_date: datetime):
+    if int(end_date.year) < 1000:
+        end_date = end_date.replace(year=start_date.year)
     return start_date + (end_date - start_date) / 2
 
 

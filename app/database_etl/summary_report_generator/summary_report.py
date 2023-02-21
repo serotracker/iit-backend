@@ -140,4 +140,5 @@ class SummaryReport:
         return self
 
     def __exit__(self, exception_type, exception_value, traceback):
-        self.send_summary_report()
+        return
+        # self.send_summary_report()

@@ -52,20 +52,20 @@ def main():
 
         # Add test adjustment data
         test_adj_start_time = time()
-        airtable_master_data = add_test_adjustments(airtable_master_data)
+        # airtable_master_data = add_test_adjustments(airtable_master_data)
         test_adj_total_time = round((time() - test_adj_start_time) / (60), 2)
         etl_report.set_test_adjusted_time(test_adj_total_time)
 
         # Record number of records test adjusted and number of divergent estimates
-        test_adjusted_records = airtable_master_data[airtable_master_data['test_adjusted_record'] == True].shape[0]
-        etl_report.set_num_test_adjusted_records(test_adjusted_records)
-        test_adjusted_record_ids =\
-            airtable_master_data[airtable_master_data['test_adjusted_record'] == True]['airtable_record_id'].tolist()
-        etl_report.set_test_adjusted_record_ids(test_adjusted_record_ids)
-        divergent_estimates = airtable_master_data[(airtable_master_data['test_adjusted_record'] == True)
-                                                   & (pd.isna(airtable_master_data['adj_prevalence']))].shape[0]
-        etl_report.set_num_divergent_estimates(divergent_estimates)
-        airtable_master_data.drop(columns=['test_adjusted_record'], inplace=True)
+        # test_adjusted_records = airtable_master_data[airtable_master_data['test_adjusted_record'] == True].shape[0]
+        # etl_report.set_num_test_adjusted_records(test_adjusted_records)
+        # test_adjusted_record_ids =\
+        #     airtable_master_data[airtable_master_data['test_adjusted_record'] == True]['airtable_record_id'].tolist()
+        # etl_report.set_test_adjusted_record_ids(test_adjusted_record_ids)
+        # divergent_estimates = airtable_master_data[(airtable_master_data['test_adjusted_record'] == True)
+        #                                            & (pd.isna(airtable_master_data['adj_prevalence']))].shape[0]
+        # etl_report.set_num_divergent_estimates(divergent_estimates)
+        # airtable_master_data.drop(columns=['test_adjusted_record'], inplace=True)
 
         # Apply min risk of bias to all study estimates
         airtable_master_data = apply_min_risk_of_bias(airtable_master_data)

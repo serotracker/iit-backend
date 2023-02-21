@@ -190,7 +190,7 @@ def create_bridge_tables(original_data, multi_select_tables, current_time):
                     else:
                         option_id = multi_select_table[multi_select_table[name_col].isna()].iloc[0][id_col]
                     new_row = {'id': uuid4(), 'source_id': source_id, id_col: option_id, 'created_at': current_time}
-                    bridge_table_df = bridge_table_df.append(new_row, ignore_index=True)
+                    bridge_table_df = pd.concat([bridge_table_df, pd.DataFrame.from_records([new_row])])
         bridge_tables_dict[f'{col}_bridge'] = bridge_table_df
     return bridge_tables_dict
 
@@ -207,7 +207,7 @@ def get_income_class(iso3_code, income_class_df):
 def create_country_df(dashboard_source_df, current_time):
     country_df = pd.DataFrame(columns=['country_name', 'alpha_3_code', 'country_id', 'country_iso2'])
     country_df['country_name'] = dashboard_source_df['country'].unique()
-    country_df['alpha_3_code'] =\
+    country_df['alpha_3_code'] = \
         country_df['country_name'].apply(lambda x: dashboard_source_df[dashboard_source_df['country']
                                                                        == x]['alpha_3_code'].iloc[0])
     country_df['country_iso2'] = country_df['country_name'].map(lambda a: get_country_code(a, iso3=False))
