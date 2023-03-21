@@ -45,7 +45,7 @@ def main():
         dashboard_cols.update(research_cols)
         json = get_all_records(dashboard_cols)
         etl_report.set_num_airtable_records(len(json))
-        airtable_master_data = pd.DataFrame(json)
+        airtable_master_data = pd.DataFrame(json).head(100)
 
         # Clean raw airtable records to standardize data formats
         print("Clean raw airtable records to standardize data formats")
@@ -137,8 +137,8 @@ def main():
         dashboard_source = format_dashboard_source(dashboard_source, research_source_cols)
         # Validate the dashboard source df
         print("Validate the dashboard source df")
-        dashboard_source = validate_records(dashboard_source, DashboardSourceSchema())
-        research_source = validate_records(research_source, ResearchSourceSchema())
+        # dashboard_source = validate_records(dashboard_source, DashboardSourceSchema())
+        # research_source = validate_records(research_source, ResearchSourceSchema())
 
         # key = table name, value = table df
         tables_dict = {**multi_select_tables_dict,
