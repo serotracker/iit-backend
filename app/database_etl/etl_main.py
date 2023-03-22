@@ -45,7 +45,7 @@ def main():
         dashboard_cols.update(research_cols)
         json = get_all_records(dashboard_cols)
         etl_report.set_num_airtable_records(len(json))
-        airtable_master_data = pd.DataFrame(json).head(100)
+        airtable_master_data = pd.DataFrame(json)
 
         # Clean raw airtable records to standardize data formats
         print("Clean raw airtable records to standardize data formats")
@@ -136,9 +136,10 @@ def main():
         print("Format dashboard source table after creating research source")
         dashboard_source = format_dashboard_source(dashboard_source, research_source_cols)
         # Validate the dashboard source df
+
         print("Validate the dashboard source df")
-        # dashboard_source = validate_records(dashboard_source, DashboardSourceSchema())
-        # research_source = validate_records(research_source, ResearchSourceSchema())
+        dashboard_source = validate_records(dashboard_source, DashboardSourceSchema())
+        research_source = validate_records(research_source, ResearchSourceSchema())
 
         # key = table name, value = table df
         tables_dict = {**multi_select_tables_dict,
@@ -172,12 +173,12 @@ def main():
         validate_pooling_function_columns(tables_dict)
 
         # Upload tableau csv to google sheets with prioritization estimates
-        print("Upload tableau csv to google sheets with prioritization estimates")
-        upload_analyze_csv(canadian_data=False)
+        # print("Upload tableau csv to google sheets with prioritization estimates")
+        # upload_analyze_csv(canadian_data=False)
 
         # Upload tableau csv to google sheets without prioritizing estimates for canadian data
-        print("Upload tableau csv to google sheets without prioritizing estimates for canadian data")
-        upload_analyze_csv(canadian_data=True)
+        # print("Upload tableau csv to google sheets without prioritizing estimates for canadian data")
+        # upload_analyze_csv(canadian_data=True)
         print("DONE RUNNING WOHOOOO!")
         return
 
