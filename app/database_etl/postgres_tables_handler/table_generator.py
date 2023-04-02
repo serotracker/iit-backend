@@ -20,6 +20,16 @@ def isotype_col(isotype_string, x):
     return False
 
 
+def parse_date_cols(x):
+    if x:
+        new_date = datetime.strptime(x, '%Y-%m-%d')
+        if new_date.year < 2000:
+            print(new_date)
+            return None
+        return new_date
+    return None
+
+
 def create_dashboard_source_df(original_data, current_time):
     # Length of records
     num_records = original_data.shape[0]
@@ -41,7 +51,7 @@ def create_dashboard_source_df(original_data, current_time):
     date_cols = ['publication_date', 'sampling_start_date', 'sampling_end_date']
     for col in date_cols:
         original_data[col] = \
-            original_data[col].apply(lambda x: datetime.strptime(x, '%Y-%m-%d') if x is not None else x)
+            original_data[col].apply(parse_date_cols)
 
     # Create midpoint date column
     original_data['sampling_midpoint_date'] = original_data.apply(

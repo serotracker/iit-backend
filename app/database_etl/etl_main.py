@@ -179,12 +179,12 @@ def main():
         # Upload tableau csv to google sheets without prioritizing estimates for canadian data
         # print("Upload tableau csv to google sheets without prioritizing estimates for canadian data")
         # upload_analyze_csv(canadian_data=True)
-        print("DONE RUNNING WOHOOOO!")
         return
 
 
 if __name__ == '__main__':
+    print("Running ETL...")
     beginning = time()
     main()
     diff = time() - beginning
-    print(diff)
+    print(f"Done running ETL in {diff} seconds...")
