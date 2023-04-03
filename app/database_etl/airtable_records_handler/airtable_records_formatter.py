@@ -104,7 +104,6 @@ def standardize_airtable_data(df: pd.DataFrame) -> pd.DataFrame:
     # Replace columns that should be floats with NaN from None
     # IMPORTANT: ind_sp and ind_se are percentages but stored as ints in airtable so must convert to decimal!
     df[['ind_sp', 'ind_se']] = df[['ind_sp', 'ind_se']].replace({None: np.nan}).apply(pd.to_numeric, errors="coerce", axis=1).fillna(0).astype('int64') / 100
-    # df[['ind_sp', 'ind_se']] = df[['ind_sp', 'ind_se']].replace({None: np.nan}).astype('int64') / 100
 
     # Get index of most recent publication date
     df = df.apply(lambda row: get_most_recent_publication_info(row), axis=1)
