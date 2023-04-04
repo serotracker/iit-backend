@@ -20,6 +20,16 @@ def isotype_col(isotype_string, x):
     return False
 
 
+def parse_date_cols(x):
+    if x:
+        new_date = datetime.strptime(x, '%Y-%m-%d')
+        if new_date.year < 2000:
+            print(new_date)
+            return None
+        return new_date
+    return None
+
+
 def create_dashboard_source_df(original_data, current_time):
     # Length of records
     num_records = original_data.shape[0]
@@ -41,7 +51,7 @@ def create_dashboard_source_df(original_data, current_time):
     date_cols = ['publication_date', 'sampling_start_date', 'sampling_end_date']
     for col in date_cols:
         original_data[col] = \
-            original_data[col].apply(lambda x: datetime.strptime(x, '%Y-%m-%d') if x is not None else x)
+            original_data[col].apply(parse_date_cols)
 
     # Create midpoint date column
     original_data['sampling_midpoint_date'] = original_data.apply(
@@ -190,7 +200,7 @@ def create_bridge_tables(original_data, multi_select_tables, current_time):
                     else:
                         option_id = multi_select_table[multi_select_table[name_col].isna()].iloc[0][id_col]
                     new_row = {'id': uuid4(), 'source_id': source_id, id_col: option_id, 'created_at': current_time}
-                    bridge_table_df = bridge_table_df.append(new_row, ignore_index=True)
+                    bridge_table_df = pd.concat([bridge_table_df, pd.DataFrame.from_records([new_row])])
         bridge_tables_dict[f'{col}_bridge'] = bridge_table_df
     return bridge_tables_dict
 
@@ -207,7 +217,7 @@ def get_income_class(iso3_code, income_class_df):
 def create_country_df(dashboard_source_df, current_time):
     country_df = pd.DataFrame(columns=['country_name', 'alpha_3_code', 'country_id', 'country_iso2'])
     country_df['country_name'] = dashboard_source_df['country'].unique()
-    country_df['alpha_3_code'] =\
+    country_df['alpha_3_code'] = \
         country_df['country_name'].apply(lambda x: dashboard_source_df[dashboard_source_df['country']
                                                                        == x]['alpha_3_code'].iloc[0])
     country_df['country_iso2'] = country_df['country_name'].map(lambda a: get_country_code(a, iso3=False))

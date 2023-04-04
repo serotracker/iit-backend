@@ -3,7 +3,7 @@ import logging.config
 import multiprocessing
 
 from flask import Flask
-from flask_restplus import Api
+from flask_restx import Api
 from flask_cors import CORS
 from .config import config_by_name
 from flask_sqlalchemy import SQLAlchemy

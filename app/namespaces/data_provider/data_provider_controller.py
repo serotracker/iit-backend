@@ -1,6 +1,6 @@
 import logging.config
 
-from flask_restplus import Resource, Namespace
+from flask_restx import Resource, Namespace
 from flask import jsonify, make_response, request
 
 from .data_provider_service import get_record_details, get_country_seroprev_summaries, jitter_pins, \

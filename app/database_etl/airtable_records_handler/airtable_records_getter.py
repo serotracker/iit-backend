@@ -31,11 +31,8 @@ def airtable_get_request(url: String, headers):
     r = requests.get(url, headers=headers)
     i = 0
     while r.status_code != 200 and i < 3:
-        print(r.status_code)
-        print(r.text)
         r = requests.get(url, headers=headers)
         i += 1
-    print(f'Final code: %d', r.status_code)
     data = r.json()
     return data
 

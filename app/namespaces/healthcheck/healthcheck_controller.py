@@ -1,5 +1,5 @@
 from flask import jsonify
-from flask_restplus import Resource, Namespace
+from flask_restx import Resource, Namespace
 
 healthcheck_ns = Namespace('healthcheck', description='A health check endpoint.')
 

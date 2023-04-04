@@ -87,7 +87,7 @@ def standardize_airtable_data(df: pd.DataFrame) -> pd.DataFrame:
                                 'jbi_1', 'jbi_2', 'jbi_3', 'jbi_4', 'jbi_5', 'jbi_6', 'jbi_7', 'jbi_8', 'jbi_9',
                                 'measure_of_age', 'number_of_females', 'number_of_males', 'average_age',
                                 'test_not_linked_reason', 'include_in_srma', 'is_unity_aligned', 'alpha_3_code',
-                                'study_exclusion_criteria']
+                                'study_exclusion_criteria', 'overall_risk_of_bias']
 
     # Remove lists from single select columns
     for col in single_element_list_cols:
@@ -103,7 +103,7 @@ def standardize_airtable_data(df: pd.DataFrame) -> pd.DataFrame:
 
     # Replace columns that should be floats with NaN from None
     # IMPORTANT: ind_sp and ind_se are percentages but stored as ints in airtable so must convert to decimal!
-    df[['ind_sp', 'ind_se']] = df[['ind_sp', 'ind_se']].replace({None: np.nan}) / 100
+    df[['ind_sp', 'ind_se']] = df[['ind_sp', 'ind_se']].replace({None: np.nan}).apply(pd.to_numeric, errors="coerce", axis=1).fillna(0).astype('int64') / 100
 
     # Get index of most recent publication date
     df = df.apply(lambda row: get_most_recent_publication_info(row), axis=1)
