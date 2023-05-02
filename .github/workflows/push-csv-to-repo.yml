@@ -17,13 +17,13 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.8.3' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+          python-version: '3.9' # Version range or exact version of a Python version to use, using SemVer's version range syntax
           architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
 
       - name: Install packages
         uses: BSFishy/pip-action@v1
         with:
-          requirements: iit-backend/requirements.txt
+          requirements: iit-backend/github_csv_requirements.txt
   
       - name: Create CSV locally  # run estimate_csv_creator.py to get CSV
         run: python3 $GITHUB_WORKSPACE/iit-backend/app/github_public_repo/estimate_csv_creator.py
