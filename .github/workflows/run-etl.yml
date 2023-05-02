@@ -20,6 +20,7 @@ jobs:
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
             cd www/iit-backend/ &&
+            git pull &&
             source venv/bin/activate &&
             pip install -r requirements.txt &&
             python app/database_etl/etl_main.py
