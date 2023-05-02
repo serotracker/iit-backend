@@ -1,4 +1,4 @@
-arcgis
+arcgis==1.9.1
 aiofiles==22.1.0
 aiosqlite==0.19.0
 aniso8601==9.0.1
