@@ -1,0 +1,27 @@
+name: Run ETL Pipeline
+
+on:
+  schedule:
+    - cron: '0 0 * * SUN' # runs at 00:00 AM UTC every Sunday
+  workflow_dispatch: # manual trigger
+
+jobs:
+  run-etl:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Run ETL in ec2
+        env:
+          PRIVATE_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY  }}
+          HOSTNAME: ${{ secrets.AWS_HOST_NAME }}
+          USER_NAME: ${{ secrets.AWS_USER_NAME }}
+
+        run: |
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+            cd www/iit-backend/ &&
+            git pull &&
+            source venv/bin/activate &&
+            pip install -r requirements.txt &&
+            python app/database_etl/etl_main.py
+          '
