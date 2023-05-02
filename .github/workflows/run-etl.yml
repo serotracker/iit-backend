@@ -12,13 +12,13 @@ jobs:
     steps:
       - name: Run ETL in ec2
         env:
-          PRIVATE_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY  }}
+          PRIVATE_KEY: ${{ secrets.AWS_ETL_EC2_PRIVATE_KEY }}
           HOSTNAME: ${{ secrets.AWS_HOST_NAME }}
           USER_NAME: ${{ secrets.AWS_USER_NAME }}
 
         run: |
-          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+          echo "$PRIVATE_KEY" > private_key.pem && chmod 600 private_key.pem
+          ssh -i "private_key.pem" ${USER_NAME}@${HOSTNAME} '
             cd www/iit-backend/ &&
             git pull &&
             source venv/bin/activate &&
