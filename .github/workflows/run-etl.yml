@@ -18,7 +18,7 @@ jobs:
 
         run: |
           echo "$PRIVATE_KEY" > private_key.pem && chmod 600 private_key.pem
-          ssh -i "private_key.pem" ${USER_NAME}@${HOSTNAME} '
+          ssh -o StrictHostKeyChecking=no -i "private_key.pem" ${USER_NAME}@${HOSTNAME} '
             cd www/iit-backend/ &&
             git pull &&
             source venv/bin/activate &&
