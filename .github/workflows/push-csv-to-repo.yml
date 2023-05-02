@@ -22,7 +22,7 @@ jobs:
 
       - name: Install packages
 #        uses: BSFishy/pip-action@v1
-        run: pip install --upgrade pip && pip install -r github_csv_requirements.txt
+        run: pip install --upgrade pip && pip install -r iit-backend/github_csv_requirements.txt
   
       - name: Create CSV locally  # run estimate_csv_creator.py to get CSV
         run: python3 $GITHUB_WORKSPACE/iit-backend/app/github_public_repo/estimate_csv_creator.py
