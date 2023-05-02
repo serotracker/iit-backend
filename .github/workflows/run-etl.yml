@@ -22,5 +22,6 @@ jobs:
             cd www/iit-backend/ &&
             source venv/bin/activate &&
             pip install -r requirements.txt &&
+            set -o allexport; source .env; set +o allexport &&
             python -m app.database_etl.etl_main
           '
