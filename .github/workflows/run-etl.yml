@@ -18,7 +18,7 @@ jobs:
 
         run: |
           echo "$PRIVATE_KEY" > private_key.pem && chmod 600 private_key.pem
-          ssh -o ServerAliveInterval=800 -o StrictHostKeyChecking=no -i "private_key.pem" ${USER_NAME}@${HOSTNAME} '
+          ssh -o ServerAliveInterval=60 -o StrictHostKeyChecking=no -i "private_key.pem" ${USER_NAME}@${HOSTNAME} '
             cd www/iit-backend/ &&
             source venv/bin/activate &&
             pip install -r requirements.txt &&
