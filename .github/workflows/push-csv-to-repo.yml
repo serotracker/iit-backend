@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout iit-backend
         uses: actions/checkout@v2
@@ -17,8 +17,7 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v4
         with: 
-          python-version: '3.9' #install the python needed
-          architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
+          python-version: '3.8.3' #install the python needed
           
       - name: Install dependencies
         run: |
