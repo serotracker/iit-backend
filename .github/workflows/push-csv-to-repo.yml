@@ -24,9 +24,6 @@ jobs:
         run: |
           pwd
           echo $PATH
-          which $PYTHON
-          $PYTHON --version
-          $PYTHON -m pip --version
           
       - name: Create VEnv
         shell: bash
@@ -41,9 +38,6 @@ jobs:
         run: |
           pwd
           echo $PATH
-          which $PYTHON
-          $PYTHON --version
-          $PYTHON -m pip --version
           
       - name: Install dependencies
         run: |
