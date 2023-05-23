@@ -19,6 +19,32 @@ jobs:
         with: 
           python-version: '3.8' #install the python needed
           
+      - name: Python Pre-VENV Check
+        shell: bash
+        run: |
+          pwd
+          echo $PATH
+          which $PYTHON
+          $PYTHON --version
+          $PYTHON -m pip --version
+          
+      - name: Create VEnv
+        shell: bash
+        if: inputs.with-venv == 'true'
+        run: |
+          $PYTHON -m pip install virtualenv
+          virtualenv $HOME/.pcsv
+          echo "$HOME/.pcsv/bin" >> $GITHUB_PATH
+          
+      - name: Python Post-VENV Check
+        shell: bash
+        run: |
+          pwd
+          echo $PATH
+          which $PYTHON
+          $PYTHON --version
+          $PYTHON -m pip --version
+          
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
