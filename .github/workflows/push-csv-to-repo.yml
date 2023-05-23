@@ -28,7 +28,7 @@ jobs:
       - name: Create VEnv
         shell: bash
         run: |
-          $PYTHON -m pip install virtualenv
+          python -m pip install virtualenv
           virtualenv $HOME/.pcsv
           echo "$HOME/.pcsv/bin" >> $GITHUB_PATH
           
