@@ -27,7 +27,6 @@ jobs:
           
       - name: Create VEnv
         shell: bash
-        if: inputs.with-venv == 'true'
         run: |
           $PYTHON -m pip install virtualenv
           virtualenv $HOME/.pcsv
