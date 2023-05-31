@@ -8,6 +8,7 @@ from .data_provider_service import get_record_details, get_country_seroprev_summ
 from .data_provider_schema import RecordDetailsSchema, RecordsSchema, PaginatedRecordsSchema, StudyCountSchema
 from app.utils import validate_request_input_against_schema, get_filtered_records, get_paginated_records, \
     convert_start_end_dates, filter_columns
+from ...utils.get_filtered_records import get_all_arbo_records
 
 data_provider_ns = Namespace('data_provider', description='Endpoints for getting database records.')
 logging.getLogger(__name__)
@@ -74,6 +75,9 @@ class Records(Resource):
                                        include_subgeography_estimates=include_subgeography_estimates,
                                        unity_aligned_only=unity_aligned_only,
                                        include_records_without_latlngs=include_records_without_latlngs)
+
+        print(records)
+
         if not columns or ("pin_latitude" in columns and "pin_longitude" in columns):
             records = jitter_pins(records)
 
@@ -86,6 +90,20 @@ class Records(Resource):
             # Ensure that we only return the requested columns to streamline data sent over HTTP
             if columns_requested:
                 result["records"] = filter_columns(result["records"], columns_requested)
+        return jsonify(result)
+
+
+@data_provider_ns.route('/records/arbo', methods=['GET'])
+class ArboRecords(Resource):
+    @data_provider_ns.doc('An endpoint for getting all arbotracker records from database with or without filters.')
+    def get(self):
+
+        records = get_all_arbo_records()
+
+        result = {"records": records}
+
+        print(result)
+
         return jsonify(result)
 
 

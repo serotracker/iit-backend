@@ -1,5 +1,7 @@
+import json
+
 from app.serotracker_sqlalchemy import db_session, DashboardSource, ResearchSource, \
-    db_model_config, Country, dashboard_source_cols, research_source_cols
+    db_model_config, Country, dashboard_source_cols, research_source_cols, ArboRecords
 from sqlalchemy.dialects.postgresql import array
 from sqlalchemy import func, cast, case, and_, String, ARRAY
 import pandas as pd
@@ -49,6 +51,24 @@ def _apply_agg_query(agg_field_exp: SQLalchemyExpression, label: str,
     return case([(func.array_agg(agg_field_exp).filter(agg_field_exp.isnot(None)).isnot(None),
                   cast(func.array_agg(func.distinct(agg_field_exp)).filter(agg_field_exp.isnot(None)), ARRAY(type)))],
                 else_=cast(array([]), ARRAY(type))).label(label)
+
+
+def get_all_arbo_records():
+    with db_session() as session:
+        records = session.query(ArboRecords).all()
+
+        # Convert records to a list of dictionaries
+        record_dicts = [record.__dict__ for record in records]
+
+        # Remove unnecessary attributes from the dictionaries
+        for record_dict in record_dicts:
+            record_dict.pop("_sa_instance_state")
+
+        # Convert the list of dictionaries to JSON
+        # Print or do whatever you want with the JSON data
+        print(record_dicts)
+
+        return record_dicts
 
 
 def get_all_records(research_fields=False, include_disputed_regions=False,

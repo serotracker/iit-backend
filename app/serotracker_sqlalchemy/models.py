@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime
+from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, BigInteger, Date
 from sqlalchemy.dialects.postgresql import UUID
 
 from app import db
@@ -238,3 +238,30 @@ class PopulationGroupOptions(db.Model):
     german_name = Column(String())
     order = Column(Integer)
     created_at = Column(DateTime)
+
+
+# ARBO
+
+class ArboRecords(db.Model):
+    __tablename__ = 'estimates'
+    __table_args__ = {'schema': 'Arbo'}
+
+    estimate_id = Column(BigInteger, primary_key=True, autoincrement=True)
+    sex = Column(String(1))
+    age = Column(String(64))
+    antibody = Column(String(8))
+    antigen = Column(String(8))
+    sample_size = Column(BigInteger)
+    sample_numerator = Column(BigInteger)
+    source_sheet = Column(String(128), nullable=False)
+    inclusion_criteria = Column(String(128))
+    pathogen = Column(String(8), nullable=False)
+    seroprevalence = Column(Float, nullable=False)
+    longitude = Column(Float)
+    latitude = Column(Float)
+    sample_start_date = Column(Date, nullable=False)
+    sample_end_date = Column(Date, nullable=False)
+    assay = Column(String(128))
+    country = Column(String(128))
+    city = Column(String(128))
+    url = Column(String(512))
