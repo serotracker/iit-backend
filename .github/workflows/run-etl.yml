@@ -18,10 +18,10 @@ jobs:
 
         run: |
           echo "$PRIVATE_KEY" > private_key.pem && chmod 600 private_key.pem
-          ssh -o StrictHostKeyChecking=no -i "private_key.pem" ${USER_NAME}@${HOSTNAME} '
+          ssh -o ServerAliveInterval=60 -o StrictHostKeyChecking=no -i "private_key.pem" ${USER_NAME}@${HOSTNAME} '
             cd www/iit-backend/ &&
-            git pull &&
             source venv/bin/activate &&
             pip install -r requirements.txt &&
-            python app/database_etl/etl_main.py
+            set -o allexport; source .env; set +o allexport &&
+            python -m app.database_etl.etl_main
           '
