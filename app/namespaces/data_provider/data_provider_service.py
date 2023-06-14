@@ -211,7 +211,10 @@ def get_all_filter_options() -> Dict[str, Any]:
             0].isoformat()
         options["min_publication_end_date"] = session.query(func.min(DashboardSource.publication_date))[0][
             0].isoformat()
-        options["updated_at"] = session.query(func.max(DashboardSource.publication_date))[0][0].isoformat()
+        options["last_updated"] = session.query(func.max(DashboardSource.created_at))[0][0].isoformat()
+        options["most_recent_publication_date"] = \
+            session.query(func.max(DashboardSource.publication_date))[0][0].isoformat()
+
 
         # Get population group options
         results = session.query(PopulationGroupOptions.order, PopulationGroupOptions.name, PopulationGroupOptions.french_name, PopulationGroupOptions.german_name)
