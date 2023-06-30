@@ -30,7 +30,7 @@ def main():
 
     estimate_table = Table(os.getenv('AIRTABLE_API_KEY'), os.getenv('AIRTABLE_ARBO_BASE_ID'), 'Study/Estimate Sheet')
 
-    engine = create_engine('postgresql://{username}:{password}@{host_address}/whiteclaw'.format(
+    engine = create_engine('postgresql://{username}:{password}@{host_address}/happydad'.format(
         username=os.getenv('DATABASE_USERNAME'),
         password=os.getenv('DATABASE_PASSWORD'),
         host_address=os.getenv('DATABASE_HOST_ADDRESS')))
