@@ -22,8 +22,8 @@ jobs:
             cd www/iit-backend/ &&
             cd venv/lib/python3.8/site-packages && 
             rm -rf *~* &&
-            echo DONE &&
             ls | grep "^~" &&
             pip uninstall arcgis &&
-            echo "arcgis uninstall and ~ removed"
-          '
+            pip freeze &&
+            pip freeze | grep arcgis
+'
