@@ -24,7 +24,7 @@ jobs:
             rm -rf *~* &&
             ls | grep "^~" &&
             pip uninstall arcgis &&
-            echo "arcgis uninstall and ~ removed"
+            echo "arcgis uninstall and ~ removed" &&
             cd ../../../../ &&
             source venv/bin/activate &&
             pip install -r requirements.txt &&
