@@ -50,6 +50,7 @@ Flask-SQLAlchemy==3.0.3
 fonttools==4.38.0
 fqdn==1.5.1
 future==0.18.3
+geopandas==0.13.2
 google-api-core==2.11.0
 google-api-python-client==2.76.0
 google-auth==2.16.0
