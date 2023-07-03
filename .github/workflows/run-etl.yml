@@ -23,7 +23,6 @@ jobs:
             cd venv/lib/python3.8/site-packages && 
             ls | grep "^~" &&
             ls | grep "^-" &&
-            rm -rf *-* &&
             rm -rf *~* &&
             cd ../../../../
             source venv/bin/activate &&
