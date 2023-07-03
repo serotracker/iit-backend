@@ -26,4 +26,4 @@ jobs:
             pip uninstall arcgis &&
             pip freeze &&
             pip freeze | grep arcgis
-'
+          '
