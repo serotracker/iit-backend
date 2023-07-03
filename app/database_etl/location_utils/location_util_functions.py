@@ -1,14 +1,12 @@
 import os
 import requests
 import json
-from arcgis.features import FeatureLayer
-from arcgis.geometry import Point
-from arcgis.geometry.filters import intersects
 import pandas as pd
 from statistics import mean
 from typing import Tuple
-from time import sleep
-from app.utils.notifications_sender import send_slack_message
+import geopandas as gpd
+from shapely.geometry import Point as shapelyPoint
+
 
 # Note: this function takes in a relative path
 def read_from_json(path_to_json):
@@ -22,6 +20,7 @@ def read_from_json(path_to_json):
 ISO3_CODES = read_from_json('country_iso3.json')
 ISO2_CODES = read_from_json('country_iso2.json')
 COUNTRY_ALTERNATIVE_NAMES = read_from_json('country_alternative_names.json')
+
 
 # Place = string representing the name of the place
 # Country code = ISO2 alpha country code, used as an optional argument to the mapbox api
@@ -51,7 +50,8 @@ def get_coords(place, place_type, country_code=None):
 
 
 def add_latlng_to_df(place_type, place_type_name, df):
-    df['coords'] = df.apply(lambda row: get_coords(row[place_type_name], place_type, country_code=row['country_iso2']), axis=1)
+    df['coords'] = df.apply(lambda row: get_coords(row[place_type_name], place_type, country_code=row['country_iso2']),
+                            axis=1)
     df['longitude'] = df['coords'].map(lambda a: a[0] if isinstance(a, list) else None)
     df['latitude'] = df['coords'].map(lambda a: a[1] if isinstance(a, list) else None)
     df = df.drop(columns=['coords'])
@@ -86,37 +86,16 @@ def get_city(row):
         return row['city']
 
 
-# Checks if a coordinate represented as a pandas series is contained
-# in an ArcGIS feature layer
-def row_in_feature_layer(row: pd.Series, feature_layer: FeatureLayer) -> bool:
+# Checks if a coordinate represented as a pandas series is contained in a GeoPandas df
+def row_in_feature_layer_gdf(row: pd.Series, gdf: gpd.GeoDataFrame) -> bool:
     # Null check
     if pd.isna(row['pin_longitude']) or pd.isna(row['pin_latitude']):
+        print("GDF: LngLat Missing")
         return False
     # Construct a point at the row's coordinates
-    pin = Point({"x": row['pin_longitude'], "y": row['pin_latitude']})
-    # construct a geometry filter to check if each point is in a disputed area
-    pin_filter = intersects(pin)
-
-    continue_query = True
-    retries = 0
-    MAX_RETRIES = 9
-    # Default to setting in_disputed_area = True to ensure we never show pins in disputed area
-    in_disputed_area = True
-    # Make query to determine whether or not the pin is in the disputed area
-    # If the query times out, retry with exponential backoff
-    while continue_query:
-        try:
-            in_disputed_area = len(feature_layer.query(geometry_filter=pin_filter).features) > 0
-            continue_query = False
-        except Exception as e:
-            # send slack message if we exceed retry count
-            if retries > MAX_RETRIES:
-                body = f'Unable to check if the record with ID {row["source_id"]} is in a disputed region.'
-                send_slack_message(body, channel='#dev-logging-etl')
-                continue_query = False
-            else:
-                sleep(1.5**(retries))
-                retries += 1
+    point = shapelyPoint(row['pin_longitude'], row['pin_latitude'])
+    # Check if each point intersects with any feature in the GeoDataFrame
+    in_disputed_area = any(gdf.geometry.intersects(point))
 
     return in_disputed_area
 
@@ -143,8 +122,9 @@ def get_record_coordinates(record: pd.Series, geo_dfs: dict) -> Tuple:
         return pin_lat, pin_lng
     state_df = geo_dfs['state']
     # query matching states based on matching state name and country_iso2 code
-    matching_states = [state_df[(state_df['state_name'] == state_name) & (state_df['country_iso2'] == matching_country_iso2)].iloc[0]
-                       for state_name in record['state']]
+    matching_states = [
+        state_df[(state_df['state_name'] == state_name) & (state_df['country_iso2'] == matching_country_iso2)].iloc[0]
+        for state_name in record['state']]
     state_latitudes = [s['latitude'] for s in matching_states if not pd.isna(s['latitude'])]
     state_longitudes = [s['longitude'] for s in matching_states if not pd.isna(s['longitude'])]
     if len(state_latitudes) > 0 and len(state_longitudes) > 0:
@@ -162,8 +142,9 @@ def get_record_coordinates(record: pd.Series, geo_dfs: dict) -> Tuple:
     city_df = geo_dfs['city']
     # query matching cities based on matching state name and country_iso2 code
     matching_cities = [city_df[(city_df['city_name'] == city_name)
-                       & (city_df['country_iso2'] == matching_country_iso2)
-                       & (city_df['state_name'] == matching_state_name)].iloc[0] for city_name in record['city']]
+                               & (city_df['country_iso2'] == matching_country_iso2)
+                               & (city_df['state_name'] == matching_state_name)].iloc[0] for city_name in
+                       record['city']]
     city_latitudes = [c['latitude'] for c in matching_cities if not pd.isna(c['latitude'])]
     city_longitudes = [c['longitude'] for c in matching_cities if not pd.isna(c['longitude'])]
     if len(city_latitudes) > 0 and len(city_longitudes) > 0:
@@ -172,15 +153,27 @@ def get_record_coordinates(record: pd.Series, geo_dfs: dict) -> Tuple:
 
     return pin_lat, pin_lng
 
+
 # Computes pin latlngs and whether or not the pin is in a disputed area
 def compute_pin_info(df: pd.DataFrame, geo_dfs: dict) -> pd.DataFrame:
     # Get record coordinates
     df['pin_latitude'], df['pin_longitude'] = \
         zip(*df.apply(lambda record: get_record_coordinates(record, geo_dfs), axis=1))
     # Populate in_disputed_area col
-    WHO_FL_URL = "https://services.arcgis.com/5T5nSi527N4F7luB/arcgis/rest/services/DISPUTED_AREAS_mask/FeatureServer/0"
-    # Create feature layer object
-    disputed_areas_fl = FeatureLayer(WHO_FL_URL)
-    # apply row_in_disputed_area across the whole df
-    df['in_disputed_area'] = df.apply(lambda row: row_in_feature_layer(row, disputed_areas_fl), axis=1)
+    WHO_disputed_areas_feature_layer_url = "https://services.arcgis.com/5T5nSi527N4F7luB/arcgis/rest/services/DISPUTED_AREAS_mask/FeatureServer/0/query"
+    params = {
+        "f": "geojson",
+        "where": "1=1",
+        "outSR": "4326"
+    }
+
+    # Send a GET request to the REST endpoint and retrieve the GeoJSON response
+    response = requests.get(WHO_disputed_areas_feature_layer_url, params=params)
+    data = response.json()
+
+    # Convert the GeoJSON data to a GeoDataFrame
+    disputed_areas_gdf = gpd.GeoDataFrame.from_features(data["features"])
+
+    df['in_disputed_area'] = df.apply(lambda row: row_in_feature_layer_gdf(row, disputed_areas_gdf), axis=1)
+
     return df
