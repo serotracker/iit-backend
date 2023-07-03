@@ -24,6 +24,8 @@ jobs:
             ls | grep "^~" &&
             ls | grep "^-" &&
             rm -rf *~* &&
+            ls | grep "^~" &&
+            pip uninstall arcgis &&
             cd ../../../../
             source venv/bin/activate &&
             pip install -r requirements.txt &&
