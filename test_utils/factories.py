@@ -199,7 +199,6 @@ class ResearchSourceFactory(factory.alchemy.SQLAlchemyModelFactory):
     death_count_plus4 = factory.LazyFunction(lambda: randint(100, 1000))
     include_in_srma = factory.LazyFunction(lambda: bool(randint(0, 1)))
     sensspec_from_manufacturer = factory.LazyFunction(lambda: bool(randint(0, 1)))
-    ind_eval_lab = factory.Sequence(lambda n: 'research_field_%d' % n)
     ind_eval_link = factory.Sequence(lambda n: 'research_field_%d' % n)
     ind_se = factory.LazyFunction(random)
     ind_se_n = factory.LazyFunction(random)

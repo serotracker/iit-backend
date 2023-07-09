@@ -73,7 +73,7 @@ def replace_null_fields(row_val):
     null_cols = ['nr', 'NR', 'Not Reported', 'Not reported', 'Not available', 'NA', 'N/A']
 
     if type(row_val) is str:
-        row_val = row_val.replace(" ", ""). split(",")
+        row_val = row_val.replace(" ", "").split(",")
     filtered_row = [i for i in set(row_val) - set(null_cols) if i is not None]
     return sorted(filtered_row)
 
@@ -82,7 +82,7 @@ def standardize_airtable_data(df: pd.DataFrame) -> pd.DataFrame:
     # List of columns that are lookup fields and therefore only have one element in the list
     single_element_list_cols = ['included', 'source_name', 'url', 'source_publisher', 'summary',
                                 'study_type', 'lead_organization', 'age_variation', 'age_variation_measure',
-                                'ind_eval_lab', 'ind_eval_link', 'ind_se', 'ind_se_n', 'ind_sp', 'ind_sp_n',
+                                'ind_eval_link', 'ind_se', 'ind_se_n', 'ind_sp', 'ind_sp_n',
                                 'jbi_a_outputs_v5', 'multiple_test_gold_standard_algorithm',
                                 'jbi_1', 'jbi_2', 'jbi_3', 'jbi_4', 'jbi_5', 'jbi_6', 'jbi_7', 'jbi_8', 'jbi_9',
                                 'measure_of_age', 'number_of_females', 'number_of_males', 'average_age',
@@ -103,7 +103,9 @@ def standardize_airtable_data(df: pd.DataFrame) -> pd.DataFrame:
 
     # Replace columns that should be floats with NaN from None
     # IMPORTANT: ind_sp and ind_se are percentages but stored as ints in airtable so must convert to decimal!
-    df[['ind_sp', 'ind_se']] = df[['ind_sp', 'ind_se']].replace({None: np.nan}).apply(pd.to_numeric, errors="coerce", axis=1).fillna(0).astype('int64') / 100
+    df[['ind_sp', 'ind_se']] = df[['ind_sp', 'ind_se']].replace({None: np.nan}).apply(pd.to_numeric, errors="coerce",
+                                                                                      axis=1).fillna(0).astype(
+        'int64') / 100
 
     # Get index of most recent publication date
     df = df.apply(lambda row: get_most_recent_publication_info(row), axis=1)
