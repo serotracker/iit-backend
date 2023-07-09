@@ -226,7 +226,7 @@ You should now be ready to run your script!
 #### Creating migrations
 
 1. Anytime you change the file `serotracker_sqlalchemy/models.py` you need to create a new migration Python file.
-   To do this, run `flask db migration -m YOUR_COMMENT_YYYY_MM_DD`. The message should describe the change you have
+   To do this, run `flask db migrate -m YOUR_COMMENT_YYYY_MM_DD`. The message should describe the change you have
    made to `models.py`, example: `adding_antibody_target_col_2022_05_23`.
    
 2. You should see a new Python file created in `migrations/versions` that is titled with the new alembic
