@@ -5,13 +5,14 @@ from sqlalchemy import (
     Date,
     Float,
     ForeignKey,
+    MetaData
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 import uuid
 
-Base = declarative_base()
+Base = declarative_base(metadata=MetaData(schema="arbo"))
 
 
 class Antibody(Base):
