@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 
 from pyairtable import Table
@@ -28,8 +29,6 @@ def flatten_single_select_lists(x):
 def main():
     load_dotenv()
 
-    estimate_table = Table(os.getenv('AIRTABLE_API_KEY'), os.getenv('AIRTABLE_ARBO_BASE_ID'), 'Study/Estimate Sheet')
-
     engine = create_engine('postgresql://{username}:{password}@{host_address}/happydad'.format(
         username=os.getenv('DATABASE_USERNAME'),
         password=os.getenv('DATABASE_PASSWORD'),
@@ -39,7 +38,6 @@ def main():
                       'Inclusion Criteria': 'inclusion_criteria',
                       'Sample Start Date': 'sample_start_date',
                       'Sample End Date': 'sample_end_date',
-                      'Age': 'age',
                       'Sex': 'sex',
                       'Pathogen': 'pathogen',
                       'Antibody': 'antibody',
@@ -50,11 +48,17 @@ def main():
                       'Seroprevalence': 'seroprevalence',
                       'Country': 'country',
                       'City': 'city',
-                      'Latitude': 'latitude',
-                      'Longitude': 'longitude',
                       'URL': 'url'}
 
+    estimate_columns = ['id', 'inclusion_criteria', 'sample_start_date', 'sample_end_date', 'sex', 'assay', 'sample_size',
+                        'sample_numerator', 'seroprevalence', 'url']
+
+    required_fields = ['source_sheet', 'url', 'country', 'antibody', 'inclusion_criteria', 'sample_start_date',
+                       'sample_end_date', 'pathogen', 'seroprevalence']
+
     single_select_lists = ['source_sheet', 'antibody', 'url']
+
+    estimate_table = Table(os.getenv('AIRTABLE_API_KEY'), os.getenv('AIRTABLE_ARBO_BASE_ID'), 'Study/Estimate Sheet')
 
     #  TODO: Update all airtable requests to use pyairtable instead of hardcoded strings
     all_records = estimate_table.all(fields=fields_mapping.keys())
@@ -65,7 +69,10 @@ def main():
     records_df.replace({'nr': None, 'NR': None, 'Not Reported': None, 'Not reported': None, 'Not available': None,
                         'NA': None, 'N/A': None, 'nan': None}, inplace=True)
 
-    records_df.dropna(inplace=True)
+    # Only drop records of fields that are required. What are the required fields?
+    records_df.dropna(subset=required_fields, inplace=True)
+
+    records_df['id'] = [uuid.uuid4() for _ in range(len(records_df))]
 
     for col in single_select_lists:
         records_df[col] = records_df[col].apply(lambda x: x[0] if x is not None else x)
@@ -81,11 +88,11 @@ def main():
     print(records_df.dtypes)
 
     try:
-        records_df.to_sql("estimates",
-                          schema='Arbo',
-                          con=engine,
-                          if_exists='append',
-                          index=False)
+        records_df[estimate_columns].to_sql("estimates",
+                                            schema='public',
+                                            con=engine,
+                                            if_exists='append',
+                                            index=False)
         print("Completed running... Verify in database...")
     except (SQLAlchemyError, ValueError) as e:
         # Send slack error message

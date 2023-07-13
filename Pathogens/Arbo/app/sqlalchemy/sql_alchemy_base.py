@@ -15,7 +15,13 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 import uuid
 
+# If you want to create a new migration,
+# simply change the model definitions in Pathogens/Arbo/app/sqlalchemy/sql_alchemy_base.py (here)
+# and run the following command: alembic revision --autogenerate -m "<name of the migration>".
+# This will autogenerate any new changes based on the updated models
+# and then to apply the change, run alembic upgrade head again.
 Base = declarative_base(metadata=MetaData(schema="arbo"))
+
 
 
 class Antibody(Base):
@@ -90,6 +96,7 @@ class Estimate(Base):
     sample_size = Column(Integer)
     sample_numerator = Column(Integer)
     inclusion_criteria = Column(Text)
+
     pathogen = Column(VARCHAR(length=255))
     seroprevalence = Column(VARCHAR(length=255))
     country = Column(VARCHAR(length=255))
