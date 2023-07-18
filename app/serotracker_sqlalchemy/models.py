@@ -83,7 +83,6 @@ class ResearchSource(db.Model):
     include_in_srma = Column(Boolean)
     sensspec_from_manufacturer = Column(Boolean)
     immunoassays_name = Column(String())
-    ind_eval_link = Column(String())
     ind_se = Column(Float)
     ind_se_n = Column(Float)
     ind_sp = Column(Float)

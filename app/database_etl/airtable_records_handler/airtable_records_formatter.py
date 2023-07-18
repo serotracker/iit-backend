@@ -82,7 +82,7 @@ def standardize_airtable_data(df: pd.DataFrame) -> pd.DataFrame:
     # List of columns that are lookup fields and therefore only have one element in the list
     single_element_list_cols = ['included', 'source_name', 'url', 'source_publisher', 'summary',
                                 'study_type', 'lead_organization', 'age_variation', 'age_variation_measure',
-                                'ind_eval_link', 'ind_se', 'ind_se_n', 'ind_sp', 'ind_sp_n',
+                                'ind_se', 'ind_se_n', 'ind_sp', 'ind_sp_n',
                                 'jbi_a_outputs_v5', 'multiple_test_gold_standard_algorithm',
                                 'jbi_1', 'jbi_2', 'jbi_3', 'jbi_4', 'jbi_5', 'jbi_6', 'jbi_7', 'jbi_8', 'jbi_9',
                                 'measure_of_age', 'number_of_females', 'number_of_males', 'average_age',
