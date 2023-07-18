@@ -5,7 +5,10 @@ from sqlalchemy import (
     Date,
     Float,
     ForeignKey,
-    MetaData
+    MetaData,
+    DateTime,
+    Text,
+    func
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
@@ -17,112 +20,62 @@ Base = declarative_base(metadata=MetaData(schema="arbo"))
 
 class Antibody(Base):
     __tablename__ = 'antibody'
+    __table_args__ = {"schema": "arbo"}
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True)
     antibody = Column(VARCHAR(length=255))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
-class AntibodyBridge(Base):
-    __tablename__ = 'antibody_bridge'
+class AntibodyToEstimate(Base):
+    __tablename__ = 'antibody_to_estimate'
+    __table_args__ = {"schema": "arbo"}
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True)
     antibody_id = Column(ForeignKey("antibody.id"), index=True)
-    antibody = relationship("Antibody", foreign_keys="AntibodyBridge.antibody_id")
-    estimate_id = Column(ForeignKey("estimates.id"), index=True)
-    estimate = relationship("Estimates", foreign_keys="AntibodyBridge.estimate_id")
+    antibody = relationship("Antibody", foreign_keys="AntibodyToEstimate.antibody_id")
+    estimate_id = Column(ForeignKey("estimate.id"), index=True)
+    estimate = relationship("Estimate", foreign_keys="AntibodyToEstimate.estimate_id")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
 class Antigen(Base):
     __tablename__ = 'antigen'
+    __table_args__ = {"schema": "arbo"}
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True)
     antigen = Column(VARCHAR(length=255))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
-class AntigenBridge(Base):
-    __tablename__ = 'antigen_bridge'
+class AntigenToEstimate(Base):
+    __tablename__ = 'antigen_to_estimate'
+    __table_args__ = {"schema": "arbo"}
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True)
     antigen_id = Column(ForeignKey("antigen.id"), index=True)
-    antigen = relationship("Antigen", foreign_keys="AntigenBridge.antigen_id")
-    estimate_id = Column(ForeignKey("estimates.id"), index=True)
-    estimate = relationship("Estimates", foreign_keys="AntigenBridge.estimate_id")
-
-
-class City(Base):
-    __tablename__ = 'city'
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True)
-    city = Column(VARCHAR(length=255))
-
-
-class CityBridge(Base):
-    __tablename__ = 'city_bridge'
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True)
-    city_id = Column(ForeignKey("city.id"), index=True)
-    city = relationship("City", foreign_keys="CityBridge.city_id")
-    estimate_id = Column(ForeignKey("estimates.id"), index=True)
-    estimate = relationship("Estimates", foreign_keys="CityBridge.estimate_id")
-
-
-class State(Base):
-    __tablename__ = 'state'
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True)
-    state = Column(VARCHAR(length=255))
-
-
-class StateBridge(Base):
-    __tablename__ = 'state_bridge'
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True)
-    state_id = Column(ForeignKey("state.id"), index=True)
-    state = relationship("State", foreign_keys="StateBridge.state_id")
-    estimate_id = Column(ForeignKey("estimates.id"), index=True)
-    estimate = relationship("Estimates", foreign_keys="StateBridge.estimate_id")
-
-
-class Country(Base):
-    __tablename__ = 'country'
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True)
-    country = Column(VARCHAR(length=255))
-
-
-class CountryBridge(Base):
-    __tablename__ = 'country_bridge'
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True)
-    country_id = Column(ForeignKey("country.id"), index=True)
-    country = relationship("Country", foreign_keys="CountryBridge.country_id")
-    estimate_id = Column(ForeignKey("estimates.id"), index=True)
-    estimate = relationship("Estimates", foreign_keys="CountryBridge.estimate_id")
+    antigen = relationship("Antigen", foreign_keys="AntigenToEstimate.antigen_id")
+    estimate_id = Column(ForeignKey("estimate.id"), index=True)
+    estimate = relationship("Estimate", foreign_keys="AntigenToEstimate.estimate_id")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
 class SourceSheet(Base):
     __tablename__ = 'source_sheet'
+    __table_args__ = {"schema": "arbo"}
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True)
-    source_title = Column(VARCHAR(length=255))
+    source_title = Column(Text)
     extractor = Column(VARCHAR(length=255))
     first_author = Column(VARCHAR(length=255))
     publication_date = Column(Date)
-    url = Column(VARCHAR(length=255))
+    url = Column(Text)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
-class SourceSheetBridge(Base):
-    __tablename__ = 'source_sheet_bridge'
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True)
-    source_sheet_id = Column(ForeignKey("source_sheet.id"), index=True)
-    source_sheet = relationship("SourceSheet", foreign_keys="SourceSheetBridge.source_sheet_id")
-    estimate_id = Column(ForeignKey("estimates.id"), index=True)
-    estimate = relationship("Estimates", foreign_keys="SourceSheetBridge.estimate_id")
-
-
-class Estimates(Base):
-    __tablename__ = 'estimates'
+class Estimate(Base):
+    __tablename__ = 'estimate'
+    __table_args__ = {"schema": "arbo"}
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True)
     sex = Column(VARCHAR(length=255))
@@ -136,15 +89,21 @@ class Estimates(Base):
     same_frame_target_group = Column(VARCHAR(length=255))
     sample_size = Column(Integer)
     sample_numerator = Column(Integer)
-    inclusion_criteria = Column(VARCHAR(length=255))
+    inclusion_criteria = Column(Text)
     pathogen = Column(VARCHAR(length=255))
     seroprevalence = Column(VARCHAR(length=255))
+    country = Column(VARCHAR(length=255))
+    state = Column(VARCHAR(length=255))
+    city = Column(VARCHAR(length=255))
     longitude = Column(Float)
     latitude = Column(Float)
     sample_start_date = Column(Date)
     sample_end_date = Column(Date)
     assay = Column(VARCHAR(length=255))
-    url = Column(VARCHAR(length=255))
+    url = Column(Text)
+    source_sheet_id = Column(UUID(as_uuid=True), ForeignKey('source_sheet.id'))
+    source_sheet = relationship("SourceSheet", backref="estimate")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
 Base.registry.configure()

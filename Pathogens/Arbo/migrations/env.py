@@ -78,16 +78,24 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
+        def include_name(name, type_, parent_names):
+            if type_ == "schema":
+                return name in ["arbo"]
+            else:
+                return True
+
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
             version_table_schema=target_metadata.schema,
+            compare_type=True,
             include_schemas=True,
+            include_name=include_name
         )
 
         with context.begin_transaction():
             context.execute(f'create schema if not exists {target_metadata.schema};')
-            context.execute(f'set search_path to {target_metadata.schema}')
+            context.execute(f'set search_path to {target_metadata.schema};')
             context.run_migrations()
 
 
