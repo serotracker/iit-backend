@@ -8,7 +8,6 @@ import pandas as pd
 from statistics import mean
 from typing import Tuple
 from time import sleep
-from app.utils.notifications_sender import send_slack_message
 
 # Note: this function takes in a relative path
 def read_from_json(path_to_json):
@@ -112,7 +111,6 @@ def row_in_feature_layer(row: pd.Series, feature_layer: FeatureLayer) -> bool:
             # send slack message if we exceed retry count
             if retries > MAX_RETRIES:
                 body = f'Unable to check if the record with ID {row["source_id"]} is in a disputed region.'
-                send_slack_message(body, channel='#dev-logging-etl')
                 continue_query = False
             else:
                 sleep(1.5**(retries))
