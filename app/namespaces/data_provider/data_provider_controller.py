@@ -3,12 +3,12 @@ import logging.config
 from flask_restx import Resource, Namespace
 from flask import jsonify, make_response, request
 
+from Pathogens.Arbo.API.Services.records_service import get_all_arbo_records
 from .data_provider_service import get_record_details, get_country_seroprev_summaries, jitter_pins, \
     get_all_filter_options
 from .data_provider_schema import RecordDetailsSchema, RecordsSchema, PaginatedRecordsSchema, StudyCountSchema
 from app.utils import validate_request_input_against_schema, get_filtered_records, get_paginated_records, \
     convert_start_end_dates, filter_columns
-from ...utils.get_filtered_records import get_all_arbo_records
 
 data_provider_ns = Namespace('data_provider', description='Endpoints for getting database records.')
 logging.getLogger(__name__)
