@@ -1,3 +1,5 @@
+import os
+
 from sqlalchemy import (
     Integer,
     VARCHAR,
@@ -8,7 +10,7 @@ from sqlalchemy import (
     MetaData,
     DateTime,
     Text,
-    func
+    func, create_engine
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
@@ -22,7 +24,7 @@ import uuid
 # and then to apply the change, run alembic upgrade head again.
 Base = declarative_base(metadata=MetaData(schema="arbo"))
 
-
+db_engine = create_engine("postgresql://postgres:Studylight2612@localhost:5432/whiteclaw")
 
 class Antibody(Base):
     __tablename__ = 'antibody'
