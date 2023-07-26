@@ -261,4 +261,5 @@ class Records(Resource):
             args=dict(request.args)))
 
         result = get_all_filter_options()
+        print(result)
         return jsonify(result)

@@ -1,13 +1,11 @@
 import os
 import requests
 import json
-from arcgis.features import FeatureLayer
-from arcgis.geometry import Point
-from arcgis.geometry.filters import intersects
 import pandas as pd
 from statistics import mean
 from typing import Tuple
-from time import sleep
+import geopandas as gpd
+from shapely.geometry import Point as shapelyPoint
 
 
 # Note: this function takes in a relative path
@@ -88,36 +86,16 @@ def get_city(row):
         return row['city']
 
 
-# Checks if a coordinate represented as a pandas series is contained
-# in an ArcGIS feature layer
-def row_in_feature_layer(row: pd.Series, feature_layer: FeatureLayer) -> bool:
+# Checks if a coordinate represented as a pandas series is contained in a GeoPandas df
+def row_in_feature_layer_gdf(row: pd.Series, gdf: gpd.GeoDataFrame) -> bool:
     # Null check
     if pd.isna(row['pin_longitude']) or pd.isna(row['pin_latitude']):
+        print("GDF: LngLat Missing")
         return False
     # Construct a point at the row's coordinates
-    pin = Point({"x": row['pin_longitude'], "y": row['pin_latitude']})
-    # construct a geometry filter to check if each point is in a disputed area
-    pin_filter = intersects(pin)
-
-    continue_query = True
-    retries = 0
-    MAX_RETRIES = 9
-    # Default to setting in_disputed_area = True to ensure we never show pins in disputed area
-    in_disputed_area = True
-    # Make query to determine whether or not the pin is in the disputed area
-    # If the query times out, retry with exponential backoff
-    while continue_query:
-        try:
-            in_disputed_area = len(feature_layer.query(geometry_filter=pin_filter).features) > 0
-            continue_query = False
-        except Exception as e:
-            # send slack message if we exceed retry count
-            if retries > MAX_RETRIES:
-                body = f'Unable to check if the record with ID {row["source_id"]} is in a disputed region.'
-                continue_query = False
-            else:
-                sleep(1.5 ** (retries))
-                retries += 1
+    point = shapelyPoint(row['pin_longitude'], row['pin_latitude'])
+    # Check if each point intersects with any feature in the GeoDataFrame
+    in_disputed_area = any(gdf.geometry.intersects(point))
 
     return in_disputed_area
 
@@ -182,15 +160,24 @@ def compute_pin_info(df: pd.DataFrame, geo_dfs: dict) -> pd.DataFrame:
     df['pin_latitude'], df['pin_longitude'] = \
         zip(*df.apply(lambda record: get_record_coordinates(record, geo_dfs), axis=1))
     # Populate in_disputed_area col
-    WHO_FL_URL = "https://services.arcgis.com/5T5nSi527N4F7luB/arcgis/rest/services/DISPUTED_AREAS_mask/FeatureServer/0"
-    # Create feature layer object
-    disputed_areas_fl = FeatureLayer(WHO_FL_URL)
-    # apply row_in_disputed_area across the whole df
-    df['in_disputed_area'] = df.apply(lambda row: row_in_feature_layer(row, disputed_areas_fl), axis=1)
+    WHO_disputed_areas_feature_layer_url = "https://services.arcgis.com/5T5nSi527N4F7luB/arcgis/rest/services/DISPUTED_AREAS_mask/FeatureServer/0/query"
+    params = {
+        "f": "geojson",
+        "where": "1=1",
+        "outSR": "4326"
+    }
+
+    # Send a GET request to the REST endpoint and retrieve the GeoJSON response
+    response = requests.get(WHO_disputed_areas_feature_layer_url, params=params)
+    data = response.json()
+
+    # Convert the GeoJSON data to a GeoDataFrame
+    disputed_areas_gdf = gpd.GeoDataFrame.from_features(data["features"])
+
+    df['in_disputed_area'] = df.apply(lambda row: row_in_feature_layer_gdf(row, disputed_areas_gdf), axis=1)
+
     return df
 
-
-#
 def get_lng_lat(geocoder_search_text, geocoder_data_type, country_code=None):
     # If a city doesn't have a state associated with it,
     # we cannot accurately find its location
