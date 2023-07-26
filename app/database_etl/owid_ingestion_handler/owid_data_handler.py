@@ -2,7 +2,7 @@ import pandas as pd
 import datetime
 from urllib.error import HTTPError
 
-from app.database_etl.location_utils import get_alternative_names, get_country_code
+from Pathogens.Utility.location_utils import get_alternative_names, get_country_code
 from app.utils.notifications_sender import send_slack_message
 
 # Define adjustment offsets

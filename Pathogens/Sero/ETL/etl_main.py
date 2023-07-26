@@ -16,7 +16,7 @@ from app.database_etl.airtable_records_handler import get_all_records, apply_stu
 from app.database_etl.test_adjustment_handler import add_test_adjustments
 from app.database_etl.tableau_data_connector import upload_analyze_csv
 from app.database_etl.summary_report_generator import SummaryReport
-from app.database_etl.location_utils import compute_pin_info
+from Pathogens.Utility.location_utils import compute_pin_info
 from app.utils import airtable_fields_config
 
 load_dotenv()

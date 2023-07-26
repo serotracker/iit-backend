@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from pyairtable import Table
 
-from ..location_utils import get_city
+from Pathogens.Utility.location_utils import get_city
 from app.utils import full_airtable_fields
 
 

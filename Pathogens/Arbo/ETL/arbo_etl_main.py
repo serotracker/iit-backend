@@ -108,13 +108,14 @@ def main():
 
     # TODO: Add 'country', 'state', 'city' once the alembic stuff is fixed
     estimate_columns = ['id', 'inclusion_criteria', 'sample_start_date', 'sample_end_date', 'sex', 'assay',
-                        'sample_size', 'sample_numerator', 'seroprevalence', 'url', 'longitude', 'latitude']
+                        'sample_size', 'sample_numerator', 'seroprevalence', 'url', 'longitude', 'latitude',
+                        'created_at', 'country', 'city', 'state']
 
     try:
-        records_df[estimate_columns].to_sql("estimates",
+        records_df[estimate_columns].to_sql("estimate",
                                             schema='arbo',
                                             con=engine,
-                                            if_exists='replace',
+                                            if_exists='append',
                                             index=False)
         print("Completed running... Verify in database...")
     except (SQLAlchemyError, ValueError) as e:
