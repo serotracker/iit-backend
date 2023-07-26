@@ -9,7 +9,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
 
-from Pathogens.Utility.location_utils.location_functions import get_LngLat
+from Pathogens.Utility.location_utils.location_functions import get_lng_lat
 
 AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
 AIRTABLE_ARBO_BASE_ID = os.getenv('AIRTABLE_ARBO_BASE_ID')
@@ -96,15 +96,15 @@ def main():
 
     # calculate the lat and lng values for each of the rows.
     records_df[['latitude', 'longitude']] = records_df.apply(lambda row:
-                                                             pd.Series(get_LngLat(
+                                                             pd.Series(get_lng_lat(
                                                                  ','.join(filter(None, [row['city'], row['state']])),
                                                                  'place'), dtype='object')
                                                              if pd.notnull(row['city']) and pd.notnull(row['state'])
                                                              else (pd.Series(
-                                                                 get_LngLat(row['state'], 'region'), dtype='object') if pd.notnull(
+                                                                 get_lng_lat(row['state'], 'region'), dtype='object') if pd.notnull(
                                                                  row['state'])
                                                                    else pd.Series(
-                                                                 get_LngLat(row['country'], 'country'), dtype='object')), axis=1)
+                                                                 get_lng_lat(row['country'], 'country'), dtype='object')), axis=1)
 
     # TODO: Add 'country', 'state', 'city' once the alembic stuff is fixed
     estimate_columns = ['id', 'inclusion_criteria', 'sample_start_date', 'sample_end_date', 'sex', 'assay',
