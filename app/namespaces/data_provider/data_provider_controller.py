@@ -3,7 +3,7 @@ import logging.config
 from flask_restx import Resource, Namespace
 from flask import jsonify, make_response, request
 
-from Pathogens.Arbo.API.Services.records_service import get_all_arbo_records
+from Pathogens.Arbo.API.Services.records_service import get_all_arbo_records, get_all_arbo_filter_options
 from .data_provider_service import get_record_details, get_country_seroprev_summaries, jitter_pins, \
     get_all_filter_options
 from .data_provider_schema import RecordDetailsSchema, RecordsSchema, PaginatedRecordsSchema, StudyCountSchema
@@ -106,6 +106,13 @@ class ArboRecords(Resource):
 
         return jsonify(result)
 
+@data_provider_ns.route('/arbo/filter_options', methods=['GET'])
+class ArboFilterOptions(Resource):
+    @data_provider_ns.doc('An endpoint for getting all arbotracker filter options.')
+    def get(self):
+        result = get_all_arbo_filter_options()
+        print(result)
+        return jsonify(result)
 
 # TODO: Deprecate
 @data_provider_ns.route('/records/paginated', methods=['POST'])

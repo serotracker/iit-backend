@@ -6,9 +6,13 @@ from pyairtable import Table
 import os
 from dotenv import load_dotenv
 import pandas as pd
+from sqlalchemy import or_, table
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
 
+from Pathogens.Arbo.ETL.constants import estimate_columns, single_select_lists
 from Pathogens.Arbo.app.sqlalchemy import db_engine
+from Pathogens.Arbo.app.sqlalchemy.sql_alchemy_base import Estimate
 from Pathogens.Utility.location_utils.location_functions import get_lng_lat
 
 AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
@@ -33,7 +37,7 @@ def flatten_single_select_lists(x):
 def main():
     load_dotenv()
 
-    fields_mapping = {'Source Sheet': 'source_sheet',
+    fields_mapping = {'Source Sheet': 'source_sheet_id',
                       'Inclusion Criteria': 'inclusion_criteria',
                       'Sample Start Date': 'sample_start_date',
                       'Sample End Date': 'sample_end_date',
@@ -42,6 +46,7 @@ def main():
                       'Antibody': 'antibody',
                       'Antigen': 'antigen',
                       'Assay': 'assay',
+                      'Assay - Other': 'assay_other',
                       'Sample Size': 'sample_size',
                       'Sample Numerator': 'sample_numerator',
                       'Sample Frame': 'sample_frame',
@@ -51,13 +56,12 @@ def main():
                       'City': 'city',
                       'URL': 'url',
                       'Age group': 'age_group',
-                      'ETL Included': 'include_in_etl'}
-
-    # Unused at the moment. Keeping here in case needed
-    required_fields = ['sample_start_date', 'sex', 'assay', 'sample_size', 'age_group',
-                       'sample_frame', 'seroprevalence', 'url', 'antibody', 'country', 'pathogen', 'source_sheet']
-
-    single_select_lists = ['source_sheet', 'antibody', 'url']
+                      'Age Minimum': 'age_minimum',
+                      'Age Maximum': 'age_maximum',
+                      'ETL Included': 'include_in_etl',
+                      'Producer': 'producer',
+                      'Producer - Other': 'producer_other'
+                      }
 
     estimate_table = Table(os.getenv('AIRTABLE_API_KEY'), os.getenv('AIRTABLE_ARBO_BASE_ID'), 'Study/Estimate Sheet')
 
@@ -105,10 +109,7 @@ def main():
                                                                  get_lng_lat(row['country'], 'country'),
                                                                  dtype='object')), axis=1)
 
-    # TODO: Add 'country', 'state', 'city' once the alembic stuff is fixed
-    estimate_columns = ['id', 'inclusion_criteria', 'sample_start_date', 'sample_end_date', 'sex', 'assay',
-                        'sample_size', 'sample_numerator', 'seroprevalence', 'url', 'longitude', 'latitude',
-                        'created_at', 'country', 'city', 'state']
+    db_loaded_successfully = False
 
     try:
         records_df[estimate_columns].to_sql("estimate",
@@ -117,10 +118,15 @@ def main():
                                             if_exists='append',
                                             index=False)
         print("Completed running... Verify in database...")
+        db_loaded_successfully = True
     except (SQLAlchemyError, ValueError) as e:
         # Send slack error message
         body = f'Error occurred while loading tables into Postgres: {e}'
         print(body)
+
+    if db_loaded_successfully:
+        with Session(db_engine) as session:
+            session.query(Estimate).filter(or_(table.created_at != CURR_TIME, table.created_at.is_(None))).delete()
 
 
 if __name__ == '__main__':
