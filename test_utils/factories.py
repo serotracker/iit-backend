@@ -72,6 +72,8 @@ class DashboardSourceFactory(factory.alchemy.SQLAlchemyModelFactory):
     # Make this false by default so that no records are filtered out
     in_disputed_area = False
     subgroup_var = factory.Sequence(lambda n: 'subgroup_var_%d' % n)
+    manufacturer_sensitivity = factory.LazyFunction(random)
+    manufacturer_specificity = factory.LazyFunction(random)
 
 
 class AntibodyTargetFactory(factory.alchemy.SQLAlchemyModelFactory):
