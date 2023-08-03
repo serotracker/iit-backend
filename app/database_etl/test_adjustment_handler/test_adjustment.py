@@ -14,18 +14,17 @@ from app.database_etl.airtable_records_handler import batch_update_airtable_reco
 
 def logit(p, tol=1e-3):
     # logit function; well defined for p in open interval (0,1)
-    
+
     # constrain the probability to the range [tol, 1-tol]
     # to avoid NaNs if p = 0 or p = 1
     p = max(p, tol)
     p = min(p, 1 - tol)
-    
+
     # return the logit of the constrained probability
     return log(p / (1 - p))
 
 
 def result_is_bounded(median_adj_prev, raw_prev):
-    
     # check whether the adjusted result is close to the raw value
     # e.g., log odds within 1 
     logit_delta = logit(median_adj_prev) - logit(raw_prev)
@@ -35,7 +34,7 @@ def result_is_bounded(median_adj_prev, raw_prev):
     # or if both are > 0.5    
     both_below_maxsmall = (median_adj_prev <= 0.5) and (raw_prev <= 0.5)
     both_above_minbig = (median_adj_prev >= 0.5) and (raw_prev >= 0.5)
-    
+
     return (adjusted_closeto_raw or both_below_maxsmall or both_above_minbig)
 
 
@@ -62,7 +61,7 @@ def run_on_test_set(model_code: str = testadj_model_code, model_name: str = 'tes
 
     # Write to csv
     records_df['adj_prevalence'], records_df['adj_sensitivity'], records_df['adj_specificity'], \
-    records_df['ind_eval_type'], records_df['adj_prev_ci_lower'], records_df['adj_prev_ci_upper'] = \
+        records_df['ind_eval_type'], records_df['adj_prev_ci_lower'], records_df['adj_prev_ci_upper'] = \
         zip(*records_df.apply(lambda row: testadjHandler.get_adjusted_estimate(row), axis=1))
     return records_df
 
@@ -77,10 +76,6 @@ def add_test_adjustments(df: pd.DataFrame) -> pd.DataFrame:
                                          DashboardSource.test_type,
                                          DashboardSource.denominator_value,
                                          DashboardSource.adj_prevalence,
-                                         ResearchSource.ind_se,
-                                         ResearchSource.ind_sp,
-                                         ResearchSource.ind_se_n,
-                                         ResearchSource.ind_sp_n,
                                          ResearchSource.se_n,
                                          ResearchSource.sp_n,
                                          ResearchSource.test_validation,
@@ -94,7 +89,7 @@ def add_test_adjustments(df: pd.DataFrame) -> pd.DataFrame:
     diff.fillna(0, inplace=True)
 
     # Convert numeric cols to float (some of these come out of airtable as strings so need to standardize types)
-    float_cols = ['ind_se', 'ind_sp', 'ind_se_n', 'ind_sp_n', 'se_n', 'sp_n', 'sensitivity', 'specificity',
+    float_cols = ['manufacturer_sensitivity', 'manufacturer_specificity', 'se_n', 'sp_n', 'sensitivity', 'specificity',
                   'denominator_value', 'serum_pos_prevalence']
     diff[float_cols] = diff[float_cols].astype(float)
 
@@ -102,7 +97,7 @@ def add_test_adjustments(df: pd.DataFrame) -> pd.DataFrame:
     diff[float_cols] = diff[float_cols].round(5)
 
     # Drop duplicates based on these cols
-    duplicate_cols = ['airtable_record_id', 'test_adj', 'ind_se', 'ind_sp', 'ind_se_n', 'ind_sp_n',
+    duplicate_cols = ['airtable_record_id', 'test_adj', 'manufacturer_sensitivity', 'manufacturer_specificity',
                       'se_n', 'sp_n', 'sensitivity', 'specificity', 'test_validation', 'test_type', 'denominator_value',
                       'serum_pos_prevalence']
     diff = diff.drop_duplicates(subset=duplicate_cols, keep=False)
@@ -127,17 +122,15 @@ def add_test_adjustments(df: pd.DataFrame) -> pd.DataFrame:
         # Apply test adjustment to the new_test_adj_records and add 6 new columns
         test_adj_handler = TestAdjHandler()
         new_airtable_test_adj_records['adj_prevalence'], \
-        new_airtable_test_adj_records['adj_sensitivity'], \
-        new_airtable_test_adj_records['adj_specificity'], \
-        new_airtable_test_adj_records['ind_eval_type'], \
-        new_airtable_test_adj_records['adj_prev_ci_lower'], \
-        new_airtable_test_adj_records['adj_prev_ci_upper'] = \
+            new_airtable_test_adj_records['adj_sensitivity'], \
+            new_airtable_test_adj_records['adj_specificity'], \
+            new_airtable_test_adj_records['ind_eval_type'], \
+            new_airtable_test_adj_records['adj_prev_ci_lower'], \
+            new_airtable_test_adj_records['adj_prev_ci_upper'] = \
             zip(*new_airtable_test_adj_records.apply(
                 lambda x: test_adj_handler.get_adjusted_estimate(test_adj=x['test_adj'],
-                                                                 ind_se=x['ind_se'],
-                                                                 ind_sp=x['ind_sp'],
-                                                                 ind_se_n=x['ind_se_n'],
-                                                                 ind_sp_n=x['ind_sp_n'],
+                                                                 man_sens=x['manufacturer_sensitivity'],
+                                                                 man_spec=x['manufacturer_specificity'],
                                                                  se_n=x['se_n'],
                                                                  sp_n=x['sp_n'],
                                                                  sensitivity=x['sensitivity'],

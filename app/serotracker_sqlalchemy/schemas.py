@@ -55,6 +55,8 @@ class DashboardSourceSchema(Schema):
     pop_adj = fields.Boolean(allow_none=True)
     isotype_comb = fields.Str(validate=validate.Length(max=32), allow_none=True)
     test_type = fields.Str(validate=validate.Length(max=256), allow_none=True)
+    manufacturer_sensitivity = fields.Float(allow_nan=True, allow_none=True)
+    manufacturer_specificity = fields.Float(allow_nan=True, allow_none=True)
 
 
 class ResearchSourceSchema(Schema):

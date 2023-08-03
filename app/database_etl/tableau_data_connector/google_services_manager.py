@@ -19,8 +19,8 @@ class GoogleSheetsManager:
 
     def create_service(self):
         creds = None
-        if os.path.exists('tableau_data_connector/token.pickle'):
-            with open('tableau_data_connector/token.pickle', 'rb') as token:
+        if os.path.exists('app/database_etl/tableau_data_connector/credentials.json'):
+            with open('app/database_etl/tableau_data_connector/token.pickle', 'rb') as token:
                 creds = pickle.load(token)
 
             # If there are no (valid) credentials available, let the user log in.
@@ -29,11 +29,11 @@ class GoogleSheetsManager:
                 creds.refresh(Request())
             else:
                 flow = InstalledAppFlow.from_client_secrets_file(
-                    'tableau_data_connector/credentials.json', self.scope)
+                    'app/database_etl/tableau_data_connector/credentials.json', self.scope)
                 creds = flow.run_local_server(port=0)
 
             # Save the credentials for the next run
-            with open('tableau_data_connector/token.pickle', 'wb') as token:
+            with open('app/database_etl/tableau_data_connector/token.pickle', 'wb') as token:
                 pickle.dump(creds, token)
         service = build('sheets', 'v4', credentials=creds)
         return service

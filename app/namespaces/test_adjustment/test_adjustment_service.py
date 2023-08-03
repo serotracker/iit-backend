@@ -96,7 +96,7 @@ class TestAdjHandler:
 
     def fit_one_pystan_model(self, model_params: Dict) -> Tuple:
         # Calculate adapt_delta param
-        if model_params['n_sp'] < 10 or model_params['n_se'] < 10  \
+        if model_params['n_sp'] < 10 or model_params['n_se'] < 10 \
                 or model_params['y_sp'] < 5 or model_params['y_se'] < 5:
             adapt_delta = 0.99
         else:
@@ -168,7 +168,7 @@ class TestAdjHandler:
         else:
             return lower, model_result, upper
 
-    def get_adjusted_estimate(self, test_adj, ind_se, ind_sp, ind_se_n, ind_sp_n,
+    def get_adjusted_estimate(self, test_adj, man_sens, man_spec,
                               se_n, sp_n, sensitivity, specificity, test_validation,
                               test_type, denominator_value, serum_pos_prevalence) -> Tuple:
         # initialize adj_type
@@ -178,12 +178,12 @@ class TestAdjHandler:
         if pd.isna(test_adj):
 
             # Independent evaluation is available
-            if pd.notna(ind_se) and pd.notna(ind_sp):
+            if pd.notna(man_sens) and pd.notna(man_spec):
                 adj_type = 'FINDDx / MUHC independent evaluation'
-                se = ind_se
-                sp = ind_sp
-                output_se_n = float(ind_se_n) if ind_se_n is not None else 30
-                output_sp_n = float(ind_sp_n) if ind_sp_n is not None else 80
+                se = man_sens
+                sp = man_spec
+                output_se_n = 30
+                output_sp_n = 80
 
             # Author evaluation is available
             elif pd.notna(se_n) and pd.notna(sp_n) and \

@@ -8,7 +8,8 @@ dashboard_fields = ['Source Name', 'Publication Date', 'First Author Full Name',
                     'SeroTracker Analysis Primary Estimate', 'Most Adjusted Primary Estimate', 'Isotype combination',
                     'Rapid Review Study Name (Text)', 'Test Adjustment', 'Population Adjustment', 'UNITY: Criteria',
                     'Adjusted serum positive prevalence', 'Adjusted serum pos prevalence, 95pct CI Lower',
-                    'Adjusted serum pos prevalence, 95pct CI Upper']
+                    'Adjusted serum pos prevalence, 95pct CI Upper', 'Manufacturer Sensitivity (Immunoassay)',
+                    'Manufacturer Specificity (Immunoassay)']
 
 research_fields = ['2020 Population Count - Case', '2020 Population Count - Mortality', 'Age Maximum', 'Age Minimum',
                    'Age variation', 'Age variation measure', 'Antibody target', 'Average age',
@@ -126,7 +127,9 @@ full_airtable_fields = {'2020 Population Count - Case': 'case_population',
                         'Test Validation': 'test_validation',
                         'UNITY: Criteria': 'is_unity_aligned',
                         'URL': 'url',
-                        'Zotero Citation Key': 'zotero_citation_key'}
+                        'Zotero Citation Key': 'zotero_citation_key',
+                        'Manufacturer Sensitivity (Immunoassay)': 'manufacturer_sensitivity',
+                        'Manufacturer Specificity (Immunoassay)': 'manufacturer_specificity'}
 
 airtable_fields_config = {'dashboard': {k: full_airtable_fields[k] for k in dashboard_fields},
                           'research': {k: full_airtable_fields[k] for k in research_fields}}

@@ -60,6 +60,8 @@ class DashboardSource(db.Model):
     in_disputed_area = Column(Boolean)
     subgroup_var = Column(String())
     is_unity_aligned = Column(Boolean)
+    manufacturer_sensitivity = Column(Float)
+    manufacturer_specificity = Column(Float)
 
 
 # Research table for all additional research fields
