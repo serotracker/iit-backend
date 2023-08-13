@@ -177,16 +177,8 @@ class TestAdjHandler:
         # unadjusted estimate available and thus prioritized in estimate selection code
         if pd.isna(test_adj):
 
-            # Independent evaluation is available
-            if pd.notna(man_sens) and pd.notna(man_spec):
-                adj_type = 'FINDDx / MUHC independent evaluation'
-                se = man_sens
-                sp = man_spec
-                output_se_n = 30
-                output_sp_n = 80
-
             # Author evaluation is available
-            elif pd.notna(se_n) and pd.notna(sp_n) and \
+            if pd.notna(se_n) and pd.notna(sp_n) and \
                     pd.notna(sensitivity) and pd.notna(specificity):
                 if test_validation and \
                         'Validated by independent authors/third party/non-developers' in test_validation:
@@ -197,6 +189,14 @@ class TestAdjHandler:
                 sp = specificity
                 output_se_n = se_n if pd.notna(se_n) else 30
                 output_sp_n = sp_n if pd.notna(sp_n) else 80
+
+            # Independent evaluation is available
+            elif pd.notna(man_sens) and pd.notna(man_spec):
+                adj_type = 'FINDDx / MUHC independent evaluation'
+                se = man_sens
+                sp = man_spec
+                output_se_n = 30
+                output_sp_n = 80
 
             # Manufacturer evaluation is available
             elif pd.notna(sensitivity) and pd.notna(specificity):
