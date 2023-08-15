@@ -19,7 +19,7 @@ class GoogleSheetsManager:
 
     def create_service(self):
         creds = None
-        if os.path.exists('app/database_etl/tableau_data_connector/credentials.json'):
+        if os.path.exists('app/database_etl/tableau_data_connector/token.pickle'):
             with open('app/database_etl/tableau_data_connector/token.pickle', 'rb') as token:
                 creds = pickle.load(token)
 
