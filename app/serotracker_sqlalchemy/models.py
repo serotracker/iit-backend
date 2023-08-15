@@ -60,6 +60,8 @@ class DashboardSource(db.Model):
     in_disputed_area = Column(Boolean)
     subgroup_var = Column(String())
     is_unity_aligned = Column(Boolean)
+    manufacturer_sensitivity = Column(Float)
+    manufacturer_specificity = Column(Float)
 
 
 # Research table for all additional research fields
@@ -83,12 +85,6 @@ class ResearchSource(db.Model):
     include_in_srma = Column(Boolean)
     sensspec_from_manufacturer = Column(Boolean)
     immunoassays_name = Column(String())
-    ind_eval_lab = Column(String())
-    ind_eval_link = Column(String())
-    ind_se = Column(Float)
-    ind_se_n = Column(Float)
-    ind_sp = Column(Float)
-    ind_sp_n = Column(Float)
     jbi_1 = Column(String())
     jbi_2 = Column(String())
     jbi_3 = Column(String())

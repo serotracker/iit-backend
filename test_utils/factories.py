@@ -72,6 +72,8 @@ class DashboardSourceFactory(factory.alchemy.SQLAlchemyModelFactory):
     # Make this false by default so that no records are filtered out
     in_disputed_area = False
     subgroup_var = factory.Sequence(lambda n: 'subgroup_var_%d' % n)
+    manufacturer_sensitivity = factory.LazyFunction(random)
+    manufacturer_specificity = factory.LazyFunction(random)
 
 
 class AntibodyTargetFactory(factory.alchemy.SQLAlchemyModelFactory):
@@ -199,12 +201,6 @@ class ResearchSourceFactory(factory.alchemy.SQLAlchemyModelFactory):
     death_count_plus4 = factory.LazyFunction(lambda: randint(100, 1000))
     include_in_srma = factory.LazyFunction(lambda: bool(randint(0, 1)))
     sensspec_from_manufacturer = factory.LazyFunction(lambda: bool(randint(0, 1)))
-    ind_eval_lab = factory.Sequence(lambda n: 'research_field_%d' % n)
-    ind_eval_link = factory.Sequence(lambda n: 'research_field_%d' % n)
-    ind_se = factory.LazyFunction(random)
-    ind_se_n = factory.LazyFunction(random)
-    ind_sp = factory.LazyFunction(random)
-    ind_sp_n = factory.LazyFunction(random)
     jbi_1 = factory.Sequence(lambda n: 'research_field_%d' % n)
     jbi_2 = factory.Sequence(lambda n: 'research_field_%d' % n)
     jbi_3 = factory.Sequence(lambda n: 'research_field_%d' % n)

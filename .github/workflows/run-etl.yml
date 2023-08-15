@@ -23,5 +23,5 @@ jobs:
             source venv/bin/activate &&
             pip install -r requirements.txt &&
             set -o allexport; source .env; set +o allexport &&
-            python -m app.database_etl.etl_main
+            python3 -m app.database_etl.etl_main
           '

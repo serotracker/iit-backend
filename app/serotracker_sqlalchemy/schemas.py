@@ -55,6 +55,8 @@ class DashboardSourceSchema(Schema):
     pop_adj = fields.Boolean(allow_none=True)
     isotype_comb = fields.Str(validate=validate.Length(max=32), allow_none=True)
     test_type = fields.Str(validate=validate.Length(max=256), allow_none=True)
+    manufacturer_sensitivity = fields.Float(allow_nan=True, allow_none=True)
+    manufacturer_specificity = fields.Float(allow_nan=True, allow_none=True)
 
 
 class ResearchSourceSchema(Schema):
@@ -73,12 +75,6 @@ class ResearchSourceSchema(Schema):
     death_count_plus4 = fields.Float(allow_none=True, allow_nan=True)
     include_in_srma = fields.Boolean(allow_none=True)
     sensspec_from_manufacturer = fields.Boolean(allow_none=True)
-    ind_eval_lab = fields.Str(allow_none=True)
-    ind_eval_link = fields.Str(allow_none=True)
-    ind_se = fields.Float(allow_none=True, allow_nan=True)
-    ind_se_n = fields.Float(allow_none=True, allow_nan=True)
-    ind_sp = fields.Float(allow_none=True, allow_nan=True)
-    ind_sp_n = fields.Float(allow_none=True, allow_nan=True)
     jbi_1 = fields.Str(allow_none=True)
     jbi_2 = fields.Str(allow_none=True)
     jbi_3 = fields.Str(allow_none=True)
