@@ -7,6 +7,8 @@ from app import db
 # Dashboard table for all dashboard fields
 class DashboardSource(db.Model):
     __tablename__ = 'dashboard_source'
+    # __table_args__ = {"schema": "public"}
+
 
     source_id = Column(UUID(as_uuid=True), primary_key=True)
     source_name = Column(String())

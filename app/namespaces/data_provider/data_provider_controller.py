@@ -4,6 +4,8 @@ from flask_restx import Resource, Namespace
 from flask import jsonify, make_response, request
 
 from Pathogens.Arbo.API.Services.records_service import get_all_arbo_records, get_all_arbo_filter_options
+from Pathogens.Arbo.API.Services.visualizations_service import get_arbo_visualizations
+from Pathogens.Sero.API.Services.records_service import get_all_sarscov2_filter_options, get_all_sarscov2_records
 from .data_provider_service import get_record_details, get_country_seroprev_summaries, jitter_pins, \
     get_all_filter_options
 from .data_provider_schema import RecordDetailsSchema, RecordsSchema, PaginatedRecordsSchema, StudyCountSchema
@@ -76,7 +78,7 @@ class Records(Resource):
                                        unity_aligned_only=unity_aligned_only,
                                        include_records_without_latlngs=include_records_without_latlngs)
 
-        print(records)
+        # print(records)
 
         if not columns or ("pin_latitude" in columns and "pin_longitude" in columns):
             records = jitter_pins(records)
@@ -92,27 +94,6 @@ class Records(Resource):
                 result["records"] = filter_columns(result["records"], columns_requested)
         return jsonify(result)
 
-
-@data_provider_ns.route('/records/arbo', methods=['GET'])
-class ArboRecords(Resource):
-    @data_provider_ns.doc('An endpoint for getting all arbotracker records from database with or without filters.')
-    def get(self):
-
-        records = get_all_arbo_records()
-
-        result = {"records": records}
-
-        print(result)
-
-        return jsonify(result)
-
-@data_provider_ns.route('/arbo/filter_options', methods=['GET'])
-class ArboFilterOptions(Resource):
-    @data_provider_ns.doc('An endpoint for getting all arbotracker filter options.')
-    def get(self):
-        result = get_all_arbo_filter_options()
-        print(result)
-        return jsonify(result)
 
 # TODO: Deprecate
 @data_provider_ns.route('/records/paginated', methods=['POST'])
@@ -268,5 +249,58 @@ class Records(Resource):
             args=dict(request.args)))
 
         result = get_all_filter_options()
+        print(result)
+        return jsonify(result)
+
+# NEW SERO ENDPOINTS ------------------------------------------------------------------------------------------------------------
+
+@data_provider_ns.route('/sarscov2/records', methods=['GET'])
+class SarsCov2Records(Resource):
+    @data_provider_ns.doc('An endpoint for getting all serotracker records from database with or without filters.')
+    def get(self):
+        records = get_all_sarscov2_records()
+
+        result = {"records": records}
+
+        return jsonify(result)
+
+
+@data_provider_ns.route('/sarscov2/filter_options', methods=['GET'])
+class ArboFilterOptions(Resource):
+    @data_provider_ns.doc('An endpoint for getting all serotracker filter options.')
+    def get(self):
+        result = get_all_sarscov2_filter_options()
+        print(result)
+        return jsonify(result)
+
+# ARBO ENDPOINTS ---------------------------------------------------------------------------------------------------------------
+
+@data_provider_ns.route('/arbo/records', methods=['GET'])
+class ArboRecords(Resource):
+    @data_provider_ns.doc('An endpoint for getting all arbotracker records from database with or without filters.')
+    def get(self):
+        records = get_all_arbo_records()
+
+        result = {"records": records}
+
+        # print(result)
+
+        return jsonify(result)
+
+
+@data_provider_ns.route('/arbo/filter_options', methods=['GET'])
+class ArboFilterOptions(Resource):
+    @data_provider_ns.doc('An endpoint for getting all arbotracker filter options.')
+    def get(self):
+        result = get_all_arbo_filter_options()
+        # print(result)
+        return jsonify(result)
+
+
+@data_provider_ns.route('/data_provider/arbo/visualizations', methods=['GET'])
+class ArboVisualizations(Resource):
+    @data_provider_ns.doc('An endpoint for getting all arbotracker visualizations.')
+    def get(self):
+        result = get_arbo_visualizations()
         print(result)
         return jsonify(result)

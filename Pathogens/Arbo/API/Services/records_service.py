@@ -42,9 +42,9 @@ def get_all_arbo_filter_options():
         producer = session.query(distinct(Estimate.producer)).all()
         sample_frame = session.query(distinct(Estimate.sample_frame)).all()
         antibody = session.query(distinct(Antibody.antibody)).all()
+        pathogen = session.query(distinct(Estimate.pathogen)).all()
 
-        print(f'[DEBUG] age_group: {age_group[0]}')
-        print(f'[DEBUG] antibody: {antibody[0]}')
+        print(f'[DEBUG] pathogen: {pathogen}')
 
         result_dict = {
             "age_group": [item[0] for item in age_group],
@@ -53,7 +53,8 @@ def get_all_arbo_filter_options():
             "country": [item[0] for item in country],
             "producer": [item[0] for item in producer],
             "sample_frame": [item[0] for item in sample_frame],
-            "antibody": [item[0] for item in antibody]
+            "antibody": [item[0] for item in antibody],
+            "pathogen": [item[0] for item in pathogen]
         }
 
         return result_dict

@@ -46,7 +46,7 @@ def load_into_db(data, table_name, schema='arbo'):
     except (SQLAlchemyError, ValueError) as e:
         # Send slack error message
         body = f'[ERROR] Error occurred while loading {table_name} data into Postgres: {e}: '
-        print(body)
+        # print(body)
         return False
 
 
@@ -130,7 +130,7 @@ def main():
         print("[STEP] Converting date string to datetime object for " + col)
         records_df[col] = records_df[col].apply(parse_date_cols)
 
-    print(records_df.dtypes)
+    # print(records_df.dtypes)
 
     print("[STEP] generating lat and lng values")
     # calculate the lat and lng values for each of the rows.
