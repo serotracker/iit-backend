@@ -4,7 +4,7 @@ from datetime import datetime
 
 from app.utils.notifications_sender import send_slack_message
 from app.utils import airtable_fields_config
-from app.database_etl.location_utils import add_latlng_to_df, get_country_code
+from Pathogens.Utility.location_utils import add_latlng_to_df, get_country_code
 from .table_formatter import replace_null_string
 from app.database_etl.owid_ingestion_handler import get_vaccinations_per_hundred, get_tests_per_hundred, \
     get_deaths_per_hundred, get_cases_per_hundred, get_vaccination_policy, get_midpoint, get_whether_exact_match

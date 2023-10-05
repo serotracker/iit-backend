@@ -45,3 +45,5 @@ docker_postgres_dump.sql
 
 # Dataset CSV
 **/serotracker_dataset.csv
+
+env

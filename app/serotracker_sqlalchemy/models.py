@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime
+from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, BigInteger, Date
 from sqlalchemy.dialects.postgresql import UUID
 
 from app import db
@@ -7,6 +7,8 @@ from app import db
 # Dashboard table for all dashboard fields
 class DashboardSource(db.Model):
     __tablename__ = 'dashboard_source'
+    # __table_args__ = {"schema": "public"}
+
 
     source_id = Column(UUID(as_uuid=True), primary_key=True)
     source_name = Column(String())
@@ -234,3 +236,4 @@ class PopulationGroupOptions(db.Model):
     german_name = Column(String())
     order = Column(Integer)
     created_at = Column(DateTime)
+

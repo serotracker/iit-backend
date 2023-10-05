@@ -1,0 +1,51 @@
+{
+    "USA":  [
+        "United States of America",
+        "United States"
+    ],
+    "RUS": [
+        "Russian Federation",
+        "Russia"
+    ],
+    "PSE": [
+        "Palestine",
+        "State of Palestine"
+    ],
+    "COG": [
+        "Republic of Congo",
+        "Congo"
+    ],
+    "KOR": [
+        "Republic of Korea",
+        "South Korea"
+    ],
+    "CUB": [
+        "Republic of Cuba",
+        "Cuba"
+    ],
+    "EST": [
+        "Republic of Estonia",
+        "Estonia"
+    ],
+    "GBR": [
+        "The United Kingdom",
+        "United Kingdom"
+    ],
+    "IRN": [
+        "Iran (Islamic Republic of)",
+        "Iran"
+    ], 
+    "VNM": [
+        "Viet Nam",
+        "Vietnam"
+    ], 
+    "JEY": [
+        "Jersey"
+    ],
+    "GUF": [
+        "French Guiana"
+    ],
+    "FRO": [
+        "Faroe Islands"
+    ]
+}

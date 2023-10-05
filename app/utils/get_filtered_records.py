@@ -1,5 +1,8 @@
+import json
+
+from Pathogens.Arbo.app.sqlalchemy.sql_alchemy_base import Estimate
 from app.serotracker_sqlalchemy import db_session, DashboardSource, ResearchSource, \
-    db_model_config, Country, dashboard_source_cols, research_source_cols
+    db_model_config, Country, dashboard_source_cols, research_source_cols, ArboRecords
 from sqlalchemy.dialects.postgresql import array
 from sqlalchemy import func, cast, case, and_, String, ARRAY
 import pandas as pd
@@ -49,6 +52,7 @@ def _apply_agg_query(agg_field_exp: SQLalchemyExpression, label: str,
     return case([(func.array_agg(agg_field_exp).filter(agg_field_exp.isnot(None)).isnot(None),
                   cast(func.array_agg(func.distinct(agg_field_exp)).filter(agg_field_exp.isnot(None)), ARRAY(type)))],
                 else_=cast(array([]), ARRAY(type))).label(label)
+
 
 
 def get_all_records(research_fields=False, include_disputed_regions=False,
