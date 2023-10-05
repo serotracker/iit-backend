@@ -249,7 +249,6 @@ class Records(Resource):
             args=dict(request.args)))
 
         result = get_all_filter_options()
-        print(result)
         return jsonify(result)
 
 # NEW SERO ENDPOINTS ------------------------------------------------------------------------------------------------------------
@@ -270,7 +269,6 @@ class ArboFilterOptions(Resource):
     @data_provider_ns.doc('An endpoint for getting all serotracker filter options.')
     def get(self):
         result = get_all_sarscov2_filter_options()
-        print(result)
         return jsonify(result)
 
 # ARBO ENDPOINTS ---------------------------------------------------------------------------------------------------------------
@@ -302,5 +300,4 @@ class ArboVisualizations(Resource):
     @data_provider_ns.doc('An endpoint for getting all arbotracker visualizations.')
     def get(self):
         result = get_arbo_visualizations()
-        print(result)
         return jsonify(result)

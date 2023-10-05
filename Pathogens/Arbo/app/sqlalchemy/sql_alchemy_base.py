@@ -24,7 +24,8 @@ import uuid
 # and then to apply the change, run alembic upgrade head again.
 Base = declarative_base(metadata=MetaData(schema="arbo"))
 
-db_engine = create_engine("postgresql://postgres:Studylight2612@localhost:5432/whiteclaw")
+print(f'[DEBUG] DATABASE_URL: {os.getenv("DATABASE_URL")}')
+db_engine = create_engine(os.getenv('DATABASE_URL'))
 
 class Antibody(Base):
     __tablename__ = 'antibody'

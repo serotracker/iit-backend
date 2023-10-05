@@ -44,8 +44,6 @@ def get_all_arbo_filter_options():
         antibody = session.query(distinct(Antibody.antibody)).all()
         pathogen = session.query(distinct(Estimate.pathogen)).all()
 
-        print(f'[DEBUG] pathogen: {pathogen}')
-
         result_dict = {
             "age_group": [item[0] for item in age_group],
             "sex": [item[0] for item in sex],
