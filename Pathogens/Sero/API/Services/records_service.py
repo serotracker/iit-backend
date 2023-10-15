@@ -18,25 +18,27 @@ def get_all_sarscov2_records():
 
         try:
             # Selecting only the required columns from the DashboardSource table
+            # TODO: Isotype reported and antibody target need to be added in
+
             records = session.query(
+                DashboardSource.study_name,
+                DashboardSource.estimate_grade,
                 DashboardSource.source_type,
                 DashboardSource.overall_risk_of_bias,
                 DashboardSource.population_group,
                 DashboardSource.sex,
                 DashboardSource.age,
                 DashboardSource.test_type,
-                DashboardSource.isotypes_reported,
-                DashboardSource.antibody_target
+                DashboardSource.pin_latitude,
+                DashboardSource.pin_longitude,
             ).all()
 
-            result_list = []
-            for estimate in records:
-                record_dict = estimate.__dict__  # Convert Estimate object to a dictionary
-                result_list.append(record_dict)
+            # Convert each record into a dictionary of column name and value pairs
+            records = [dict(zip(record.keys(), record)) for record in records]
 
-            # Remove unnecessary attributes from the dictionaries
-            for record_dict in result_list:
-                record_dict.pop("_sa_instance_state")
+            result_list = []
+
+            result_list.extend(records)
 
             for record in result_list[0:5]:
                 print(f'[DEBUG] estimate record: {record}')
@@ -54,36 +56,36 @@ def get_all_sarscov2_filter_options():
 
         options = get_filter_static_options()
 
-        # Get countries
-        query = session.query(distinct(getattr(Country, "country_name")))
-        results = [q[0] for q in query if q[0] is not None]
-        # sort countries in alpha order
-        options["country"] = sorted(results)
+        # # Get countries
+        # query = session.query(distinct(getattr(Country, "country_name")))
+        # results = [q[0] for q in query if q[0] is not None]
+        # # sort countries in alpha order
+        # options["country"] = sorted(results)
 
-        # Get genpop
-        query = session.query(distinct(ResearchSource.genpop))
-        results = [q[0] for q in query if q[0] is not None]
-        options["genpop"] = sorted(results)
+        # # Get genpop
+        # query = session.query(distinct(ResearchSource.genpop))
+        # results = [q[0] for q in query if q[0] is not None]
+        # options["genpop"] = sorted(results)
 
-        # Get subgroup_var
-        query = session.query(distinct(DashboardSource.subgroup_var))
-        results = [q[0] for q in query if q[0] is not None]
-        options["subgroup_var"] = sorted(results)
+        # # Get subgroup_var
+        # query = session.query(distinct(DashboardSource.subgroup_var))
+        # results = [q[0] for q in query if q[0] is not None]
+        # options["subgroup_var"] = sorted(results)
 
-        # Get subgroup_cat
-        query = session.query(distinct(ResearchSource.subgroup_cat))
-        results = [q[0] for q in query if q[0] is not None]
-        options["subgroup_cat"] = sorted(results)
+        # # Get subgroup_cat
+        # query = session.query(distinct(ResearchSource.subgroup_cat))
+        # results = [q[0] for q in query if q[0] is not None]
+        # options["subgroup_cat"] = sorted(results)
 
-        # Get state
-        query = session.query(distinct(State.state_name))
-        results = [q[0] for q in query if q[0] is not None]
-        options["state"] = sorted(results)
+        # # Get state
+        # query = session.query(distinct(State.state_name))
+        # results = [q[0] for q in query if q[0] is not None]
+        # options["state"] = sorted(results)
 
-        # Get city
-        query = session.query(distinct(City.city_name))
-        results = [q[0] for q in query if q[0] is not None]
-        options["city"] = sorted(results)
+        # # Get city
+        # query = session.query(distinct(City.city_name))
+        # results = [q[0] for q in query if q[0] is not None]
+        # options["city"] = sorted(results)
 
         # Only surface Spike and Nucleocapsid anitbody target options because only options that are relevant for
         # interpreting seroprev data in the context of vaccines
