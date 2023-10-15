@@ -17,7 +17,17 @@ def get_all_sarscov2_records():
             # group_by(Estimate.id).all()
 
         try:
-            records = session.query(DashboardSource).all()
+            # Selecting only the required columns from the DashboardSource table
+            records = session.query(
+                DashboardSource.source_type,
+                DashboardSource.overall_risk_of_bias,
+                DashboardSource.population_group,
+                DashboardSource.sex,
+                DashboardSource.age,
+                DashboardSource.test_type,
+                DashboardSource.isotypes_reported,
+                DashboardSource.antibody_target
+            ).all()
 
             result_list = []
             for estimate in records:
@@ -99,6 +109,4 @@ def get_all_sarscov2_filter_options():
         # result[2]: French translation of filter option
         options["population_group"] = [{"english": result[1], "french": result[2], "german": result[3]} for result in sorted(results, key=lambda result: result[0])]
         
-        print(options)
-
         return options
