@@ -7,8 +7,8 @@ prioritization_criteria_full = {
     ],
     'adjustment_testadj': [
         lambda estimate: (estimate['pop_adj'] is True) and (estimate['test_adj'] is True),
-        lambda estimate: (pd.isna(estimate['pop_adj'])) and (estimate['test_adj'] is True),
         lambda estimate: (estimate['pop_adj'] is True) and (pd.isna(estimate['test_adj'])),
+        lambda estimate: (pd.isna(estimate['pop_adj'])) and (estimate['test_adj'] is True),
         lambda estimate: (pd.isna(estimate['pop_adj'])) and (pd.isna(estimate['test_adj'])),
     ],
     'primary_estimate_testunadj': [
@@ -24,7 +24,6 @@ prioritization_criteria_full = {
         lambda estimate: estimate['estimate_grade'] == 'National',
         lambda estimate: estimate['estimate_grade'] == 'Regional',
         lambda estimate: estimate['estimate_grade'] == 'Local',
-        lambda estimate: estimate['estimate_grade'] == 'Sublocal',
     ],
     'age': [
         lambda estimate: estimate['age'] == 'Multiple groups'
@@ -53,8 +52,11 @@ prioritization_criteria_full = {
     ],
     'test_type': [
         lambda estimate: estimate['test_type'] == 'Neutralization',
+        lambda estimate: estimate['test_type'] == 'Multiple Types',
+        lambda estimate: estimate['test_type'] == 'ELISA',
         lambda estimate: estimate['test_type'] == 'CLIA',
-        lambda estimate: estimate['test_type'] == 'ELISA'
+        lambda estimate: estimate['test_type'] == 'LFIA',
+        lambda estimate: estimate['test_type'] == 'Other',
     ],
     'specimen': [
         lambda estimate: estimate['specimen_type'] != 'Dried Blood'
