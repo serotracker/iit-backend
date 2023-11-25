@@ -19,6 +19,9 @@ AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
 AIRTABLE_ARBO_BASE_ID = os.getenv('AIRTABLE_ARBO_BASE_ID')
 CURR_TIME = datetime.now()
 
+geocentric_latitude_or_longitude_regex = re.compile('^(-?)(\d*)(.\d+)?°?$')
+geodetic_latitude_regex = re.compile('^(\d{1,3})°(\d{1,3})′(\d{1,3})″([N,S])$')
+geodetic_longitude_regex = re.compile('^(\d{1,3})°(\d{1,3})′(\d{1,3})″([O,W,E])$')
 
 def parse_date_cols(x):
     if x:
@@ -26,6 +29,37 @@ def parse_date_cols(x):
         return new_date
     return None
 
+def clean_latitude_value(latitude):
+    if latitude is None:
+        return None
+
+    latitude_no_spaces = latitude.replace(" ", "")
+
+    if geocentric_latitude_or_longitude_regex.search(latitude_no_spaces):
+        return latitude_no_spaces.replace('°', '')
+    if geodetic_latitude_regex.search(latitude_no_spaces):
+        sign = '' if ( latitude_no_spaces[-1] == 'N') else '-'
+        angle = latitude_no_spaces.split('°')[0]
+
+        return sign + angle
+    else: 
+        return None
+
+def clean_longitude_value(longitude):
+    if longitude is None:
+        return None
+
+    longitude_no_spaces = longitude.replace(" ", "")
+
+    if geocentric_latitude_or_longitude_regex.search(longitude_no_spaces):
+        return longitude_no_spaces.replace('°', '')
+    if geodetic_longitude_regex.search(longitude_no_spaces):
+        sign = '' if ( longitude_no_spaces[-1] == 'E') else '-'
+        angle = longitude_no_spaces.split('°')[0]
+
+        return sign + angle
+    else: 
+        return None
 
 def flatten_single_select_lists(x):
     if isinstance(x, list) and len(x) == 1:
@@ -93,6 +127,8 @@ def main():
                       'Country': 'country',
                       'State': 'state',
                       'City': 'city',
+                      'Latitude': 'latitude',
+                      'Longitude': 'longitude',
                       'URL': 'url',
                       'Age group': 'age_group',
                       'Age Minimum': 'age_minimum',
@@ -132,21 +168,9 @@ def main():
 
     # print(records_df.dtypes)
 
-    print("[STEP] generating lat and lng values")
-    # calculate the lat and lng values for each of the rows.
-    # TODO: Not working correctly yet
-    records_df[['latitude', 'longitude']] = records_df.apply(lambda row:
-                                                             pd.Series(get_lng_lat(
-                                                                 ','.join(filter(None, [row['city'], row['state']])),
-                                                                 'place'), dtype='object')
-                                                             if pd.notnull(row['city']) and pd.notnull(row['state'])
-                                                             else (pd.Series(
-                                                                 get_lng_lat(row['state'], 'region'),
-                                                                 dtype='object') if pd.notnull(
-                                                                 row['state'])
-                                                                   else pd.Series(
-                                                                 get_lng_lat(row['country'], 'country'),
-                                                                 dtype='object')), axis=1)
+    # clean latitude and longitude values
+    records_df['latitude'] = records_df['latitude'].apply(lambda value: clean_latitude_value(value))
+    records_df['longitude'] = records_df['longitude'].apply(lambda value: clean_longitude_value(value))
 
     dbs_loaded_successfully = True
     print("[STEP] loading estimate data into database")
