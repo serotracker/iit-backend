@@ -6,7 +6,7 @@ from statistics import mean
 from typing import Tuple
 import geopandas as gpd
 from shapely.geometry import Point as shapelyPoint
-
+from Pathogens.Utility.location_utils.city_state_country_lat_lng_data_cache import update_lat_lng_data_cache, attempt_to_fetch_lat_lng_data_from_cache
 
 # Note: this function takes in a relative path
 def read_from_json(path_to_json):
@@ -192,6 +192,11 @@ def parse_mapbox_response(response):
 def get_city_lat_lng(city_name, state_name, country_name):
     if(city_name is None):
         return get_state_lat_lng(state_name, country_name)
+    
+    cached_query_value = attempt_to_fetch_lat_lng_data_from_cache(city_name, state_name, country_name)
+
+    if(cached_query_value is not None):
+        return cached_query_value
 
     mapbox_search_text = city_name + ',' + state_name if (state_name is not None) else city_name
     
@@ -203,11 +208,17 @@ def get_city_lat_lng(city_name, state_name, country_name):
     if(coords is None):
         return get_state_lat_lng(state_name, country_name)
     else:
+        update_lat_lng_data_cache(city_name, state_name, country_name, coords)
         return coords
 
 def get_state_lat_lng(state_name, country_name):
     if(state_name is None):
         return get_country_lat_lng(country_name)
+
+    cached_query_value = attempt_to_fetch_lat_lng_data_from_cache(None, state_name, country_name)
+
+    if(cached_query_value is not None):
+        return cached_query_value
 
     url = get_mapbox_api_query_url(state_name, 'region', country_code=get_country_code(country_name=country_name, iso3=False))
 
@@ -217,12 +228,20 @@ def get_state_lat_lng(state_name, country_name):
     if(coords is None):
         return get_country_lat_lng(country_name)
     else:
+        update_lat_lng_data_cache(None, state_name, country_name, coords)
         return coords
 
 def get_country_lat_lng(country_name):
+    cached_query_value = attempt_to_fetch_lat_lng_data_from_cache(None, None, country_name)
+
+    if(cached_query_value is not None):
+        return cached_query_value
+
     url = get_mapbox_api_query_url(country_name, 'country', country_code=get_country_code(country_name=country_name, iso3=False))
 
     api_response = requests.get(url)
     coords = parse_mapbox_response(api_response)
+
+    update_lat_lng_data_cache(None, None, country_name, coords)
 
     return coords
