@@ -133,7 +133,7 @@ def main():
 
     # print(records_df.dtypes)
 
-    print("[STEP] filtering out studies that don't meet the minimum sample size requirement (sample sizes must be >={MINIMUM_SAMPLE_SIZE})")
+    print("[STEP] filtering out studies that don't meet the minimum sample size requirement (sample sizes must be >={})".format(MINIMUM_SAMPLE_SIZE))
     records_df.drop(records_df[records_df.sample_size < MINIMUM_SAMPLE_SIZE].index, inplace=True)
 
     print("[STEP] generating lat and lng values")
