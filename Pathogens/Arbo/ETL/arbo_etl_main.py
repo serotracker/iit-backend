@@ -17,6 +17,7 @@ from Pathogens.Utility.location_utils.location_functions import get_lng_lat
 
 AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
 AIRTABLE_ARBO_BASE_ID = os.getenv('AIRTABLE_ARBO_BASE_ID')
+MINIMUM_SAMPLE_SIZE = 5
 CURR_TIME = datetime.now()
 
 
@@ -131,6 +132,9 @@ def main():
         records_df[col] = records_df[col].apply(parse_date_cols)
 
     # print(records_df.dtypes)
+
+    print("[STEP] filtering out studies that don't meet the minimum sample size requirement (sample sizes must be >={MINIMUM_SAMPLE_SIZE})")
+    records_df.drop(records_df[records_df.sample_size < MINIMUM_SAMPLE_SIZE].index, inplace=True)
 
     print("[STEP] generating lat and lng values")
     # calculate the lat and lng values for each of the rows.
