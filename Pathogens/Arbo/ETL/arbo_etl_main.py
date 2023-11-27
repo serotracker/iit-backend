@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 
 import numpy as np
+import random
 from pyairtable import Table
 import os
 from dotenv import load_dotenv
@@ -18,7 +19,7 @@ from Pathogens.Utility.location_utils.location_functions import get_city_lat_lng
 AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
 AIRTABLE_ARBO_BASE_ID = os.getenv('AIRTABLE_ARBO_BASE_ID')
 CURR_TIME = datetime.now()
-
+MAXIMUM_PIN_JITTER_LATITUDE_OR_LONGITUDE = 0.1
 
 def parse_date_cols(x):
     if x:
@@ -141,6 +142,10 @@ def main():
             country_name=row['country']),
         dtype='object'), axis = 1
     )
+
+    print ("[STEP] adding random jitter to lat and lng values to distribute pins around.")
+    for column in ['latitude', 'longitude']:
+        records_df[column] = records_df[column].apply(lambda value: value + (random.uniform(-MAXIMUM_PIN_JITTER_LATITUDE_OR_LONGITUDE, MAXIMUM_PIN_JITTER_LATITUDE_OR_LONGITUDE)))
 
     dbs_loaded_successfully = True
     print("[STEP] loading estimate data into database")
