@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 
 import numpy as np
+import random
 from pyairtable import Table
 import os
 from dotenv import load_dotenv
@@ -13,13 +14,13 @@ from sqlalchemy.orm import Session
 from Pathogens.Arbo.ETL.constants import estimate_columns, single_select_lists
 from Pathogens.Arbo.app.sqlalchemy import db_engine
 from Pathogens.Arbo.app.sqlalchemy.sql_alchemy_base import Estimate, Antibody, AntibodyToEstimate
-from Pathogens.Utility.location_utils.location_functions import get_lng_lat
+from Pathogens.Utility.location_utils.location_functions import get_city_lat_lng
 
 AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
 AIRTABLE_ARBO_BASE_ID = os.getenv('AIRTABLE_ARBO_BASE_ID')
 MINIMUM_SAMPLE_SIZE = 5
 CURR_TIME = datetime.now()
-
+MAXIMUM_PIN_JITTER_LATITUDE_OR_LONGITUDE = 0.1
 
 def parse_date_cols(x):
     if x:
@@ -137,20 +138,18 @@ def main():
     records_df.drop(records_df[records_df.sample_size < MINIMUM_SAMPLE_SIZE].index, inplace=True)
 
     print("[STEP] generating lat and lng values")
-    # calculate the lat and lng values for each of the rows.
-    # TODO: Not working correctly yet
+
     records_df[['latitude', 'longitude']] = records_df.apply(lambda row:
-                                                             pd.Series(get_lng_lat(
-                                                                 ','.join(filter(None, [row['city'], row['state']])),
-                                                                 'place'), dtype='object')
-                                                             if pd.notnull(row['city']) and pd.notnull(row['state'])
-                                                             else (pd.Series(
-                                                                 get_lng_lat(row['state'], 'region'),
-                                                                 dtype='object') if pd.notnull(
-                                                                 row['state'])
-                                                                   else pd.Series(
-                                                                 get_lng_lat(row['country'], 'country'),
-                                                                 dtype='object')), axis=1)
+        pd.Series(get_city_lat_lng(
+            city_name=(row['city'] if pd.notnull(row['city']) else None),
+            state_name=(row['state'] if pd.notnull(row['state']) else None),
+            country_name=row['country']),
+        dtype='object'), axis = 1
+    )
+
+    print ("[STEP] adding random jitter to lat and lng values to distribute pins around.")
+    for column in ['latitude', 'longitude']:
+        records_df[column] = records_df[column].apply(lambda value: value + (random.uniform(-MAXIMUM_PIN_JITTER_LATITUDE_OR_LONGITUDE, MAXIMUM_PIN_JITTER_LATITUDE_OR_LONGITUDE)))
 
     dbs_loaded_successfully = True
     print("[STEP] loading estimate data into database")

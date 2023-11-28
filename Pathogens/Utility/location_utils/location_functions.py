@@ -6,7 +6,7 @@ from statistics import mean
 from typing import Tuple
 import geopandas as gpd
 from shapely.geometry import Point as shapelyPoint
-
+from Pathogens.Utility.location_utils.city_state_country_lat_lng_data_cache import update_lat_lng_data_cache, attempt_to_fetch_lat_lng_data_from_cache
 
 # Note: this function takes in a relative path
 def read_from_json(path_to_json):
@@ -178,21 +178,70 @@ def compute_pin_info(df: pd.DataFrame, geo_dfs: dict) -> pd.DataFrame:
 
     return df
 
-def get_lng_lat(geocoder_search_text, geocoder_data_type, country_code=None):
-    # If a city doesn't have a state associated with it,
-    # we cannot accurately find its location
-    if (not geocoder_search_text) or (geocoder_data_type == 'place' and "," not in geocoder_search_text):
+def get_mapbox_api_query_url(geocoder_search_text, geocoder_data_type, country_code):
+    return f"https://api.mapbox.com/geocoding/v5/mapbox.places/{geocoder_search_text}.json?" \
+          f"access_token={os.getenv('MAPBOX_API_KEY')}&types={geocoder_data_type}&country={country_code}"
+
+def parse_mapbox_response(response):
+    data = response.json()
+    if data and "features" in data and len(data['features']) > 0:
+        return data['features'][0]['center']
+    else:
         return None
 
-    url = f"https://api.mapbox.com/geocoding/v5/mapbox.places/{geocoder_search_text}.json?" \
-          f"access_token={os.getenv('MAPBOX_API_KEY')}&types={geocoder_data_type}"
+def get_city_lat_lng(city_name, state_name, country_name):
+    if(city_name is None):
+        return get_state_lat_lng(state_name, country_name)
+    
+    cached_query_value = attempt_to_fetch_lat_lng_data_from_cache(city_name, state_name, country_name)
 
-    # if country_code:
-    #     url += f"&country={country_code}"
+    if(cached_query_value is not None):
+        return cached_query_value
 
-    r = requests.get(url)
-    data = r.json()
-    coords = [None, None]
-    if data and "features" in data and len(data['features']) > 0:
-        coords = data['features'][0]['center']
+    mapbox_search_text = city_name + ',' + state_name if (state_name is not None) else city_name
+    
+    url = get_mapbox_api_query_url(mapbox_search_text, 'place', country_code=get_country_code(country_name=country_name, iso3=False))
+
+    api_response = requests.get(url)
+    coords = parse_mapbox_response(api_response)
+
+    if(coords is None):
+        return get_state_lat_lng(state_name, country_name)
+    else:
+        update_lat_lng_data_cache(city_name, state_name, country_name, coords)
+        return coords
+
+def get_state_lat_lng(state_name, country_name):
+    if(state_name is None):
+        return get_country_lat_lng(country_name)
+
+    cached_query_value = attempt_to_fetch_lat_lng_data_from_cache(None, state_name, country_name)
+
+    if(cached_query_value is not None):
+        return cached_query_value
+
+    url = get_mapbox_api_query_url(state_name, 'region', country_code=get_country_code(country_name=country_name, iso3=False))
+
+    api_response = requests.get(url)
+    coords = parse_mapbox_response(api_response)
+
+    if(coords is None):
+        return get_country_lat_lng(country_name)
+    else:
+        update_lat_lng_data_cache(None, state_name, country_name, coords)
+        return coords
+
+def get_country_lat_lng(country_name):
+    cached_query_value = attempt_to_fetch_lat_lng_data_from_cache(None, None, country_name)
+
+    if(cached_query_value is not None):
+        return cached_query_value
+
+    url = get_mapbox_api_query_url(country_name, 'country', country_code=get_country_code(country_name=country_name, iso3=False))
+
+    api_response = requests.get(url)
+    coords = parse_mapbox_response(api_response)
+
+    update_lat_lng_data_cache(None, None, country_name, coords)
+
     return coords
