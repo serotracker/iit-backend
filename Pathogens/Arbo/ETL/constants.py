@@ -25,8 +25,13 @@ estimate_columns = [
         # 'source_sheet',
         # 'source_sheet_id',
         'state',
-        'url'
+        'url',
+        'who_region',
+        'estimate_id',
+        'source_sheet_name'
     ]
+
+
 
 
 required_fields = [
