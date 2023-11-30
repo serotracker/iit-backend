@@ -20,9 +20,9 @@ jobs:
           echo "$PRIVATE_KEY" > private_key.pem && chmod 600 private_key.pem
           ssh -o ServerAliveInterval=60 -o StrictHostKeyChecking=no -i "private_key.pem" ${USER_NAME}@${HOSTNAME} '
             cd www/iit-backend/ &&
-            export PYTHONPATH=$PYTHONPATH:Pathogens &&
             source venv/bin/activate &&
             pip install -r requirements.txt &&
             set -o allexport; source .env; set +o allexport &&
-            python3 -m Pathogens.Arbo.Etl.arbo_etl_main
+            cd Pathogens/Arbo/ETL &&
+            python3 arbo_etl_main.py
           '
