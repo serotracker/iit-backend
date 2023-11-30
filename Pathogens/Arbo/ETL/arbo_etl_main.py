@@ -120,9 +120,6 @@ def main():
     records_df = pd.DataFrame.from_records([row["fields"] for row in all_records])
     records_df.rename(columns=fields_mapping, inplace=True)
 
-    # Drop records when include_in_etl is not 1
-    records_df = records_df[records_df['include_in_etl'] == 1]
-
     records_df['created_at'] = CURR_TIME
 
     # Convert elements that are "Not reported" or "Not Reported" or "NR" to None
