@@ -1,0 +1,27 @@
+name: Run ETL Pipeline
+
+on:
+  schedule:
+    - cron: '0 0 * * SUN' # runs at 00:00 AM UTC every Sunday
+  workflow_dispatch: # manual trigger
+
+jobs:
+  run-etl:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Run ETL in ec2
+        env:
+          PRIVATE_KEY: ${{ secrets.AWS_ETL_EC2_PRIVATE_KEY }}
+          HOSTNAME: ${{ secrets.AWS_HOST_NAME }}
+          USER_NAME: ${{ secrets.AWS_USER_NAME }}
+
+        run: |
+          echo "$PRIVATE_KEY" > private_key.pem && chmod 600 private_key.pem
+          ssh -o ServerAliveInterval=60 -o StrictHostKeyChecking=no -i "private_key.pem" ${USER_NAME}@${HOSTNAME} '
+            cd www/iit-backend/ &&
+            source venv/bin/activate &&
+            pip install -r requirements.txt &&
+            set -o allexport; source .env; set +o allexport &&
+            python3 -m Pathogens.Arbo.Etl.arbo_etl_main
+          '
