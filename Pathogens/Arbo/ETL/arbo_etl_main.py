@@ -80,7 +80,7 @@ def load_antibody_data_into_db(data):
 def main():
     load_dotenv()
 
-    fields_mapping = {'Source Sheet': 'source_sheet_name',
+    fields_mapping = {'Source Sheet': 'source_sheet_id',
                       'Unique ID': 'estimate_id',
                       'Inclusion Criteria': 'inclusion_criteria',
                       'Sample Start Date': 'sample_start_date',
@@ -108,7 +108,12 @@ def main():
                       'WHO Region': 'who_region',
                       }
 
+    source_sheet_fields_mapping = {
+        'Source Title': 'source_sheet_name'
+    }
+
     estimate_sheet_airtable = Table(os.getenv('AIRTABLE_API_KEY'), os.getenv('AIRTABLE_ARBO_BASE_ID'), 'Study/Estimate Sheet')
+    source_sheet_airtable = Table(os.getenv('AIRTABLE_API_KEY'), os.getenv('AIRTABLE_ARBO_BASE_ID'), 'Source Sheet')
 
     #  TODO: Update all airtable requests to use pyairtable instead of hardcoded strings
     all_records = estimate_sheet_airtable.all(fields=fields_mapping.keys())
@@ -139,6 +144,16 @@ def main():
         records_df[col] = records_df[col].apply(parse_date_cols)
 
     # print(records_df.dtypes)
+
+    print("[STEP] Merging the estimate data with the source sheet data")
+    source_sheet_records = source_sheet_airtable.all(fields=source_sheet_fields_mapping.keys())
+    source_sheet_df = pd.DataFrame.from_records([row["fields"] for row in source_sheet_records])
+    source_sheet_df['source_sheet_id'] = ([row['id'] for row in source_sheet_records])
+    source_sheet_df.rename(columns=source_sheet_fields_mapping, inplace=True)
+    records_df = pd.merge(records_df, source_sheet_df, on="source_sheet_id")
+
+    print("[STEP] Removing fields that do not need to be saved in the database")
+    records_df = records_df[records_df['include_in_etl'] == 1]
 
     print("[STEP] filtering out studies that don't meet the minimum sample size requirement (sample sizes must be >={})".format(MINIMUM_SAMPLE_SIZE))
     records_df.drop(records_df[records_df.sample_size < MINIMUM_SAMPLE_SIZE].index, inplace=True)
