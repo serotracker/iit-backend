@@ -1,4 +1,5 @@
 import os
+from dotenv import load_dotenv
 
 from sqlalchemy import (
     Integer,
@@ -21,8 +22,10 @@ import uuid
 # simply change the model definitions in Pathogens/Arbo/app/sqlalchemy/sql_alchemy_base.py (here)
 # and run the following command: alembic revision --autogenerate -m "<name of the migration>".
 # This will autogenerate any new changes based on the updated models
-# and then to apply the change, run alembic upgrade head again.
+# and then to apply the change, run alembic upgrade head.
 Base = declarative_base(metadata=MetaData(schema="arbo"))
+
+load_dotenv()
 
 print(f'[DEBUG] DATABASE_URL: {os.getenv("DATABASE_URL")}')
 db_engine = create_engine(os.getenv('DATABASE_URL'))
@@ -99,7 +102,6 @@ class Estimate(Base):
     sample_size = Column(Integer)
     sample_numerator = Column(Integer)
     inclusion_criteria = Column(Text)
-
     pathogen = Column(VARCHAR(length=255))
     seroprevalence = Column(VARCHAR(length=255))
     country = Column(VARCHAR(length=255))
@@ -114,6 +116,9 @@ class Estimate(Base):
     source_sheet_id = Column(UUID(as_uuid=True), ForeignKey('source_sheet.id'))
     source_sheet = relationship("SourceSheet", backref="estimate")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    who_region = Column(VARCHAR(length=5))
+    estimate_id = Column(VARCHAR(length=255))
+    source_sheet_name = Column(VARCHAR(length=255))
 
 
 Base.registry.configure()
