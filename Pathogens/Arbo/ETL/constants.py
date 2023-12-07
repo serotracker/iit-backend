@@ -51,4 +51,4 @@ required_fields = [
 
 
 
-single_select_lists = ['source_sheet_id', 'url', 'who_region']
+single_select_lists = ['source_sheet_id', 'url']
