@@ -119,6 +119,7 @@ class Estimate(Base):
     who_region = Column(VARCHAR(length=5))
     estimate_id = Column(VARCHAR(length=255))
     source_sheet_name = Column(VARCHAR(length=255))
+    antigen = Column(VARCHAR(length=255))
 
 
 Base.registry.configure()

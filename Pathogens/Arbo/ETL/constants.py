@@ -28,7 +28,8 @@ estimate_columns = [
         'url',
         'who_region',
         'estimate_id',
-        'source_sheet_name'
+        'source_sheet_name',
+        'antigen'
     ]
 
 
@@ -50,4 +51,4 @@ required_fields = [
 
 
 
-single_select_lists = ['source_sheet_id', 'url']
+single_select_lists = ['source_sheet_id', 'url', 'who_region']
