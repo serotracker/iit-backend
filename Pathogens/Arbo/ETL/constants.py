@@ -28,7 +28,8 @@ estimate_columns = [
         'url',
         'who_region',
         'estimate_id',
-        'source_sheet_name'
+        'source_sheet_name',
+        'antigen'
     ]
 
 
