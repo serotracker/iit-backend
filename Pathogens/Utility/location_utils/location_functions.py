@@ -198,4 +198,4 @@ def is_point_in_bounding_box(point: [float, float], bounding_box: [float, float,
     bounding_box_longitude_maximum = bounding_box[2]
     bounding_box_latitude_maximum = bounding_box[3]
 
-    return point_longitude > bounding_box_longitude_minimum and point_longitude < bounding_box_longitude_maximum and point_latitude > bounding_box_latitude_minimum and point_latitude < bounding_box_latitude_maximum
+    return point_longitude >= bounding_box_longitude_minimum and point_longitude <= bounding_box_longitude_maximum and point_latitude >= bounding_box_latitude_minimum and point_latitude <= bounding_box_latitude_maximum
