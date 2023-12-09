@@ -1,26 +1,14 @@
 import os
 import requests
-import json
 import pandas as pd
 from statistics import mean
 from typing import Tuple
 import geopandas as gpd
 from shapely.geometry import Point as shapelyPoint
-from Pathogens.Utility.location_utils.city_state_country_lat_lng_data_cache import update_lat_lng_data_cache, attempt_to_fetch_lat_lng_data_from_cache
+from Pathogens.Utility.location_utils.country_codes import read_from_json
+from Pathogens.Utility.location_utils.mapbox_api_client import make_mapbox_request
 
-# Note: this function takes in a relative path
-def read_from_json(path_to_json):
-    dirname = os.path.dirname(__file__)
-    full_path = os.path.join(dirname, path_to_json)
-    with open(full_path, 'r') as file:
-        records = json.load(file)
-    return records
-
-
-ISO3_CODES = read_from_json('country_iso3.json')
-ISO2_CODES = read_from_json('country_iso2.json')
 COUNTRY_ALTERNATIVE_NAMES = read_from_json('country_alternative_names.json')
-
 
 # Place = string representing the name of the place
 # Country code = ISO2 alpha country code, used as an optional argument to the mapbox api
@@ -56,13 +44,6 @@ def add_latlng_to_df(place_type, place_type_name, df):
     df['latitude'] = df['coords'].map(lambda a: a[1] if isinstance(a, list) else None)
     df = df.drop(columns=['coords'])
     return df
-
-
-# Get iso3 or iso2 code for a given country name
-def get_country_code(country_name, iso3=True):
-    code_dict = ISO3_CODES if iso3 else ISO2_CODES
-    return code_dict[country_name] if country_name in code_dict else None
-
 
 def get_alternative_names(country_code):
     return COUNTRY_ALTERNATIVE_NAMES[country_code] if country_code in COUNTRY_ALTERNATIVE_NAMES else None
@@ -178,70 +159,43 @@ def compute_pin_info(df: pd.DataFrame, geo_dfs: dict) -> pd.DataFrame:
 
     return df
 
-def get_mapbox_api_query_url(geocoder_search_text, geocoder_data_type, country_code):
-    return f"https://api.mapbox.com/geocoding/v5/mapbox.places/{geocoder_search_text}.json?" \
-          f"access_token={os.getenv('MAPBOX_API_KEY')}&types={geocoder_data_type}&country={country_code}"
-
-def parse_mapbox_response(response):
-    data = response.json()
-    if data and "features" in data and len(data['features']) > 0:
-        return data['features'][0]['center']
-    else:
-        return None
-
 def get_city_lat_lng(city_name, state_name, country_name):
     if(city_name is None):
         return get_state_lat_lng(state_name, country_name)
     
-    cached_query_value = attempt_to_fetch_lat_lng_data_from_cache(city_name, state_name, country_name)
-
-    if(cached_query_value is not None):
-        return cached_query_value
-
-    mapbox_search_text = city_name + ',' + state_name if (state_name is not None) else city_name
-    
-    url = get_mapbox_api_query_url(mapbox_search_text, 'place', country_code=get_country_code(country_name=country_name, iso3=False))
-
-    api_response = requests.get(url)
-    coords = parse_mapbox_response(api_response)
-
+    mapbox_response = make_mapbox_request(city_name, state_name, country_name)
+    coords = mapbox_response.center_coordinates
     if(coords is None):
         return get_state_lat_lng(state_name, country_name)
-    else:
-        update_lat_lng_data_cache(city_name, state_name, country_name, coords)
-        return coords
+    
+    # Check if the city is in the correct state. Sometimes mapbox will fail to place cities in the state we specify.
+    mapbox_response = make_mapbox_request(None, state_name, country_name)
+    state_bounding_box = mapbox_response.bounding_box
+    if(not is_point_in_bounding_box(coords, state_bounding_box)):
+        return get_state_lat_lng(state_name, country_name)
+
+    return coords
 
 def get_state_lat_lng(state_name, country_name):
     if(state_name is None):
         return get_country_lat_lng(country_name)
-
-    cached_query_value = attempt_to_fetch_lat_lng_data_from_cache(None, state_name, country_name)
-
-    if(cached_query_value is not None):
-        return cached_query_value
-
-    url = get_mapbox_api_query_url(state_name, 'region', country_code=get_country_code(country_name=country_name, iso3=False))
-
-    api_response = requests.get(url)
-    coords = parse_mapbox_response(api_response)
-
+    
+    mapbox_response = make_mapbox_request(None, state_name, country_name)
+    coords = mapbox_response.center_coordinates
     if(coords is None):
         return get_country_lat_lng(country_name)
-    else:
-        update_lat_lng_data_cache(None, state_name, country_name, coords)
-        return coords
-
-def get_country_lat_lng(country_name):
-    cached_query_value = attempt_to_fetch_lat_lng_data_from_cache(None, None, country_name)
-
-    if(cached_query_value is not None):
-        return cached_query_value
-
-    url = get_mapbox_api_query_url(country_name, 'country', country_code=get_country_code(country_name=country_name, iso3=False))
-
-    api_response = requests.get(url)
-    coords = parse_mapbox_response(api_response)
-
-    update_lat_lng_data_cache(None, None, country_name, coords)
 
     return coords
+
+def get_country_lat_lng(country_name):
+    return make_mapbox_request(None, None, country_name)
+
+def is_point_in_bounding_box(point: [float, float], bounding_box: [float, float, float, float]):
+    point_longitude = point[0]
+    point_latitude = point[1]
+    bounding_box_longitude_minimum = bounding_box[0]
+    bounding_box_latitude_minimum = bounding_box[1]
+    bounding_box_longitude_maximum = bounding_box[2]
+    bounding_box_latitude_maximum = bounding_box[3]
+
+    return point_longitude > bounding_box_longitude_minimum and point_longitude < bounding_box_longitude_maximum and point_latitude > bounding_box_latitude_minimum and point_latitude < bounding_box_latitude_maximum
