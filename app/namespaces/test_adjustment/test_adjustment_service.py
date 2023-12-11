@@ -8,7 +8,7 @@ from hashlib import md5
 from typing import Dict, Tuple, Union
 
 import pandas as pd
-import pystan
+import stan
 import arviz
 from statsmodels.stats.proportion import proportion_confint
 from marshmallow import Schema, fields, ValidationError
@@ -71,8 +71,8 @@ class TestAdjHandler:
 
     # make sure to gitignore model caches, because the model needs to be compiled separately
     # on each machine - it is system-specific C++ code
-    def get_stan_model_cache(self, model_code: str, model_name: str = 'anon_model', **kwargs: Dict) -> pystan.StanModel:
-        """Use just as you would `pystan.StanModel`"""
+    def get_stan_model_cache(self, model_code: str, model_name: str = 'anon_model', **kwargs: Dict) -> stan.model:
+        """Use just as you would `StanModel`"""
 
         # Get working directory and extract system path of iit-backend from it
         abs_filepath_curr_dir = os.getcwd()
@@ -89,12 +89,12 @@ class TestAdjHandler:
 
         # Otherwise create the model and cache it
         except FileNotFoundError:
-            cached_model = pystan.StanModel(model_code=model_code, model_name=model_name, **kwargs)
+            cached_model = stan.model(model_code=model_code, model_name=model_name, **kwargs)
             with open(cache_fn, 'wb') as f:
                 pickle.dump(cached_model, f)
         return cached_model
 
-    def fit_one_pystan_model(self, model_params: Dict) -> Tuple:
+    def fit_one_stan_model(self, model_params: Dict) -> Tuple:
         # Calculate adapt_delta param
         if model_params['n_sp'] < 10 or model_params['n_se'] < 10 \
                 or model_params['y_sp'] < 5 or model_params['y_se'] < 5:
@@ -119,12 +119,12 @@ class TestAdjHandler:
         summary_df_parsed['samples'] = samples
         summary_df_parsed['fit'] = fit
 
-        diagnostics = pystan.diagnostics.check_hmc_diagnostics(fit)
+        diagnostics = diagnostics.check_hmc_diagnostics(fit)
 
         satisfactory_model_found = diagnostics['n_eff'] and diagnostics['Rhat']
         return summary_df_parsed, satisfactory_model_found
 
-    def pystan_adjust(self, model_params: Dict, execution_params: Dict = {}) -> Union[Tuple, pystan.StanModel]:
+    def stan_adjust(self, model_params: Dict, execution_params: Dict = {}):
         credible_interval_size = execution_params.get('credible_interval_size', 0.95)
 
         # Validate model_params using marshmallow
@@ -146,7 +146,7 @@ class TestAdjHandler:
 
             # Attempt to fit a model
             try:
-                summary_df_parsed, hmc_diagnostics_passed = self.fit_one_pystan_model(model_params)
+                summary_df_parsed, hmc_diagnostics_passed = self.fit_one_stan_model(model_params)
             except ZeroDivisionError:
                 return None, None, None
 
@@ -253,7 +253,7 @@ class TestAdjHandler:
                         n_sp=int(output_sp_n),
                         y_sp=int(output_sp_n * sp)
                     )
-                    lower, adj_prev, upper = self.pystan_adjust(model_params)
+                    lower, adj_prev, upper = self.stan_adjust(model_params)
                     if pd.isna(adj_prev):
                         print(f'FAILED TO ADJUST ESTIMATE')
         else:

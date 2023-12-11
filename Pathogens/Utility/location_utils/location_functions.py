@@ -170,12 +170,6 @@ def get_city_lat_lng(city_name, state_name, country_name):
     if(coords is None):
         return get_state_lat_lng(state_name, country_name)
     
-    mapbox_state_bounding_box_response = make_mapbox_request(None, state_name, country_name)
-    if(mapbox_state_bounding_box_response is not None):
-        state_bounding_box = mapbox_state_bounding_box_response.bounding_box
-        if(state_bounding_box is not None and not is_point_in_bounding_box(coords, state_bounding_box)):
-            return get_state_lat_lng(state_name, country_name)
-
     return coords
 
 def get_state_lat_lng(state_name, country_name):
@@ -193,13 +187,3 @@ def get_state_lat_lng(state_name, country_name):
 
 def get_country_lat_lng(country_name):
     return make_mapbox_request(None, None, country_name).center_coordinates
-
-def is_point_in_bounding_box(point: [float, float], bounding_box: [float, float, float, float]):
-    point_longitude = point[0]
-    point_latitude = point[1]
-    bounding_box_longitude_minimum = bounding_box[0]
-    bounding_box_latitude_minimum = bounding_box[1]
-    bounding_box_longitude_maximum = bounding_box[2]
-    bounding_box_latitude_maximum = bounding_box[3]
-
-    return point_longitude >= bounding_box_longitude_minimum and point_longitude <= bounding_box_longitude_maximum and point_latitude >= bounding_box_latitude_minimum and point_latitude <= bounding_box_latitude_maximum
