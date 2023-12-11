@@ -19,7 +19,7 @@
             "South 24 Parganas": {
                 "mapbox_search_text": "South 24 Parganas, West Bengal",
                 "country_code": "ID",
-                "geocoder_data_type": "region"
+                "geocoder_data_type": "district"
             },
             "Midnapur (West)": {
                 "mapbox_search_text": "Paschim Medinipur",
