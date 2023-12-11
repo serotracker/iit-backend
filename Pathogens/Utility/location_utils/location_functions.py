@@ -164,15 +164,17 @@ def get_city_lat_lng(city_name, state_name, country_name):
         return get_state_lat_lng(state_name, country_name)
     
     mapbox_response = make_mapbox_request(city_name, state_name, country_name)
+    if(mapbox_response == None):
+        return get_state_lat_lng(state_name, country_name)
     coords = mapbox_response.center_coordinates
     if(coords is None):
         return get_state_lat_lng(state_name, country_name)
     
-    # Check if the city is in the correct state. Sometimes mapbox will fail to place cities in the state we specify.
-    mapbox_response = make_mapbox_request(None, state_name, country_name)
-    state_bounding_box = mapbox_response.bounding_box
-    if(not is_point_in_bounding_box(coords, state_bounding_box)):
-        return get_state_lat_lng(state_name, country_name)
+    mapbox_state_bounding_box_response = make_mapbox_request(None, state_name, country_name)
+    if(mapbox_state_bounding_box_response is not None):
+        state_bounding_box = mapbox_state_bounding_box_response.bounding_box
+        if(state_bounding_box is not None and not is_point_in_bounding_box(coords, state_bounding_box)):
+            return get_state_lat_lng(state_name, country_name)
 
     return coords
 
@@ -181,6 +183,8 @@ def get_state_lat_lng(state_name, country_name):
         return get_country_lat_lng(country_name)
     
     mapbox_response = make_mapbox_request(None, state_name, country_name)
+    if(mapbox_response == None):
+        return get_country_lat_lng(country_name)
     coords = mapbox_response.center_coordinates
     if(coords is None):
         return get_country_lat_lng(country_name)
@@ -188,7 +192,7 @@ def get_state_lat_lng(state_name, country_name):
     return coords
 
 def get_country_lat_lng(country_name):
-    return make_mapbox_request(None, None, country_name)
+    return make_mapbox_request(None, None, country_name).center_coordinates
 
 def is_point_in_bounding_box(point: [float, float], bounding_box: [float, float, float, float]):
     point_longitude = point[0]

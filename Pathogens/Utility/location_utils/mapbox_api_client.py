@@ -10,6 +10,7 @@ from Pathogens.Utility.location_utils.country_codes import get_country_code
 class MapboxResponse:
     center_coordinates: [float, float]
     bounding_box: [float, float, float, float]
+    text: str
 
 @dataclass
 class MapboxRequestParams:
@@ -26,7 +27,8 @@ def parse_mapbox_response(response):
     if data and "features" in data and len(data['features']) > 0:
         return MapboxResponse(
             center_coordinates = data['features'][0]['center'],
-            bounding_box = data['features'][0]['bbox']
+            bounding_box = data['features'][0].get('bbox', None),
+            text = data['features'][0].get('text', None)
         )
     else:
         return None
