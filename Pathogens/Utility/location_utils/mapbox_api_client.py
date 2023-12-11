@@ -37,12 +37,16 @@ def parse_mapbox_response(response):
 def generate_mapbox_request_params(city_name: str | None, state_name: str | None, country_name: str):
     country_code = get_country_code(country_name=country_name, iso3=False)
 
-    mapbox_request_param_override = MAPBOX_REQUEST_PARAM_OVERRIDES.get(country_code, None) \
-        .get(state_name.strip() if state_name is not None else 'N/A', None) \
-        .get(city_name.strip() if state_name is not None else 'N/A', None)
+    mapbox_request_param_override = MAPBOX_REQUEST_PARAM_OVERRIDES.get(country_code, {}) \
+        .get(state_name.strip() if state_name is not None else 'N/A', {}) \
+        .get(city_name.strip() if city_name is not None else 'N/A', None)
 
     if(mapbox_request_param_override is not None):
-        return mapbox_request_param_override
+        return MapboxRequestParams(
+            center_coordinates = mapbox_request_param_override['center_coordinates'],
+            bounding_box = mapbox_request_param_override['bounding_box'],
+            text = mapbox_request_param_override['text']
+        )
 
     if(city_name is None and state_name is None):
         return MapboxRequestParams(
