@@ -1,5 +1,5 @@
 {
-    "ID": {
+    "IN": {
         "West Bengal": {
             "Birbhum": {
                 "mapbox_search_text": "Birbhum, West Bengal",
@@ -40,7 +40,7 @@
             }
         }
     },
-    "IN": {
+    "ID": {
         "Bali": {
             "Bali": {
                 "mapbox_search_text": "Bali",
@@ -70,6 +70,13 @@
                 "country_code": "UG",
                 "geocoder_data_type": "region"
             }
+        },
+        "Mbarara": {
+            "Mbarara": {
+                "mapbox_search_text": "Mbale",
+                "country_code": "UG",
+                "geocoder_data_type": "region"
+            }
         }
     },
     "VN": {
@@ -87,19 +94,12 @@
         }
     },
     "MX": {
-        "Guerrero State": {
-            "Guerrero": {
+        "Guerrero": {
+            "Guerrero State": {
                 "mapbox_search_text": "Guerrero",
                 "country_code": "MX",
                 "geocoder_data_type": "region"
             },
-            "Costa Grande and Costa Chica": {
-                "mapbox_search_text": "Guerrero",
-                "country_code": "MX",
-                "geocoder_data_type": "region"
-            }
-        },
-        "Guerrero": {
             "Guerrero": {
                 "mapbox_search_text": "Guerrero",
                 "country_code": "MX",

@@ -43,9 +43,9 @@ def generate_mapbox_request_params(city_name: str | None, state_name: str | None
 
     if(mapbox_request_param_override is not None):
         return MapboxRequestParams(
-            center_coordinates = mapbox_request_param_override['center_coordinates'],
-            bounding_box = mapbox_request_param_override['bounding_box'],
-            text = mapbox_request_param_override['text']
+            mapbox_search_text = mapbox_request_param_override['mapbox_search_text'],
+            country_code = mapbox_request_param_override['country_code'],
+            geocoder_data_type = mapbox_request_param_override['geocoder_data_type']
         )
 
     if(city_name is None and state_name is None):
