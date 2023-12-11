@@ -3,8 +3,9 @@ import requests
 
 from dataclasses import dataclass
 from Pathogens.Utility.location_utils.city_state_country_mapbox_response_data_cache import update_mapbox_response_cache, attempt_to_fetch_mapbox_response_data_from_cache
-from Pathogens.Utility.location_utils.country_codes import get_country_code
+from Pathogens.Utility.location_utils.country_codes import get_country_code, read_from_json
 
+MAPBOX_REQUEST_PARAM_OVERRIDES = read_from_json('mapbox_request_param_overrides.json')
 
 @dataclass
 class MapboxResponse:
@@ -34,30 +35,39 @@ def parse_mapbox_response(response):
         return None
 
 def generate_mapbox_request_params(city_name: str | None, state_name: str | None, country_name: str):
+    country_code = get_country_code(country_name=country_name, iso3=False)
+
+    mapbox_request_param_override = MAPBOX_REQUEST_PARAM_OVERRIDES.get(country_code, None) \
+        .get(state_name.strip() if state_name is not None else 'N/A', None) \
+        .get(city_name.strip() if state_name is not None else 'N/A', None)
+
+    if(mapbox_request_param_override is not None):
+        return mapbox_request_param_override
+
     if(city_name is None and state_name is None):
         return MapboxRequestParams(
             mapbox_search_text = country_name,
-            country_code = get_country_code(country_name=country_name, iso3=False),
+            country_code = country_code,
             geocoder_data_type = 'country'
         )
 
     if(city_name is None and state_name is not None):
         return MapboxRequestParams(
             mapbox_search_text = state_name,
-            country_code = get_country_code(country_name=country_name, iso3=False),
+            country_code = country_code,
             geocoder_data_type = 'region'
         )
 
     if(city_name is not None and state_name is None):
         return MapboxRequestParams(
             mapbox_search_text = city_name,
-            country_code = get_country_code(country_name=country_name, iso3=False),
+            country_code = country_code,
             geocoder_data_type = 'place'
         )
 
     return MapboxRequestParams(
         mapbox_search_text = city_name + "," + state_name,
-        country_code = get_country_code(country_name=country_name, iso3=False),
+            country_code = country_code,
         geocoder_data_type = 'place'
     )
 
