@@ -157,13 +157,18 @@ def main():
 
     print("[STEP] generating lat and lng values")
 
-    records_df[['latitude', 'longitude']] = records_df.apply(lambda row:
-        pd.Series(get_city_lat_lng(
-            city_name=(row['city'] if pd.notnull(row['city']) else None),
-            state_name=(row['state'] if pd.notnull(row['state']) else None),
-            country_name=row['country']),
-        dtype='object'), axis = 1
-    )
+    mapbox_lat_lng_generation_log_file_path = "./lat-lng-generation-file.txt"
+    with open(mapbox_lat_lng_generation_log_file_path, 'w') as mapbox_lat_lng_generation_log_file:
+        records_df[['latitude', 'longitude']] = records_df.apply(lambda row:
+            pd.Series(get_city_lat_lng(
+                city_name=(row['city'] if pd.notnull(row['city']) else None),
+                state_name=(row['state'] if pd.notnull(row['state']) else None),
+                country_name=row['country'],
+                log_file = mapbox_lat_lng_generation_log_file),
+            dtype='object'), axis = 1
+        )
+
+    print("Lat lng generation log file saved at %s" % mapbox_lat_lng_generation_log_file_path)
 
     print ("[STEP] adding random jitter to lat and lng values to distribute pins around.")
     for column in ['latitude', 'longitude']:

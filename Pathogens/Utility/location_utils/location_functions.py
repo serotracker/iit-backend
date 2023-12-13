@@ -1,4 +1,5 @@
 import os
+from io import TextIOWrapper
 import requests
 import pandas as pd
 from statistics import mean
@@ -159,31 +160,31 @@ def compute_pin_info(df: pd.DataFrame, geo_dfs: dict) -> pd.DataFrame:
 
     return df
 
-def get_city_lat_lng(city_name, state_name, country_name):
+def get_city_lat_lng(city_name: str | None, state_name: str | None, country_name: str, log_file: TextIOWrapper | None):
     if(city_name is None):
-        return get_state_lat_lng(state_name, country_name)
+        return get_state_lat_lng(state_name, country_name, log_file)
     
-    mapbox_response = make_mapbox_request(city_name, state_name, country_name)
+    mapbox_response = make_mapbox_request(city_name, state_name, country_name, log_file)
     if(mapbox_response == None):
-        return get_state_lat_lng(state_name, country_name)
+        return get_state_lat_lng(state_name, country_name, log_file)
     coords = mapbox_response.center_coordinates
     if(coords is None):
-        return get_state_lat_lng(state_name, country_name)
+        return get_state_lat_lng(state_name, country_name, log_file)
     
     return coords
 
-def get_state_lat_lng(state_name, country_name):
+def get_state_lat_lng(state_name: str | None, country_name: str, log_file: TextIOWrapper | None):
     if(state_name is None):
-        return get_country_lat_lng(country_name)
+        return get_country_lat_lng(country_name, log_file)
     
-    mapbox_response = make_mapbox_request(None, state_name, country_name)
+    mapbox_response = make_mapbox_request(None, state_name, country_name, log_file)
     if(mapbox_response == None):
-        return get_country_lat_lng(country_name)
+        return get_country_lat_lng(country_name, log_file)
     coords = mapbox_response.center_coordinates
     if(coords is None):
-        return get_country_lat_lng(country_name)
+        return get_country_lat_lng(country_name, log_file)
 
     return coords
 
-def get_country_lat_lng(country_name):
-    return make_mapbox_request(None, None, country_name).center_coordinates
+def get_country_lat_lng(country_name: str, log_file: TextIOWrapper | None):
+    return make_mapbox_request(None, None, country_name, log_file).center_coordinates

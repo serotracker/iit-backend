@@ -2,16 +2,17 @@ import os
 import requests
 
 from dataclasses import dataclass
+from io import TextIOWrapper
 from Pathogens.Utility.location_utils.city_state_country_mapbox_response_data_cache import update_mapbox_response_cache, attempt_to_fetch_mapbox_response_data_from_cache
-from Pathogens.Utility.location_utils.country_codes import get_country_code, read_from_json
-
-MAPBOX_REQUEST_PARAM_OVERRIDES = read_from_json('mapbox_request_param_overrides.json')
+from Pathogens.Utility.location_utils.country_codes import get_country_code
+from Pathogens.Utility.location_utils.mapbox_api_request_logging import log_mapbox_request
 
 @dataclass
 class MapboxResponse:
     center_coordinates: [float, float]
     bounding_box: [float, float, float, float]
     text: str
+    matching_text: str
 
 @dataclass
 class MapboxRequestParams:
@@ -29,24 +30,14 @@ def parse_mapbox_response(response):
         return MapboxResponse(
             center_coordinates = data['features'][0]['center'],
             bounding_box = data['features'][0].get('bbox', None),
-            text = data['features'][0].get('text', None)
+            text = data['features'][0].get('text', None),
+            matching_text = data['features'][0].get('matching_text', None)
         )
     else:
         return None
 
 def generate_mapbox_request_params(city_name: str | None, state_name: str | None, country_name: str):
     country_code = get_country_code(country_name=country_name, iso3=False)
-
-    mapbox_request_param_override = MAPBOX_REQUEST_PARAM_OVERRIDES.get(country_code, {}) \
-        .get(state_name.strip() if state_name is not None else 'N/A', {}) \
-        .get(city_name.strip() if city_name is not None else 'N/A', None)
-
-    if(mapbox_request_param_override is not None):
-        return MapboxRequestParams(
-            mapbox_search_text = mapbox_request_param_override['mapbox_search_text'],
-            country_code = mapbox_request_param_override['country_code'],
-            geocoder_data_type = mapbox_request_param_override['geocoder_data_type']
-        )
 
     if(city_name is None and state_name is None):
         return MapboxRequestParams(
@@ -75,7 +66,7 @@ def generate_mapbox_request_params(city_name: str | None, state_name: str | None
         geocoder_data_type = 'place'
     )
 
-def make_mapbox_request(city_name, state_name, country_name):
+def make_mapbox_request(city_name: str | None, state_name: str | None, country_name: str, log_file: TextIOWrapper | None):
     cached_query_value = attempt_to_fetch_mapbox_response_data_from_cache(city_name, state_name, country_name)
     
     if(cached_query_value is not None):
@@ -83,11 +74,14 @@ def make_mapbox_request(city_name, state_name, country_name):
     
     mapbox_request_params = generate_mapbox_request_params(city_name, state_name, country_name)
 
-    url = get_mapbox_api_query_url(mapbox_request_params)
+    mapbox_request_url = get_mapbox_api_query_url(mapbox_request_params)
 
-    api_response = requests.get(url)
+    api_response = requests.get(mapbox_request_url)
     mapbox_response = parse_mapbox_response(api_response)
-    
+
     update_mapbox_response_cache(city_name, state_name, country_name, mapbox_response)
+
+    if(log_file is not None):
+        log_mapbox_request(city_name, state_name, country_name, mapbox_request_params, mapbox_request_url, mapbox_response, log_file)
     
     return mapbox_response
