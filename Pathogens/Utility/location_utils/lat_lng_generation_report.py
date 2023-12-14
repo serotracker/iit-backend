@@ -18,7 +18,7 @@ def redact_mapbox_api_key_from_mapbox_api_query_url(query_url: str):
     if(mapbox_api_query_url_regex.search(query_url)):
         return re.sub(mapbox_api_query_access_token_regex, 'access_token=[REDACTED]', query_url)
 
-    return "[ENCOUNTERED ERROR WHEN REDACTING MAPBOX REQUEST URL, URL NOT INCLUDED]"
+    return "ENCOUNTERED ERROR WHEN REDACTING MAPBOX REQUEST URL, URL NOT INCLUDED"
 
 def generate_mapbox_api_request_log_prefix(
     city_name: str | None,\
@@ -132,14 +132,14 @@ def generate_line_for_city_state_bounding_box_consistency_check(
         city_name = city_name,
         state_name = state_name,
         country_name = country_name,
-        log_file = None,
+        lat_lng_report_file = None,
         mapbox_request_param_override = None
     )
     mapbox_state_info_response = mapbox_api_client.make_mapbox_request(
         city_name = None,
         state_name = state_name,
         country_name = country_name,
-        log_file = None,
+        lat_lng_report_file = None,
         mapbox_request_param_override = None
     )
 
@@ -187,7 +187,7 @@ def generate_line_for_invalid_city_but_valid_state_check(
         city_name = None,
         state_name = city_name,
         country_name = country_name,
-        log_file = None,
+        lat_lng_report_file = None,
         mapbox_request_param_override = None
     )
     
@@ -209,7 +209,7 @@ def generate_line_for_invalid_city_but_valid_state_check(
     info_statement = "[City listed is recognized as both a valid city and a valid state.]" if(mapbox_response is not None) \
         else "[City listed is not a valid city, but is a valid state]"
     details = '[City name given: ' + city_name_as_string + ', State name given: ' + state_name_as_string + ']'
-    suggestion = "[According to mapbox, the city you've given is actually also a state called " + state_name_from_mapbox_as_string + ". This might be resulting in the pin being in the wrong location because it might be using a city whose name is similar instead of using the state. The city name mapbox lists for this city is " + original_request_text_as_string + " so if that sounds wrong I would recommend moving the current city name to the state column in Airtable if that seems appropriate and makes sense given the other error messages.]"
+    suggestion = "[According to mapbox, the city you've given is the name of a valid state called " + state_name_from_mapbox_as_string + ". This might be resulting in the pin being in the wrong location because it might be using a city whose name is similar instead of using the state. The city name mapbox lists for this city is " + original_request_text_as_string + " so if that sounds wrong I would recommend moving the current city name to the state column in Airtable if that seems appropriate and makes sense given the other error messages.]"
 
     return prefix + " - " + info_statement + " - " + details + " - " + suggestion
 
@@ -229,7 +229,7 @@ def generate_line_for_invalid_city_but_valid_district_check(
         city_name = city_name,
         state_name = state_name,
         country_name = country_name,
-        log_file = None,
+        lat_lng_report_file = None,
         mapbox_request_param_override = mapbox_api_client.MapboxRequestParams(
             mapbox_search_text = city_name,
             country_code = get_country_code(country_name=country_name, iso3=False),
@@ -254,18 +254,18 @@ def generate_line_for_invalid_city_but_valid_district_check(
     info_statement = "[City listed is recognized as both a valid city and a valid district.]" if(mapbox_response is not None) \
         else "[City listed is not a valid city, but is a valid district]"
     details = '[City name given: ' + city_name_as_string + ', State name given: ' + state_name_as_string + ']'
-    suggestion = "[According to mapbox, the city you've given is actually also a district called " + district_name_from_mapbox_as_string + ". This might be resulting in the pin being in the wrong location because it might be using a city whose name is similar instead of using the state. The city name mapbox lists for this city is " + original_request_text_as_string + " so if that sounds wrong I would recommend leaving the city name empty and moving the current city name to the district column in Airtable if that seems appropriate and makes sense given the other error messages.]"
+    suggestion = "[According to mapbox, the city name you've given is the name of a valid district called " + district_name_from_mapbox_as_string + ". This might be resulting in the pin being in the wrong location because it might be using a city whose name is similar instead of using the state. The city name mapbox lists for this city is " + original_request_text_as_string + " so if that sounds wrong I would recommend leaving the city name empty and moving the current city name to the district column in Airtable if that seems appropriate and makes sense given the other error messages.]"
 
     return prefix + " - " + info_statement + " - " + details + " - " + suggestion
 
 
-def log_mapbox_request(\
+def record_mapbox_request_in_latlng_report(\
     city_name: str | None,\
     state_name: str | None,\
     country_name: str,\
     mapbox_request_url: str,\
     mapbox_response,\
-    log_file: TextIOWrapper\
+    lat_lng_report_file: TextIOWrapper\
 ):
     line_for_response_and_request = generate_line_for_response_and_request(
         city_name = city_name,
@@ -275,7 +275,7 @@ def log_mapbox_request(\
         mapbox_response = mapbox_response,
     )
     if(line_for_response_and_request is not None):
-        log_file.write(line_for_response_and_request + "\n")
+        lat_lng_report_file.write(line_for_response_and_request + "\n")
 
     line_for_text_consitency_check = generate_line_for_text_consitency_check(
         city_name = city_name,
@@ -284,7 +284,7 @@ def log_mapbox_request(\
         mapbox_response = mapbox_response,
     )
     if(line_for_text_consitency_check is not None):
-        log_file.write(line_for_text_consitency_check + "\n")
+        lat_lng_report_file.write(line_for_text_consitency_check + "\n")
 
     line_for_city_state_consitency_check = generate_line_for_city_state_bounding_box_consistency_check(
         city_name = city_name,
@@ -293,7 +293,7 @@ def log_mapbox_request(\
         mapbox_response = mapbox_response,
     )
     if(line_for_city_state_consitency_check is not None):
-        log_file.write(line_for_city_state_consitency_check + "\n")
+        lat_lng_report_file.write(line_for_city_state_consitency_check + "\n")
     
     line_for_invalid_city_but_valid_state_check = generate_line_for_invalid_city_but_valid_state_check(
         city_name = city_name,
@@ -302,7 +302,7 @@ def log_mapbox_request(\
         mapbox_response = mapbox_response,
     )
     if(line_for_invalid_city_but_valid_state_check is not None):
-        log_file.write(line_for_invalid_city_but_valid_state_check + "\n")
+        lat_lng_report_file.write(line_for_invalid_city_but_valid_state_check + "\n")
 
     line_for_invalid_city_but_valid_district_check = generate_line_for_invalid_city_but_valid_district_check(
         city_name = city_name,
@@ -311,4 +311,4 @@ def log_mapbox_request(\
         mapbox_response = mapbox_response,
     )
     if(line_for_invalid_city_but_valid_district_check is not None):
-        log_file.write(line_for_invalid_city_but_valid_district_check + "\n")
+        lat_lng_report_file.write(line_for_invalid_city_but_valid_district_check + "\n")

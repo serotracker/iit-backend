@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from io import TextIOWrapper
 from Pathogens.Utility.location_utils.mapbox_response_cache import update_mapbox_response_cache, attempt_to_fetch_mapbox_response_from_cache
 from Pathogens.Utility.location_utils.country_codes import get_country_code
-from Pathogens.Utility.location_utils.mapbox_api_request_logging import log_mapbox_request
+from Pathogens.Utility.location_utils.lat_lng_generation_report import record_mapbox_request_in_latlng_report
 
 region_id_regex = re.compile(r'^region.([0-9]+)$')
 
@@ -90,7 +90,7 @@ def make_mapbox_request(
     city_name: str | None,\
     state_name: str | None,\
     country_name: str,\
-    log_file: TextIOWrapper | None,\
+    lat_lng_report_file: TextIOWrapper | None,\
     mapbox_request_param_override: MapboxRequestParams | None\
 ):
     mapbox_request_params = generate_mapbox_request_params(city_name, state_name, country_name) \
@@ -115,14 +115,14 @@ def make_mapbox_request(
 
     update_mapbox_response_cache(mapbox_request_params, mapbox_response)
 
-    if(log_file is not None):
-        log_mapbox_request(
+    if(lat_lng_report_file is not None):
+        record_mapbox_request_in_latlng_report(
             city_name,
             state_name,
             country_name,
             mapbox_request_url,
             mapbox_response,
-            log_file
+            lat_lng_report_file
         )
     
     return mapbox_response
