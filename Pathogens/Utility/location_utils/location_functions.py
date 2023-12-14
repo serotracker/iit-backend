@@ -164,7 +164,7 @@ def get_city_lat_lng(city_name: str | None, state_name: str | None, country_name
     if(city_name is None):
         return get_state_lat_lng(state_name, country_name, log_file)
     
-    mapbox_response = make_mapbox_request(city_name, state_name, country_name, log_file)
+    mapbox_response = make_mapbox_request(city_name, state_name, country_name, log_file, None)
     if(mapbox_response == None):
         return get_state_lat_lng(state_name, country_name, log_file)
     coords = mapbox_response.center_coordinates
@@ -177,7 +177,7 @@ def get_state_lat_lng(state_name: str | None, country_name: str, log_file: TextI
     if(state_name is None):
         return get_country_lat_lng(country_name, log_file)
     
-    mapbox_response = make_mapbox_request(None, state_name, country_name, log_file)
+    mapbox_response = make_mapbox_request(None, state_name, country_name, log_file, None)
     if(mapbox_response == None):
         return get_country_lat_lng(country_name, log_file)
     coords = mapbox_response.center_coordinates
@@ -187,4 +187,4 @@ def get_state_lat_lng(state_name: str | None, country_name: str, log_file: TextI
     return coords
 
 def get_country_lat_lng(country_name: str, log_file: TextIOWrapper | None):
-    return make_mapbox_request(None, None, country_name, log_file).center_coordinates
+    return make_mapbox_request(None, None, country_name, log_file, None).center_coordinates

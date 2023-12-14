@@ -157,7 +157,7 @@ def main():
 
     print("[STEP] generating lat and lng values")
 
-    mapbox_lat_lng_generation_log_file_path = "./lat-lng-generation-file.txt"
+    mapbox_lat_lng_generation_log_file_path = "./lat_lng_generation_file.txt"
     with open(mapbox_lat_lng_generation_log_file_path, 'w') as mapbox_lat_lng_generation_log_file:
         records_df[['latitude', 'longitude']] = records_df.apply(lambda row:
             pd.Series(get_city_lat_lng(
@@ -168,7 +168,7 @@ def main():
             dtype='object'), axis = 1
         )
 
-    print("Lat lng generation log file saved at %s" % mapbox_lat_lng_generation_log_file_path)
+    print('[INFO] Lat lng generation log file saved in your current working directory with the name "' + mapbox_lat_lng_generation_log_file_path + '". The old file was overwritten')
 
     print ("[STEP] adding random jitter to lat and lng values to distribute pins around.")
     for column in ['latitude', 'longitude']:
